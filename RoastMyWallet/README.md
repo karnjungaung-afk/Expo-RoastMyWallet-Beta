@@ -1,4 +1,4 @@
-# PauseBuy
+# RoastMyWallet
 
 > **An AI-powered impulse-buying prevention system.**
 > Spend tens to save thousands.
@@ -7,7 +7,7 @@
 
 ## What Is This
 
-PauseBuy interrupts the impulse purchase loop. When a user sees something they want to buy — on TikTok Shop, Shopee, Instagram, anywhere — they add it to PauseBuy instead of buying it immediately. The app scores the purchase, gives it a waiting period, and asks: *still want it?*
+RoastMyWallet interrupts the impulse purchase loop. When a user sees something they want to buy — on TikTok Shop, Shopee, Instagram, anywhere — they add it to RoastMyWallet instead of buying it immediately. The app scores the purchase, gives it a waiting period, and asks: *still want it?*
 
 Most of the time, they don't.
 
@@ -52,7 +52,7 @@ Every table has RLS enabled. Every policy is explicit. Users cannot access other
 ## Project Structure
 
 ```
-pausebuy/
+RoastMyWallet/
 ├── app/                    # Expo Router file-based navigation
 │   ├── _layout.tsx         # Root layout, auth guard, store init
 │   ├── (auth)/             # Unauthenticated routes
@@ -120,8 +120,8 @@ pausebuy/
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/you/pausebuy.git
-cd pausebuy
+git clone https://github.com/you/RoastMyWallet.git
+cd RoastMyWallet 
 npm install
 ```
 
