@@ -14,7 +14,7 @@
     "@react-native-async-storage/async-storage": "^2.1.0",
     "@supabase/supabase-js": "^2.46.0",
     "date-fns": "^4.1.0",
-    "expo": "~52.0.0",
+    "expo": "^57.0.25",
     "expo-clipboard": "~7.0.0",
     "expo-constants": "~17.0.0",
     "expo-device": "~7.0.0",
