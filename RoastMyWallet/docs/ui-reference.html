@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PauseBuy — UI Reference</title>
+<style>
+  :root {
+    /* Light palette */
+    --bg: #F2F0EB;
+    --bg-subtle: #ECEAE4;
+    --surface: #FFFFFF;
+    --surface-raised: #FAFAF8;
+    --text-primary: #18191C;
+    --text-secondary: #525660;
+    --text-muted: #9CA0A8;
+    --border: #DEDBD4;
+    --border-subtle: #ECEAE4;
+
+    /* Accent */
+    --navy: #1B3557;
+    --navy-light: #D8E9F4;
+    --mecha: #2A5070;
+    --mecha-line: #B8CDDB;
+
+    /* Semantic */
+    --success: #2E7A4F;
+    --success-subtle: #D2F0E0;
+    --warning: #B8721E;
+    --warning-subtle: #FAF0D0;
+    --danger: #A33535;
+    --danger-subtle: #FAE2E2;
+
+    /* Spacing */
+    --radius: 12px;
+    --radius-sm: 6px;
+    --radius-lg: 16px;
+    --gap: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-subtle);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* ── Layout ─────────────────────────────────────────────────── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .logo-mark {
+    width: 48px; height: 48px;
+    border: 2px solid var(--navy);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .pause-bars {
+    display: flex; gap: 6px;
+  }
+  .pause-bar {
+    width: 6px; height: 22px;
+    background: var(--navy);
+    border-radius: 2px;
+  }
+  .corner-tl {
+    position: absolute; top: 4px; left: 4px;
+    width: 8px; height: 8px;
+    border-top: 1.5px solid var(--mecha); border-left: 1.5px solid var(--mecha);
+  }
+  .corner-br {
+    position: absolute; bottom: 4px; right: 4px;
+    width: 8px; height: 8px;
+    border-bottom: 1px solid var(--mecha); border-right: 1px solid var(--mecha);
+  }
+  .page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.8px; }
+  .page-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 3px; }
+
+  .screens-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 375px);
+    gap: 32px;
+    justify-content: start;
+  }
+
+  /* ── Phone Frame ─────────────────────────────────────────────── */
+  .phone {
+    width: 375px;
+    background: var(--surface);
+    border-radius: 36px;
+    border: 2px solid #C8C5BD;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    position: relative;
+  }
+  .phone-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 10px;
+  }
+  .phone-inner {
+    background: var(--bg);
+    min-height: 700px;
+    padding: 52px 20px 80px;
+    overflow: hidden;
+  }
+  .phone-notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 30px;
+    background: #fff;
+    border-radius: 0 0 20px 20px;
+    border-bottom: 1px solid #E5E2DC;
+    z-index: 10;
+  }
+  .phone-tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 72px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: 12px;
+    padding-top: 8px;
+  }
+  .tab-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .tab-icon {
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .tab-label { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+  .tab-item.active .tab-label { color: var(--navy); }
+  .tab-dot {
+    width: 4px; height: 4px; border-radius: 2px; background: var(--navy);
+  }
+
+  /* ── Design tokens ────────────────────────────────────────────── */
+  .section-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 20px;
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Screen components ────────────────────────────────────────── */
+  .screen-greeting { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+  .screen-name { font-size: 22px; font-weight: 800; letter-spacing: -0.8px; margin-bottom: 20px; }
+
+  .hero-card {
+    background: var(--navy);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::before {
+    content: 'SYS ▸ SHIELD';
+    position: absolute; bottom: 12px; right: 16px;
+    font-size: 9px; font-family: 'Courier New', monospace;
+    color: rgba(255,255,255,0.2); letter-spacing: 1px;
+  }
+  .hero-corner-tl {
+    position: absolute; top: 12px; left: 12px;
+    width: 16px; height: 16px;
+    border-top: 1.5px solid rgba(255,255,255,0.15);
+    border-left: 1.5px solid rgba(255,255,255,0.15);
+  }
+  .hero-corner-br {
+    position: absolute; bottom: 12px; right: 40px;
+    width: 16px; height: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .hero-sublabel {
+    font-size: 10px; font-family: 'Courier New', monospace;
+    color: rgba(255,255,255,0.5); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .hero-amount {
+    font-size: 40px; font-weight: 800; color: #fff;
+    letter-spacing: -2px; line-height: 1.1; margin-bottom: 10px;
+  }
+  .hero-meta { display: flex; align-items: center; gap: 6px; }
+  .hero-dot { width: 4px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.4); }
+  .hero-meta-text { font-size: 12px; color: rgba(255,255,255,0.6); }
+
+  .divider-line {
+    display: flex; align-items: center; gap: 8px; margin: 18px 0 14px;
+  }
+  .divider-line::before, .divider-line::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .divider-text {
+    font-size: 10px; font-family: 'Courier New', monospace;
+    color: var(--text-muted); letter-spacing: 0.8px; white-space: nowrap;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 2px;
+    background: var(--mecha); flex-shrink: 0;
+  }
+
+  /* ── Purchase Card ───────────────────────────────────────────── */
+  .purchase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .card-accent {
+    width: 2px; flex-shrink: 0;
+    background: var(--danger);
+  }
+  .card-accent.medium { background: var(--warning); }
+  .card-accent.low { background: var(--success); }
+  .card-body { flex: 1; padding: 14px; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .card-name { font-size: 14px; font-weight: 600; }
+  .card-cat { font-size: 10px; font-family: 'Courier New', monospace; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .card-price { font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
+  .card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+
+  .risk-badge {
+    display: flex; align-items: center; gap: 5px;
+    padding: 3px 7px; border-radius: 4px; background: var(--danger-subtle);
+  }
+  .risk-dots { display: flex; gap: 2px; }
+  .risk-dot-filled {
+    width: 5px; height: 5px; border-radius: 1px;
+    background: var(--danger); border: 1.5px solid var(--danger);
+  }
+  .risk-dot-empty {
+    width: 5px; height: 5px; border-radius: 1px;
+    background: transparent; border: 1.5px solid var(--danger);
+  }
+  .risk-text { font-size: 10px; font-weight: 700; font-family: 'Courier New', monospace; color: var(--danger); letter-spacing: 0.5px; }
+
+  .risk-badge.medium { background: var(--warning-subtle); }
+  .risk-badge.medium .risk-dot-filled { background: var(--warning); border-color: var(--warning); }
+  .risk-badge.medium .risk-dot-empty { border-color: var(--warning); }
+  .risk-badge.medium .risk-text { color: var(--warning); }
+
+  .risk-badge.low { background: var(--success-subtle); }
+  .risk-badge.low .risk-dot-filled { background: var(--success); border-color: var(--success); }
+  .risk-badge.low .risk-dot-empty { border-color: var(--success); }
+  .risk-badge.low .risk-text { color: var(--success); }
+
+  .score-pill {
+    padding: 2px 7px; border-radius: 4px; font-size: 10px;
+    font-weight: 700; font-family: 'Courier New', monospace;
+    background: var(--danger-subtle); color: var(--danger);
+  }
+  .score-pill.medium { background: var(--warning-subtle); color: var(--warning); }
+  .score-pill.low { background: var(--success-subtle); color: var(--success); }
+
+  .roast-text {
+    font-size: 12px; font-style: italic; color: var(--text-secondary);
+    border-left: 2px solid var(--border); padding-left: 8px;
+    margin-bottom: 8px; line-height: 1.5;
+  }
+  .progress-bar {
+    display: flex; gap: 2px; height: 3px; margin-bottom: 5px;
+  }
+  .progress-seg {
+    flex: 1; border-radius: 1px; background: var(--border-subtle);
+  }
+  .progress-seg.filled { background: var(--warning); }
+  .progress-seg.filled.low-progress { background: var(--danger); }
+  .progress-seg.filled.high-progress { background: var(--navy); }
+  .countdown-row { display: flex; align-items: center; gap: 5px; }
+  .countdown-text { font-size: 10px; font-family: 'Courier New', monospace; color: var(--text-muted); }
+
+  /* ── Stats row ────────────────────────────────────────────────── */
+  .stats-row {
+    display: flex; align-items: center; margin-bottom: 4px;
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .mini-stat { flex: 1; padding: 14px; text-align: center; }
+  .mini-stat-value { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .mini-stat-value.accent { color: var(--navy); }
+  .mini-stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .stat-divider { width: 1px; height: 28px; background: var(--border); }
+
+  /* ── FAB ──────────────────────────────────────────────────────── */
+  .fab {
+    position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--navy);
+    border-radius: 28px;
+    padding: 14px 28px;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 6px 20px rgba(27,53,87,0.35);
+    white-space: nowrap;
+  }
+  .fab-text { color: #fff; font-size: 14px; font-weight: 600; }
+
+  /* ── Score ring ───────────────────────────────────────────────── */
+  .score-ring-wrap {
+    display: flex; align-items: center; gap: 24px; margin-bottom: 16px;
+  }
+  .score-ring {
+    width: 110px; height: 110px; border-radius: 55px;
+    border: 7px solid var(--border-subtle); position: relative;
+    flex-shrink: 0;
+  }
+  .score-ring-fill {
+    position: absolute; inset: -7px; border-radius: 55px;
+    border: 7px solid transparent;
+    border-top-color: var(--danger);
+    border-right-color: var(--danger);
+  }
+  .score-ring-center {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center; flex-direction: row;
+    gap: 1px;
+  }
+  .score-num { font-size: 24px; font-weight: 800; font-family: 'Courier New', monospace; }
+  .score-denom { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+  .score-risk-label {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 700; font-family: 'Courier New', monospace;
+    letter-spacing: 0.8px; color: var(--danger); margin-top: 4px;
+  }
+  .score-detail-row { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .score-detail-key { font-size: 10px; font-family: 'Courier New', monospace; color: var(--text-muted); letter-spacing: 0.3px; }
+  .score-detail-val { font-size: 11px; font-weight: 500; }
+
+  /* ── Roast card ───────────────────────────────────────────────── */
+  .mecha-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex; overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .mecha-accent { width: 2px; flex-shrink: 0; }
+  .mecha-content { flex: 1; padding: 14px; position: relative; }
+  .mecha-corner {
+    position: absolute; top: 8px; right: 8px;
+    width: 10px; height: 10px;
+    border-top: 1.5px solid var(--navy); border-right: 1.5px solid var(--navy);
+  }
+  .roast-quote {
+    font-size: 13px; line-height: 1.6; font-style: italic;
+    color: var(--text-primary); margin-bottom: 8px;
+  }
+  .roast-reason { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ── System label ─────────────────────────────────────────────── */
+  .sys-label {
+    font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.5px;
+    color: var(--text-muted); border: 1px solid var(--mecha-line);
+    padding: 2px 6px; border-radius: 3px; display: inline-block;
+  }
+
+  /* ── Insights ─────────────────────────────────────────────────── */
+  .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .overview-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); display: flex; overflow: hidden;
+  }
+  .overview-accent { width: 3px; flex-shrink: 0; }
+  .overview-content { flex: 1; padding: 10px; }
+  .overview-label { font-size: 9px; font-family: 'Courier New', monospace; color: var(--text-muted); margin-bottom: 3px; }
+  .overview-value { font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
+  .overview-note { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Color tokens display ─────────────────────────────────────── */
+  .token-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+  .token-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; background: white;
+    border: 1px solid var(--border); border-radius: 8px;
+  }
+  .token-swatch { width: 24px; height: 24px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
+  .token-name { font-size: 12px; font-weight: 500; }
+  .token-value { font-size: 10px; color: var(--text-muted); font-family: 'Courier New', monospace; }
+
+  /* ── Bar chart ────────────────────────────────────────────────── */
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin: 10px 0; }
+  .bar-group { display: flex; gap: 2px; align-items: flex-end; }
+  .bar { border-radius: 2px 2px 0 0; }
+  .bar-label { font-size: 8px; text-align: center; color: var(--text-muted); font-family: 'Courier New', monospace; margin-top: 4px; }
+
+  /* ── Squad ────────────────────────────────────────────────────── */
+  .roast-msg {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px;
+  }
+  .roast-context { font-size: 9px; font-family: 'Courier New', monospace; color: var(--text-muted); margin-bottom: 6px; font-style: italic; }
+  .roast-body { display: flex; gap: 8px; align-items: flex-start; }
+  .roast-avatar {
+    width: 28px; height: 28px; border-radius: 14px;
+    background: var(--navy-light); display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: var(--navy); flex-shrink: 0;
+  }
+  .roast-author { font-size: 10px; font-weight: 600; color: var(--text-secondary); margin-bottom: 3px; }
+  .roast-content { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+
+  /* ── Auth ─────────────────────────────────────────────────────── */
+  .input-field {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 13px 14px; font-size: 14px; background: #F5F3EE;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);
+  }
+  .input-field .icon { font-size: 14px; color: var(--text-muted); }
+  .input-label { font-size: 11px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+  .btn-primary {
+    background: var(--navy); color: white; border: none; border-radius: 10px;
+    padding: 16px; width: 100%; font-size: 15px; font-weight: 600; cursor: pointer;
+    text-align: center; margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="logo-mark">
+    <div class="pause-bars"><div class="pause-bar"></div><div class="pause-bar"></div></div>
+    <div class="corner-tl"></div>
+    <div class="corner-br"></div>
+  </div>
+  <div>
+    <div class="page-title">PauseBuy</div>
+    <div class="page-subtitle">UI Reference · Design System + Screen Compositions</div>
+  </div>
+</div>
+
+<!-- ── Design Tokens ───────────────────────────────────────────────────── -->
+<div class="section-header">DESIGN TOKENS · COLORS</div>
+<div class="token-grid">
+  <div class="token-chip"><div class="token-swatch" style="background:#1B3557"></div><div><div class="token-name">Navy (Primary)</div><div class="token-value">#1B3557</div></div></div>
+  <div class="token-chip"><div class="token-swatch" style="background:#F2F0EB"></div><div><div class="token-name">Warm White (BG)</div><div class="token-value">#F2F0EB</div></div></div>
+  <div class="token-chip"><div class="token-swatch" style="background:#2E7A4F"></div><div><div class="token-name">Forest (Success)</div><div class="token-value">#2E7A4F</div></div></div>
+  <div class="token-chip"><div class="token-swatch" style="background:#B8721E"></div><div><div class="token-name">Amber (Warning)</div><div class="token-value">#B8721E</div></div></div>
+  <div class="token-chip"><div class="token-swatch" style="background:#A33535"></div><div><div class="token-name">Muted Red (Danger)</div><div class="token-value">#A33535</div></div></div>
+  <div class="token-chip"><div class="token-swatch" style="background:#2A5070; border:1px solid #ddd"></div><div><div class="token-name">Mecha (Accent)</div><div class="token-value">#2A5070</div></div></div>
+  <div class="token-chip"><div class="token-swatch" style="background:#18191C"></div><div><div class="token-name">Charcoal (Text)</div><div class="token-value">#18191C</div></div></div>
+  <div class="token-chip"><div class="token-swatch" style="background:#DEDBD4"></div><div><div class="token-name">Border</div><div class="token-value">#DEDBD4</div></div></div>
+</div>
+
+<!-- ── Screens ─────────────────────────────────────────────────────────── -->
+<div class="section-header">SCREENS</div>
+<div class="screens-row">
+
+  <!-- HOME SCREEN -->
+  <div>
+    <div class="phone-label">01 · HOME</div>
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-inner">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <div>
+            <div class="screen-greeting">Good evening</div>
+            <div class="screen-name">Kai</div>
+          </div>
+          <div style="width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:16px;">🔔</div>
+        </div>
+
+        <!-- Hero card -->
+        <div class="hero-card">
+          <div class="hero-corner-tl"></div>
+          <div class="hero-corner-br"></div>
+          <div class="hero-sublabel">EST. AVOIDED THIS MONTH</div>
+          <div class="hero-amount">฿2,450</div>
+          <div class="hero-meta">
+            <div class="hero-dot"></div>
+            <div class="hero-meta-text">7 purchases paused</div>
+          </div>
+        </div>
+
+        <!-- Waiting section -->
+        <div class="divider-line"><span class="divider-text">WAITING · 3</span><div class="status-dot"></div></div>
+
+        <!-- Purchase card — HIGH -->
+        <div class="purchase-card">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="card-header">
+              <div>
+                <div class="card-name">Gaming Mouse</div>
+                <div class="card-cat">Gaming</div>
+              </div>
+              <div class="card-price">฿890</div>
+            </div>
+            <div class="card-meta">
+              <span class="score-pill">28</span>
+              <div class="risk-badge">
+                <div class="risk-dots">
+                  <div class="risk-dot-filled"></div><div class="risk-dot-filled"></div><div class="risk-dot-filled"></div>
+                </div>
+                <span class="risk-text">HIGH</span>
+              </div>
+            </div>
+            <div class="roast-text">"หยุดก่อน — ของชิ้นนี้จำเป็นจริง หรือแค่เห็นคำว่า SALE แล้วใจสั่น?"</div>
+            <div class="progress-bar">
+              <div class="progress-seg filled low-progress"></div><div class="progress-seg filled low-progress"></div><div class="progress-seg filled low-progress"></div><div class="progress-seg filled low-progress"></div><div class="progress-seg filled low-progress"></div>
+              <div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div>
+            </div>
+            <div class="countdown-row">
+              <span style="font-size:11px;">⏱</span>
+              <span class="countdown-text">Decision in 18h 24m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase card — MEDIUM -->
+        <div class="purchase-card">
+          <div class="card-accent medium"></div>
+          <div class="card-body">
+            <div class="card-header">
+              <div>
+                <div class="card-name">Wireless Earbuds</div>
+                <div class="card-cat">Electronics</div>
+              </div>
+              <div class="card-price">฿1,290</div>
+            </div>
+            <div class="card-meta">
+              <span class="score-pill medium">54</span>
+              <div class="risk-badge medium">
+                <div class="risk-dots">
+                  <div class="risk-dot-filled" style="background:var(--warning);border-color:var(--warning)"></div>
+                  <div class="risk-dot-filled" style="background:var(--warning);border-color:var(--warning)"></div>
+                  <div class="risk-dot-empty" style="border-color:var(--warning)"></div>
+                </div>
+                <span class="risk-text">MED</span>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-seg filled high-progress"></div><div class="progress-seg filled high-progress"></div><div class="progress-seg filled high-progress"></div><div class="progress-seg filled high-progress"></div><div class="progress-seg filled high-progress"></div><div class="progress-seg filled high-progress"></div><div class="progress-seg filled high-progress"></div><div class="progress-seg filled high-progress"></div>
+              <div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div>
+            </div>
+            <div class="countdown-row">
+              <span style="font-size:11px;">⏱</span>
+              <span class="countdown-text">Decision in 4h 12m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="divider-line" style="margin-top:8px;"><span class="divider-text">THIS MONTH</span></div>
+        <div class="stats-row">
+          <div class="mini-stat"><div class="mini-stat-value">7</div><div class="mini-stat-label">Avoided</div></div>
+          <div class="stat-divider"></div>
+          <div class="mini-stat"><div class="mini-stat-value accent">฿2,450</div><div class="mini-stat-label">Saved</div></div>
+          <div class="stat-divider"></div>
+          <div class="mini-stat"><div class="mini-stat-value">28%</div><div class="mini-stat-label">Impulse rate</div></div>
+        </div>
+      </div>
+
+      <!-- FAB -->
+      <div class="fab">
+        <span style="color:white;font-size:18px;font-weight:700;">+</span>
+        <span class="fab-text">Add Purchase</span>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="phone-tabbar">
+        <div class="tab-item active"><div class="tab-icon">⊙</div><div class="tab-label" style="color:var(--navy)">Home</div><div class="tab-dot"></div></div>
+        <div class="tab-item"><div class="tab-icon">○</div><div class="tab-label">Waiting</div></div>
+        <div class="tab-item"><div class="tab-icon">◫</div><div class="tab-label">Insights</div></div>
+        <div class="tab-item"><div class="tab-icon">◎</div><div class="tab-label">Squad</div></div>
+        <div class="tab-item"><div class="tab-icon">◯</div><div class="tab-label">Profile</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PURCHASE DETAIL -->
+  <div>
+    <div class="phone-label">02 · PURCHASE DETAIL</div>
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-inner" style="padding-bottom:140px;">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <div class="sys-label">SYS ▸ A3F9B2</div>
+          <div style="width:30px;height:30px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;">✕</div>
+        </div>
+
+        <!-- Product info -->
+        <div style="margin-bottom:18px;">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+            <span style="background:var(--warning-subtle);color:var(--warning);font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:0.5px;">Waiting</span>
+            <span style="font-size:9px;font-family:'Courier New';color:var(--text-muted);">TikTok Shop</span>
+          </div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;">Gaming Mouse</div>
+          <div style="font-size:32px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;">฿890</div>
+          <div style="font-size:9px;font-family:'Courier New';color:var(--text-muted);">Added 2 hours ago</div>
+        </div>
+
+        <!-- Need Score -->
+        <div class="divider-line"><span class="divider-text">NEED SCORE</span></div>
+        <div class="score-ring-wrap">
+          <div>
+            <div class="score-ring">
+              <div class="score-ring-center">
+                <span class="score-num" style="color:var(--danger);">28</span>
+                <span class="score-denom">/100</span>
+              </div>
+            </div>
+            <div class="score-risk-label">
+              <span style="width:5px;height:5px;border-radius:1px;background:var(--danger);display:inline-block;"></span>
+              HIGH RISK
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div class="score-detail-row"><span class="score-detail-key">Category</span><span class="score-detail-val">Gaming</span></div>
+            <div class="score-detail-row"><span class="score-detail-key">Reason</span><span class="score-detail-val">On Sale</span></div>
+            <div class="score-detail-row"><span class="score-detail-key">Wait</span><span class="score-detail-val" style="color:var(--warning)">18h 24m</span></div>
+            <div class="score-detail-row"><span class="score-detail-key">Risk</span>
+              <div class="risk-badge" style="padding:2px 6px;">
+                <div class="risk-dots">
+                  <div class="risk-dot-filled"></div><div class="risk-dot-filled"></div><div class="risk-dot-filled"></div>
+                </div>
+                <span class="risk-text">HIGH</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Roast -->
+        <div class="divider-line"><span class="divider-text">AI ANALYSIS</span></div>
+        <div class="mecha-card">
+          <div class="mecha-accent" style="background:var(--danger)"></div>
+          <div class="mecha-content">
+            <div class="mecha-corner"></div>
+            <div class="roast-quote">"หยุดก่อน — ของชิ้นนี้จำเป็นจริง หรือแค่เห็นคำว่า SALE แล้วใจสั่น? Mouse ตัวเก่ายังใช้ได้อยู่นะ"</div>
+            <div class="roast-reason">Need score is 28/100. Sale-triggered purchase with an existing alternative. Usage frequency is likely low.</div>
+          </div>
+        </div>
+      </div>
+      <!-- Decision footer -->
+      <div style="position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 20px 28px;">
+        <div style="font-size:12px;text-align:center;color:var(--text-secondary);font-weight:500;margin-bottom:10px;">Time's up. What did you decide?</div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1;border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center;font-size:13px;font-weight:600;color:var(--text-secondary);">✕ Skip it</div>
+          <div style="flex:1;background:var(--danger);border-radius:10px;padding:13px;text-align:center;font-size:13px;font-weight:600;color:white;">✓ I bought it</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div>
+    <div class="phone-label">03 · INSIGHTS</div>
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-inner">
+        <div style="margin-bottom:18px;">
+          <div style="font-size:22px;font-weight:800;letter-spacing:-0.8px;">Insights</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Your spending patterns</div>
+        </div>
+
+        <div class="divider-line"><span class="divider-text">OVERVIEW</span></div>
+
+        <div class="overview-grid">
+          <div class="overview-card">
+            <div class="overview-accent" style="background:var(--success)"></div>
+            <div class="overview-content">
+              <div class="overview-label">AVOIDED</div>
+              <div class="overview-value" style="color:var(--success)">฿3,420</div>
+              <div class="overview-note">Est. impulse spending</div>
+            </div>
+          </div>
+          <div class="overview-card">
+            <div class="overview-accent" style="background:var(--danger)"></div>
+            <div class="overview-content">
+              <div class="overview-label">SPENT</div>
+              <div class="overview-value">฿890</div>
+              <div class="overview-note">Purchases completed</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:16px;font-weight:700;">8</div>
+            <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">Avoided</div>
+          </div>
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:16px;font-weight:700;">28%</div>
+            <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">Impulse rate</div>
+          </div>
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:16px;font-weight:700;">22h</div>
+            <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">Avg. wait</div>
+          </div>
+        </div>
+
+        <div class="divider-line"><span class="divider-text">MONTHLY TREND</span></div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:10px;">Avoided vs spent per month</div>
+          <div class="bar-chart">
+            <div><div class="bar-group"><div class="bar" style="width:10px;height:30px;background:var(--success);opacity:0.75"></div><div class="bar" style="width:10px;height:10px;background:var(--danger);opacity:0.65"></div></div><div class="bar-label">Apr</div></div>
+            <div><div class="bar-group"><div class="bar" style="width:10px;height:45px;background:var(--success);opacity:0.75"></div><div class="bar" style="width:10px;height:20px;background:var(--danger);opacity:0.65"></div></div><div class="bar-label">May</div></div>
+            <div><div class="bar-group"><div class="bar" style="width:10px;height:25px;background:var(--success);opacity:0.75"></div><div class="bar" style="width:10px;height:35px;background:var(--danger);opacity:0.65"></div></div><div class="bar-label">Jun</div></div>
+            <div><div class="bar-group"><div class="bar" style="width:10px;height:60px;background:var(--success);opacity:0.75"></div><div class="bar" style="width:10px;height:8px;background:var(--danger);opacity:0.65"></div></div><div class="bar-label">Jul</div></div>
+            <div><div class="bar-group"><div class="bar" style="width:10px;height:40px;background:var(--success);opacity:0.75"></div><div class="bar" style="width:10px;height:18px;background:var(--danger);opacity:0.65"></div></div><div class="bar-label">Aug</div></div>
+            <div><div class="bar-group"><div class="bar" style="width:10px;height:55px;background:var(--success);opacity:0.75"></div><div class="bar" style="width:10px;height:12px;background:var(--danger);opacity:0.65"></div></div><div class="bar-label">Sep</div></div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:4px;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:9px;color:#888">
+              <div style="width:8px;height:8px;border-radius:4px;background:var(--success)"></div>Avoided
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:9px;color:#888">
+              <div style="width:8px;height:8px;border-radius:4px;background:var(--danger)"></div>Spent
+            </div>
+          </div>
+        </div>
+
+        <!-- Pro ROI -->
+        <div style="background:var(--surface);border:1.5px solid var(--success);border-radius:var(--radius);display:flex;overflow:hidden;">
+          <div style="width:2px;background:var(--success);flex-shrink:0;"></div>
+          <div style="flex:1;padding:12px;position:relative;">
+            <div style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-top:1.5px solid var(--navy);border-right:1.5px solid var(--navy);"></div>
+            <div style="font-size:12px;font-weight:600;margin-bottom:10px;">Your PauseBuy return</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <div><div style="font-size:16px;font-weight:700;color:var(--text-muted)">฿39</div><div style="font-size:9px;color:var(--text-muted)">Subscription</div></div>
+              <span style="color:var(--text-muted)">→</span>
+              <div><div style="font-size:16px;font-weight:700;color:var(--success)">฿3,381</div><div style="font-size:9px;color:var(--text-muted)">Est. net gain</div></div>
+            </div>
+            <div style="font-size:9px;color:var(--text-muted);font-style:italic;line-height:1.4;">Based on estimated avoided spending.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phone-tabbar">
+        <div class="tab-item"><div class="tab-icon">⊙</div><div class="tab-label">Home</div></div>
+        <div class="tab-item"><div class="tab-icon">○</div><div class="tab-label">Waiting</div></div>
+        <div class="tab-item active"><div class="tab-icon">◫</div><div class="tab-label" style="color:var(--navy)">Insights</div><div class="tab-dot"></div></div>
+        <div class="tab-item"><div class="tab-icon">◎</div><div class="tab-label">Squad</div></div>
+        <div class="tab-item"><div class="tab-icon">◯</div><div class="tab-label">Profile</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQUAD -->
+  <div>
+    <div class="phone-label">04 · SQUAD ROASTING</div>
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-inner">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">
+          <div>
+            <div style="font-size:22px;font-weight:800;letter-spacing:-0.8px;">Thrift Gang</div>
+            <div style="font-size:9px;font-family:'Courier New';color:var(--text-muted);margin-top:2px;">3 members</div>
+          </div>
+          <span style="background:var(--navy-light);color:var(--navy);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.5px;border:1px solid var(--navy)">PRO</span>
+        </div>
+
+        <!-- Members -->
+        <div class="divider-line"><span class="divider-text">MEMBERS</span></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">
+          <div style="display:flex;gap:16px;margin-bottom:12px;">
+            <div style="text-align:center;">
+              <div style="width:42px;height:42px;border-radius:21px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-size:14px;position:relative;">
+                K<div style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:5px;background:var(--success);border:1.5px solid white;"></div>
+              </div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:3px;">Kai ★</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:42px;height:42px;border-radius:21px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-size:14px;">P</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:3px;">Ploy</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:42px;height:42px;border-radius:21px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-size:14px;position:relative;">
+                N<div style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:5px;background:var(--success);border:1.5px solid white;"></div>
+              </div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:3px;">Nam</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:42px;height:42px;border-radius:21px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:16px;">+</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:3px;">Invite</div>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:9px;color:var(--text-muted);">Share code</span>
+            <div style="background:var(--navy-light);border:1px solid var(--navy);border-radius:6px;padding:4px 10px;display:flex;align-items:center;gap:6px;">
+              <span style="font-family:'Courier New';font-size:12px;font-weight:700;color:var(--navy);letter-spacing:1.5px;">PAUSE-7X2K</span>
+              <span style="font-size:10px;color:var(--navy);">⧉</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feed -->
+        <div class="divider-line"><span class="divider-text">ROAST FEED</span><div class="status-dot"></div></div>
+
+        <div class="roast-msg">
+          <div class="roast-context">Re: Mechanical Keyboard ฿3,490</div>
+          <div class="roast-body">
+            <div class="roast-avatar">P</div>
+            <div>
+              <div class="roast-author">Ploy <span style="font-weight:400;color:var(--text-muted)"> · 2m ago</span></div>
+              <div class="roast-content">Keyboard ตัวเก่ายังใช้ได้อยู่ไม่ใช่เหรอ? 😂</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="roast-msg">
+          <div class="roast-context">Re: Mechanical Keyboard ฿3,490</div>
+          <div class="roast-body">
+            <div class="roast-avatar">N</div>
+            <div>
+              <div class="roast-author">Nam <span style="font-weight:400;color:var(--text-muted)"> · 5m ago</span></div>
+              <div class="roast-content">ซื้ออันนี้แล้วจะพิมพ์โค้ดเก่งขึ้นเหรอ? รอก่อนนะ!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-tabbar">
+        <div class="tab-item"><div class="tab-icon">⊙</div><div class="tab-label">Home</div></div>
+        <div class="tab-item"><div class="tab-icon">○</div><div class="tab-label">Waiting</div></div>
+        <div class="tab-item"><div class="tab-icon">◫</div><div class="tab-label">Insights</div></div>
+        <div class="tab-item active"><div class="tab-icon">◎</div><div class="tab-label" style="color:var(--navy)">Squad</div><div class="tab-dot"></div></div>
+        <div class="tab-item"><div class="tab-icon">◯</div><div class="tab-label">Profile</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div>
+    <div class="phone-label">05 · AUTH</div>
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-inner" style="display:flex;flex-direction:column;justify-content:center;gap:0;padding-top:80px;">
+        <!-- Logo -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:36px;">
+          <div class="logo-mark" style="width:56px;height:56px;border-radius:14px;">
+            <div class="pause-bars"><div class="pause-bar"></div><div class="pause-bar"></div></div>
+            <div class="corner-tl"></div>
+            <div class="corner-br"></div>
+          </div>
+          <div style="font-size:24px;font-weight:800;letter-spacing:-1px;">PauseBuy</div>
+          <div style="font-size:13px;color:var(--text-muted);">Think before you buy.</div>
+        </div>
+
+        <!-- Form -->
+        <div>
+          <div class="input-label">Email</div>
+          <div class="input-field"><span class="icon">✉</span>you@example.com</div>
+
+          <div class="input-label">Password</div>
+          <div class="input-field"><span class="icon">🔒</span>••••••••</div>
+
+          <div style="text-align:right;margin-top:-4px;margin-bottom:16px;">
+            <span style="font-size:12px;color:var(--navy);font-weight:500;">Forgot password?</span>
+          </div>
+
+          <div class="btn-primary">Sign in</div>
+        </div>
+
+        <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--text-muted);">
+          Don't have an account? <span style="color:var(--navy);font-weight:600;">Create one</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Component library note -->
+<div class="section-header" style="margin-top:48px;">COMPONENT SIGNATURES</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:40px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12px;">
+    <div style="font-weight:600;margin-bottom:6px;">RiskBadge</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div class="risk-badge"><div class="risk-dots"><div class="risk-dot-filled"></div><div class="risk-dot-filled"></div><div class="risk-dot-filled"></div></div><span class="risk-text">HIGH</span></div>
+      <div class="risk-badge medium"><div class="risk-dots"><div class="risk-dot-filled" style="background:var(--warning);border-color:var(--warning)"></div><div class="risk-dot-filled" style="background:var(--warning);border-color:var(--warning)"></div><div class="risk-dot-empty" style="border-color:var(--warning)"></div></div><span class="risk-text">MED</span></div>
+      <div class="risk-badge low"><div class="risk-dots"><div class="risk-dot-filled" style="background:var(--success);border-color:var(--success)"></div><div class="risk-dot-empty" style="border-color:var(--success)"></div><div class="risk-dot-empty" style="border-color:var(--success)"></div></div><span class="risk-text">LOW</span></div>
+    </div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12px;">
+    <div style="font-weight:600;margin-bottom:6px;">StatusBadge</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <span style="background:var(--warning-subtle);color:var(--warning);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;">Waiting</span>
+      <span style="background:var(--success-subtle);color:var(--success);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;">Avoided</span>
+      <span style="background:var(--danger-subtle);color:var(--danger);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;">Bought</span>
+      <span style="background:var(--navy-light);color:var(--navy);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid var(--navy);">PRO</span>
+    </div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12px;">
+    <div style="font-weight:600;margin-bottom:6px;">SystemLabel</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div class="sys-label">SYS ▸ SHIELD</div>
+      <div class="sys-label">SYS ▸ A3F9B2</div>
+      <div class="sys-label">PRO ▸ ACTIVE</div>
+    </div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12px;">
+    <div style="font-weight:600;margin-bottom:6px;">TechnicalDivider</div>
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:180px;">
+      <div class="divider-line" style="margin:0;"><span class="divider-text">WAITING · 3</span><div class="status-dot"></div></div>
+      <div class="divider-line" style="margin:0;"><span class="divider-text">OVERVIEW</span></div>
+      <div class="divider-line" style="margin:0;"><span class="divider-text">NEED SCORE</span></div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;color:var(--text-muted);font-size:11px;font-family:'Courier New',monospace;padding-bottom:32px;">
+  PauseBuy UI Reference · Generated from src/theme/tokens.ts
+</div>
+
+</body>
+</html>
