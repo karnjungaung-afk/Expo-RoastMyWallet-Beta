@@ -6,15 +6,18 @@ import { env } from '@/config/env';
 /**
  * Shared Supabase client for auth, database and Edge Functions.
  *
- * Supabase's auth session is persisted in AsyncStorage for React Native.
- * The app never stores a service-role key here; only the public anon key
- * should be provided through the Expo app config / environment variables.
+ * Supabase's publishable key is safe to ship in a public/mobile client.
+ * NEVER use a secret/service-role key in this file.
  */
-export const supabase = createClient(env.supabaseUrl, env.supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
+export const supabase = createClient(
+  env.supabaseUrl,
+  env.supabasePublishableKey,
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
   },
-});
+);
