@@ -274,6 +274,8 @@ export interface NotificationData {
   type: NotificationType;
   purchaseId?: string;
   squadId?: string;
+  /** expo-notifications requires data: Record<string, unknown> */
+  [key: string]: unknown;
 }
 
 // ─── INTERCEPT ────────────────────────────────────────────────────────────────

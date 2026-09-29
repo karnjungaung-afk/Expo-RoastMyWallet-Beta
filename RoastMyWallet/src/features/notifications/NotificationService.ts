@@ -1,7 +1,13 @@
 import * as ExpoNotifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import type { NotificationType, NotificationData, Purchase } from '@/types';
+
+// Remote push tokens on Android are NOT supported inside Expo Go since SDK 53.
+// Local notification scheduling still works on all platforms including Expo Go.
+const isExpoGo =
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 // ─── CONFIGURATION ────────────────────────────────────────────────────────────
 
@@ -39,13 +45,45 @@ export class NotificationService {
     return status === 'granted';
   }
 
+  /**
+   * Returns the Expo push token, or null when unavailable.
+   *
+   * - Returns null on Android Expo Go: remote push requires FCM/EAS infra
+   *   that Expo Go doesn't provide since SDK 53. Local scheduling still works.
+   * - Returns null on simulators/emulators (Device.isDevice is false).
+   * - Returns null when permission hasn't been granted.
+   * - All errors are caught — push-token failure is non-fatal.
+   */
   async getPushToken(): Promise<string | null> {
     if (!Device.isDevice) return null;
     if (!(await this.hasPermission())) return null;
+
+    // Android Expo Go doesn't support FCM-based push tokens since SDK 53.
+    // Skip silently so the rest of the app keeps working.
+    if (Platform.OS === 'android' && isExpoGo) {
+      if (__DEV__) {
+        console.log(
+          '[Notifications] Skipping push token on Android Expo Go — ' +
+            'use a development build for remote push support.',
+        );
+      }
+      return null;
+    }
+
     try {
-      const token = await ExpoNotifications.getExpoPushTokenAsync();
+      // Pass projectId explicitly when available so the call works outside
+      // an EAS build too. Falls back to app config auto-detection when absent.
+      const projectId =
+        (Constants.expoConfig?.extra?.eas?.projectId as string | undefined) ||
+        undefined;
+
+      const token = await ExpoNotifications.getExpoPushTokenAsync(
+        projectId ? { projectId } : undefined,
+      );
       return token.data;
-    } catch {
+    } catch (err) {
+      // Non-fatal: local scheduling works without a push token.
+      console.warn('[Notifications] Push token unavailable (non-fatal):', err);
       return null;
     }
   }
@@ -74,14 +112,14 @@ export class NotificationService {
         },
       });
     } catch (err) {
-      console.error('[NotificationService] Schedule failed:', err);
+      console.error('[Notifications] Schedule failed:', err);
       return null;
     }
   }
 
   async scheduleSpendingLimitWarning(
     limitType: 'daily' | 'weekly' | 'monthly',
-    percentUsed: number
+    percentUsed: number,
   ): Promise<void> {
     if (!(await this.hasPermission())) return;
 
@@ -106,7 +144,7 @@ export class NotificationService {
     try {
       await ExpoNotifications.cancelScheduledNotificationAsync(notificationId);
     } catch (err) {
-      console.error('[NotificationService] Cancel failed:', err);
+      console.error('[Notifications] Cancel failed:', err);
     }
   }
 
@@ -115,13 +153,13 @@ export class NotificationService {
   }
 
   addReceivedListener(
-    callback: (notification: ExpoNotifications.Notification) => void
+    callback: (notification: ExpoNotifications.Notification) => void,
   ): ExpoNotifications.EventSubscription {
     return ExpoNotifications.addNotificationReceivedListener(callback);
   }
 
   addResponseListener(
-    callback: (response: ExpoNotifications.NotificationResponse) => void
+    callback: (response: ExpoNotifications.NotificationResponse) => void,
   ): ExpoNotifications.EventSubscription {
     return ExpoNotifications.addNotificationResponseReceivedListener(callback);
   }

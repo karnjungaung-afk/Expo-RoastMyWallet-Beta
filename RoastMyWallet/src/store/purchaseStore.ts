@@ -109,7 +109,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         category: input.category,
         reason: input.reason,
         notes: input.notes,
-        questionnaire: input.questionnaire as Record<string, unknown> | null,
+        questionnaire: (input.questionnaire as unknown) as Record<string, unknown> | null,
         need_score: scoring.score,
         impulse_risk: scoring.risk,
         status: 'waiting',
