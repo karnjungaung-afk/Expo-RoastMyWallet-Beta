@@ -1,4 +1,4 @@
-import 'react-native-url-polyfill/auto';
+// URL polyfill is applied at app entry (app/_layout.tsx) before this module loads.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { env } from '@/config/env';

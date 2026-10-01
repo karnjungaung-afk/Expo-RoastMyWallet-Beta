@@ -1,5 +1,10 @@
+// ─── URL Polyfill ─────────────────────────────────────────────────────────────
+// Must be the very first import to ensure URL is available for supabase and
+// env.ts before any other module initialises.
+import 'react-native-url-polyfill/auto';
+
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,6 +14,20 @@ import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useTheme } from '@/hooks/useTheme';
+
+// ─── GLOBAL ERROR HANDLER ─────────────────────────────────────────────────────
+// Logs every unhandled JS error to the Metro terminal so "Something went wrong"
+// always has a traceable cause — even if it happens before React renders.
+if (typeof ErrorUtils !== 'undefined') {
+  const prevHandler = ErrorUtils.getGlobalHandler();
+  ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
+    console.error(
+      `[GlobalError] ${isFatal ? '💥 FATAL' : '⚠️  non-fatal'}: ${error.message}`,
+    );
+    if (error.stack) console.error('[GlobalError] Stack:', error.stack);
+    prevHandler(error, isFatal);
+  });
+}
 
 // ─── PROTECTED ROUTE GUARD ────────────────────────────────────────────────────
 
@@ -45,20 +64,16 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      // Load persisted settings first (currency, language, theme, limits)
-      await loadSettings();
-
-      // Auth — determines which screen stack to show
-      await initAuth();
-
-      // Subscription — needed for feature gates throughout app
-      await initSubscription();
-
-      // Notifications — request permission, set up channels, load scheduled IDs
-      // Non-blocking: notification failure must never prevent app startup
-      initNotifications().catch(err =>
-        console.warn('[RootLayout] Notification init failed (non-fatal):', err)
-      );
+      try {
+        await loadSettings();
+        await initAuth();
+        await initSubscription();
+        initNotifications().catch(err =>
+          console.warn('[RootLayout] Notification init failed (non-fatal):', err),
+        );
+      } catch (err) {
+        console.error('[RootLayout] Init failed:', err);
+      }
     };
     init();
   }, []);
@@ -89,9 +104,9 @@ export default function RootLayout() {
 
 function SplashLoader({ colors, isDark }: { colors: any; isDark: boolean }) {
   return (
-    <View style={[styles.splash, { backgroundColor: colors.background }]}>
+    <View style={[styles.splash, { backgroundColor: colors?.background ?? '#F2F0EB' }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <ActivityIndicator size="small" color={colors.primary} />
+      <ActivityIndicator size="small" color={colors?.primary ?? '#1B3557'} />
     </View>
   );
 }
