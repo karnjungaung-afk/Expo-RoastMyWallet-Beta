@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AppTheme, Currency, Language, SpendingLimits } from '@/types';
 
-const STORAGE_KEY = '@pausebuy:settings';
+const STORAGE_KEY = '@roastmywallet:settings';
 
 interface SettingsState {
   theme: AppTheme;

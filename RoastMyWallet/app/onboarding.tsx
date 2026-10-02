@@ -40,7 +40,7 @@ function useSlides() {
       id: '2',
       title: 'The AI scores your decision.',
       subtitle:
-        'PauseBuy calculates a Need Score based on your answers. It gives you an honest, slightly sarcastic verdict.',
+        'RoastMyWallet calculates a Need Score based on your answers. It gives you an honest, slightly sarcastic verdict.',
       visual: <SlideVisual2 colors={colors} />,
       accent: colors.success,
     },

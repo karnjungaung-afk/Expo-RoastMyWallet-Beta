@@ -2,8 +2,8 @@
  * Android Intercept Service
  *
  * Capabilities on Android:
- * ✅ Share intents — user shares a product URL to PauseBuy
- * ✅ Deep links — apps can register pausebuy:// scheme
+ * ✅ Share intents — user shares a product URL to RoastMyWallet
+ * ✅ Deep links — apps can register roastmywallet:// scheme
  * ✅ App links — HTTPS-based verified deep links
  * ✅ Notifications — trigger when user opens shopping apps (requires usage access)
  *
@@ -13,7 +13,7 @@
  * ✗ Background app detection without usage stats permission
  *
  * The primary intercept mechanism: Share Intent
- * User finds a product → shares URL → PauseBuy opens and pre-fills the form.
+ * User finds a product → shares URL → RoastMyWallet opens and pre-fills the form.
  * This is frictionless, opt-in, and platform-policy compliant.
  */
 
@@ -69,14 +69,14 @@ export class AndroidInterceptService implements IInterceptService {
   }
 
   getCapabilityDescription(): string {
-    return 'Share any product URL from a shopping app directly to PauseBuy. Tap Share → PauseBuy in any browser or app to add it to your pause list instantly.';
+    return 'Share any product URL from a shopping app directly to RoastMyWallet. Tap Share → RoastMyWallet in any browser or app to add it to your pause list instantly.';
   }
 
   private handleUrl = ({ url }: { url: string }) => {
     if (!url) return;
 
-    // Handle our deep link scheme: pausebuy://intercept?url=<shopping_url>
-    if (url.startsWith('pausebuy://intercept')) {
+    // Handle our deep link scheme: roastmywallet://intercept?url=<shopping_url>
+    if (url.startsWith('roastmywallet://intercept')) {
       const parsed = Linking.parse(url);
       const shoppingUrl = parsed.queryParams?.url as string | undefined;
 

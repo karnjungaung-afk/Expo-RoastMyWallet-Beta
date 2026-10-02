@@ -1,5 +1,5 @@
 /**
- * PauseBuy — Deterministic Need Score Engine
+ * RoastMyWallet — Deterministic Need Score Engine
  *
  * This module owns the actual score calculation.
  * The AI NEVER modifies the Need Score — it only explains it.

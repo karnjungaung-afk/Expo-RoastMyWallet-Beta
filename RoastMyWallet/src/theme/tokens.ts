@@ -1,5 +1,5 @@
 /**
- * PauseBuy Design Token System
+ * RoastMyWallet Design Token System
  *
  * Philosophy:
  * - Warm off-white base with deep navy primary

@@ -106,7 +106,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
           </View>
           {isWide && (
             <Text style={[styles.logoText, { color: colors.textPrimary }]}>
-              PauseBuy
+              RoastMyWallet
             </Text>
           )}
         </View>

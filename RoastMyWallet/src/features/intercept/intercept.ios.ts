@@ -6,8 +6,8 @@
  * What's available on iOS:
  * ✅ Share Extension — native Share Sheet integration (separate target)
  * ✅ Universal Links — HTTPS-verified deep links
- * ✅ Custom URL Scheme — pausebuy:// deep links
- * ✅ Siri Shortcuts — Add PauseBuy shortcut to Safari share sheet
+ * ✅ Custom URL Scheme — roastmywallet:// deep links
+ * ✅ Siri Shortcuts — Add RoastMyWallet shortcut to Safari share sheet
  * ✅ Notifications — Push notifications triggered by server-side events
  * ✅ Clipboard monitoring — detect product URLs copied from shopping apps
  *
@@ -17,7 +17,7 @@
  * ✗ Screen Time API for custom detection
  *
  * Primary mechanism: Share Extension
- * User finds a product → Share Sheet → PauseBuy Extension → pre-fills form.
+ * User finds a product → Share Sheet → RoastMyWallet Extension → pre-fills form.
  * The extension is a separate Xcode target that communicates via App Groups.
  *
  * Note: The Share Extension is a native iOS target and requires Xcode configuration.
@@ -90,14 +90,14 @@ export class IOSInterceptService implements IInterceptService {
   }
 
   getCapabilityDescription(): string {
-    return 'Tap the Share button in Safari or any shopping app, then choose PauseBuy to instantly add a product to your pause list. You can also install a Siri Shortcut for faster access.';
+    return 'Tap the Share button in Safari or any shopping app, then choose RoastMyWallet to instantly add a product to your pause list. You can also install a Siri Shortcut for faster access.';
   }
 
   private handleUrl = ({ url }: { url: string }) => {
     if (!url) return;
 
-    // Handle Share Extension callback: pausebuy://share?url=<product_url>
-    if (url.startsWith('pausebuy://share')) {
+    // Handle Share Extension callback: roastmywallet://share?url=<product_url>
+    if (url.startsWith('roastmywallet://share')) {
       const parsed = Linking.parse(url);
       const shoppingUrl = parsed.queryParams?.url as string | undefined;
 

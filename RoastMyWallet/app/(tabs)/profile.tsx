@@ -116,7 +116,7 @@ export default function ProfileScreen() {
               <Zap size={20} color={colors.primary} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.subTitle, { color: colors.textPrimary }]}>
-                  PauseBuy Pro
+                  RoastMyWallet Pro
                 </Text>
                 <Text style={[styles.subNote, { color: colors.textMuted }]}>
                   All features unlocked
@@ -264,7 +264,7 @@ export default function ProfileScreen() {
 
         {/* Version */}
         <Text style={[styles.version, { color: colors.textMuted }]}>
-          PauseBuy v1.0.0 · Build 1
+          RoastMyWallet v1.0.0 · Build 1
         </Text>
       </ScrollView>
     </View>

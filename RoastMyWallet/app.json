@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PauseBuy",
-    "slug": "pausebuy",
+    "name": "RoastMyWallet",
+    "slug": "roastmywallet",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,24 +10,25 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F2F0EB"
+      "backgroundColor": "#1B3557"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.pausebuy.app",
+      "supportsTablet": false,
+      "bundleIdentifier": "com.roastmywallet.app",
       "buildNumber": "1",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "PauseBuy uses your photo library to attach product images.",
-        "NSCameraUsageDescription": "PauseBuy uses your camera to capture product photos.",
+        "NSPhotoLibraryUsageDescription": "RoastMyWallet ใช้ photo library เพื่อแนบรูปสินค้าที่อยากซื้อ",
+        "NSCameraUsageDescription": "RoastMyWallet ใช้กล้องเพื่อถ่ายรูปสินค้าที่อยากซื้อ",
+        "NSUserNotificationUsageDescription": "RoastMyWallet ส่ง reminder เพื่อช่วยตัดสินใจก่อนซื้อของ",
         "UIBackgroundModes": ["remote-notification", "fetch"]
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#F2F0EB"
+        "backgroundColor": "#1B3557"
       },
-      "package": "com.pausebuy.app",
+      "package": "com.roastmywallet.app",
       "versionCode": 1,
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
@@ -54,7 +55,7 @@
     "experiments": {
       "typedRoutes": true
     },
-    "scheme": "pausebuy",
+    "scheme": "roastmywallet",
     "extra": {
       "eas": {
         "projectId": "your-eas-project-id"

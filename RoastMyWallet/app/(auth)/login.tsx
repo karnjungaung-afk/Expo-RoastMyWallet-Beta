@@ -71,7 +71,7 @@ export default function LoginScreen() {
           <View style={styles.logoSection}>
             <LogoMark colors={colors} />
             <Text style={[styles.wordmark, { color: colors.textPrimary }]}>
-              PauseBuy
+              RoastMyWallet
             </Text>
             <Text style={[styles.tagline, { color: colors.textMuted }]}>
               Think before you buy.

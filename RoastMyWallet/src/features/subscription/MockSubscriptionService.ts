@@ -38,7 +38,7 @@ export class MockSubscriptionService implements ISubscriptionService {
       data: [
         {
           id: 'default',
-          displayName: 'PauseBuy Pro',
+          displayName: 'RoastMyWallet Pro',
           packages: [
             {
               id: 'pro_monthly',

@@ -203,7 +203,7 @@ The subscription is positioned as a savings tool, not a feature paywall. The das
 ## Platform Notes
 
 ### Android
-Auto-Intercept via Share Intents. User shares a product URL → PauseBuy opens with pre-filled form. No Accessibility API usage (Play Store policy).
+Auto-Intercept via Share Intents. User shares a product URL → RoastMyWallet opens with pre-filled form. No Accessibility API usage (Play Store policy).
 
 ### iOS
 Auto-Intercept via Share Extension (separate Xcode target) + Universal Links. The extension communicates with the main app via App Groups.

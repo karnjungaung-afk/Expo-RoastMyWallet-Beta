@@ -14,6 +14,7 @@ import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useTheme } from '@/hooks/useTheme';
+import { useDeepLinkHandler } from '@/features/auth/DeepLinkHandler';
 
 // ─── GLOBAL ERROR HANDLER ─────────────────────────────────────────────────────
 // Logs every unhandled JS error to the Metro terminal so "Something went wrong"
@@ -61,6 +62,7 @@ export default function RootLayout() {
   const { initialize: initNotifications } = useNotificationStore();
 
   useProtectedRoute();
+  useDeepLinkHandler();
 
   useEffect(() => {
     const init = async () => {

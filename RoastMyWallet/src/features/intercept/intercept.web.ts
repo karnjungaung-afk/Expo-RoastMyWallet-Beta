@@ -5,7 +5,7 @@
  * This service handles the PWA/web-app side of that integration.
  *
  * Capabilities:
- * ✅ URL parameter detection — pausebuy.app/add?url=<shopping_url>
+ * ✅ URL parameter detection — roastmywallet.app/add?url=<shopping_url>
  * ✅ postMessage from browser extension → web app
  * ✅ Custom protocol handler (if installed as PWA)
  * ✅ Bookmarklet support (documented in onboarding)
@@ -76,7 +76,7 @@ export class WebInterceptService implements IInterceptService {
   }
 
   getCapabilityDescription(): string {
-    return 'Use the PauseBuy browser extension to intercept shopping on any website. Or drag our bookmarklet to your bookmarks bar for one-click pausing.';
+    return 'Use the RoastMyWallet browser extension to intercept shopping on any website. Or drag our bookmarklet to your bookmarks bar for one-click pausing.';
   }
 
   private checkUrlParams() {

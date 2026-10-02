@@ -184,7 +184,7 @@ export default function InsightsScreen() {
           {isPro() ? (
             <MechaCard accent="success" showAccentLine showCornerMark>
               <Text style={[styles.roiTitle, { color: colors.textPrimary }]}>
-                Your PauseBuy return
+                Your RoastMyWallet return
               </Text>
               <View style={styles.roiRow}>
                 <View style={styles.roiItem}>
