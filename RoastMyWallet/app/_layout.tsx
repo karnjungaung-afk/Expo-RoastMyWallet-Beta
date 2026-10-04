@@ -15,6 +15,9 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useDeepLinkHandler } from '@/features/auth/DeepLinkHandler';
+import { useInterceptListener } from '@/features/intercept/useInterceptListener';
+import { useScheduledRoastNotifications } from '@/features/intercept/useScheduledRoastNotifications';
+import { InterceptRoastModal } from '@/features/intercept/InterceptRoastModal';
 
 // ─── GLOBAL ERROR HANDLER ─────────────────────────────────────────────────────
 // Logs every unhandled JS error to the Metro terminal so "Something went wrong"
@@ -63,6 +66,8 @@ export default function RootLayout() {
 
   useProtectedRoute();
   useDeepLinkHandler();
+  useInterceptListener();
+  useScheduledRoastNotifications(true);
 
   useEffect(() => {
     const init = async () => {
@@ -97,6 +102,7 @@ export default function RootLayout() {
             options={{ presentation: 'modal', headerShown: false }}
           />
         </Stack>
+        <InterceptRoastModal />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -107,7 +107,7 @@ export class WebInterceptService implements IInterceptService {
 
     const { type, payload } = event.data as { type: string; payload?: unknown };
 
-    if (type === 'PAUSEBUY_INTERCEPT' && payload && typeof payload === 'object') {
+    if (type === 'ROASTMYWALLET_INTERCEPT' && payload && typeof payload === 'object') {
       const p = payload as Record<string, unknown>;
       const url = typeof p.url === 'string' ? p.url : null;
 
