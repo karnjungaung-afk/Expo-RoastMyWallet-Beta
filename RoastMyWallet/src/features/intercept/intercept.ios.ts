@@ -1,30 +1,17 @@
 /**
  * iOS Intercept Service
  *
- * iOS sandbox is significantly stricter than Android.
+ * ✅ Universal Links — user taps shopping URL in Safari/browser
+ * ✅ Deep link — roastmywallet://intercept?url=...
+ * ✅ Share Extension — user presses Share → RoastMyWallet in share sheet
+ * ✅ Clipboard monitor — detects copied product URL when app foregrounds
  *
- * What's available on iOS:
- * ✅ Share Extension — native Share Sheet integration (separate target)
- * ✅ Universal Links — HTTPS-verified deep links
- * ✅ Custom URL Scheme — roastmywallet:// deep links
- * ✅ Siri Shortcuts — Add RoastMyWallet shortcut to Safari share sheet
- * ✅ Notifications — Push notifications triggered by server-side events
- * ✅ Clipboard monitoring — detect product URLs copied from shopping apps
- *
- * What is NOT available:
- * ✗ App-open detection (no background app monitoring)
- * ✗ Overlay on other apps
- * ✗ Screen Time API for custom detection
- *
- * Primary mechanism: Share Extension
- * User finds a product → Share Sheet → RoastMyWallet Extension → pre-fills form.
- * The extension is a separate Xcode target that communicates via App Groups.
- *
- * Note: The Share Extension is a native iOS target and requires Xcode configuration.
- * This service handles the app side of the communication.
+ * Native share extension requires EAS Build (not Expo Go).
+ * Everything else works in both Expo Go and production builds.
  */
 
 import * as Linking from 'expo-linking';
+import { AppState, Platform } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import type { IInterceptService } from './InterceptService';
 import type { InterceptEvent } from '@/types';
@@ -34,119 +21,81 @@ type Callback = (event: InterceptEvent) => void;
 
 export class IOSInterceptService implements IInterceptService {
   private callbacks: Set<Callback> = new Set();
-  private linkingSubscription: { remove: () => void } | null = null;
-  private clipboardPollingInterval: ReturnType<typeof setInterval> | null = null;
-  private lastCheckedClipboard = '';
+  private linkingSub: { remove: () => void } | null = null;
+  private appStateSub: { remove: () => void } | null = null;
+  private lastClipboard = '';
   private isRunning = false;
 
-  isSupported(): boolean {
-    // Share Extension + deep links are always supported on iOS
-    // Clipboard monitoring is available but requires care (iOS 16+ shows UI indicator)
-    return true;
-  }
-
-  async hasPermission(): Promise<boolean> {
-    // Deep links don't require permission
-    // Clipboard monitoring in iOS 16+ shows a banner but doesn't block
-    return true;
-  }
-
-  async requestPermission(): Promise<boolean> {
-    return true;
-  }
+  isSupported() { return Platform.OS === 'ios'; }
+  async hasPermission(): Promise<boolean> { return true; }
+  async requestPermission(): Promise<boolean> { return true; }
 
   async start(): Promise<void> {
     if (this.isRunning) return;
     this.isRunning = true;
 
-    // Listen for URLs from Share Extension and Universal Links
-    this.linkingSubscription = Linking.addEventListener('url', this.handleUrl);
+    // Deep links & Universal Links
+    this.linkingSub = Linking.addEventListener('url', ({ url }) => this.handleUrl(url));
+    try {
+      const initial = await Linking.getInitialURL();
+      if (initial) this.handleUrl(initial);
+    } catch {}
 
-    // Check cold-start URL
-    const initialUrl = await Linking.getInitialURL();
-    if (initialUrl) {
-      this.handleUrl({ url: initialUrl });
-    }
-
-    // Optionally: poll clipboard for product URLs (conservative interval)
-    // Note: iOS 16+ shows a paste notification — only enable with user consent
-    // this.startClipboardPolling();
+    // Clipboard check on foreground — iOS 16+ shows a system banner
+    this.appStateSub = AppState.addEventListener('change', state => {
+      if (state === 'active') this.checkClipboard();
+    });
+    this.checkClipboard();
   }
 
   async stop(): Promise<void> {
     this.isRunning = false;
-    this.linkingSubscription?.remove();
-    this.linkingSubscription = null;
-
-    if (this.clipboardPollingInterval) {
-      clearInterval(this.clipboardPollingInterval);
-      this.clipboardPollingInterval = null;
-    }
+    this.linkingSub?.remove();
+    this.appStateSub?.remove();
+    this.linkingSub = null;
+    this.appStateSub = null;
   }
 
-  subscribe(callback: Callback): () => void {
-    this.callbacks.add(callback);
-    return () => this.callbacks.delete(callback);
+  subscribe(cb: Callback): () => void {
+    this.callbacks.add(cb);
+    return () => this.callbacks.delete(cb);
   }
 
   getCapabilityDescription(): string {
-    return 'Tap the Share button in Safari or any shopping app, then choose RoastMyWallet to instantly add a product to your pause list. You can also install a Siri Shortcut for faster access.';
+    return 'กด Share แล้วเลือก RoastMyWallet — รองรับ Safari, Shopee, TikTok และแอปช้อปปิ้งอื่นๆ';
   }
 
-  private handleUrl = ({ url }: { url: string }) => {
+  private handleUrl(url: string) {
     if (!url) return;
 
-    // Handle Share Extension callback: roastmywallet://share?url=<product_url>
-    if (url.startsWith('roastmywallet://share')) {
+    if (url.startsWith('roastmywallet://intercept') || url.startsWith('roastmywallet://share')) {
       const parsed = Linking.parse(url);
-      const shoppingUrl = parsed.queryParams?.url as string | undefined;
-
-      if (shoppingUrl) {
-        this.emit({
-          trigger: 'share_intent',
-          platform: detectPlatformFromUrl(shoppingUrl),
-          url: shoppingUrl,
-          detectedAt: new Date().toISOString(),
-        });
-      }
+      const target = parsed.queryParams?.url as string | undefined;
+      if (target) this.emit('share_intent', target);
       return;
     }
 
-    // Universal link / custom scheme
-    if (isShoppingUrl(url)) {
-      this.emit({
-        trigger: 'url_open',
-        platform: detectPlatformFromUrl(url),
-        url,
-        detectedAt: new Date().toISOString(),
-      });
-    }
-  };
-
-  private startClipboardPolling() {
-    // Poll every 5 seconds when the app is in foreground
-    // This is secondary to share extension; only activate if user opts in
-    this.clipboardPollingInterval = setInterval(async () => {
-      try {
-        const text = await Clipboard.getStringAsync();
-        if (text && text !== this.lastCheckedClipboard && isShoppingUrl(text)) {
-          this.lastCheckedClipboard = text;
-          this.emit({
-            trigger: 'url_open',
-            platform: detectPlatformFromUrl(text),
-            url: text,
-            detectedAt: new Date().toISOString(),
-          });
-        }
-      } catch {
-        // Clipboard access may be denied silently
-      }
-    }, 5000);
+    if (isShoppingUrl(url)) this.emit('url_open', url);
   }
 
-  private emit(event: InterceptEvent) {
+  private async checkClipboard() {
+    try {
+      const text = await Clipboard.getStringAsync();
+      if (!text || text === this.lastClipboard) return;
+      this.lastClipboard = text;
+      if (isShoppingUrl(text)) this.emit('url_open', text);
+    } catch {}
+  }
+
+  private emit(trigger: InterceptEvent['trigger'], url: string) {
+    const event: InterceptEvent = {
+      trigger,
+      platform: detectPlatformFromUrl(url),
+      url,
+      detectedAt: new Date().toISOString(),
+    };
     this.callbacks.forEach(cb => {
-      try { cb(event); } catch (e) { console.error('[IOSIntercept] Callback error:', e); }
+      try { cb(event); } catch (e) { console.error('[iOSIntercept]', e); }
     });
   }
 }

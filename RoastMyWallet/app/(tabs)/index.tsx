@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Bell, Plus } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore, selectWaitingPurchases } from '@/store/purchaseStore';
 import { useAuthStore, selectProfile } from '@/store/authStore';
@@ -25,7 +26,17 @@ import { formatCurrency, formatPercent } from '@/utils/formatting';
 export default function HomeScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { interceptUrl } = useLocalSearchParams<{ interceptUrl?: string }>();
   const [showAddSheet, setShowAddSheet] = useState(false);
+  const [prefillUrl, setPrefillUrl] = useState<string | undefined>(undefined);
+
+  // Auto-open sheet when arriving via intercept modal
+  useEffect(() => {
+    if (interceptUrl && typeof interceptUrl === 'string') {
+      setPrefillUrl(interceptUrl);
+      setShowAddSheet(true);
+    }
+  }, [interceptUrl]);
   const [refreshing, setRefreshing] = useState(false);
 
   const profile = useAuthStore(selectProfile);
@@ -204,7 +215,8 @@ export default function HomeScreen() {
         onRequestClose={() => setShowAddSheet(false)}
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.surface }]}>
-          <AddPurchaseSheet onClose={() => setShowAddSheet(false)} />
+          <AddPurchaseSheet onClose={() => { setShowAddSheet(false); setPrefillUrl(undefined); }}
+          prefillUrl={prefillUrl} />
         </SafeAreaView>
       </Modal>
     </View>

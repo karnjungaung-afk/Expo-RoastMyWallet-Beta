@@ -1,23 +1,18 @@
 /**
  * Android Intercept Service
  *
- * Capabilities on Android:
- * ✅ Share intents — user shares a product URL to RoastMyWallet
- * ✅ Deep links — apps can register roastmywallet:// scheme
- * ✅ App links — HTTPS-based verified deep links
- * ✅ Notifications — trigger when user opens shopping apps (requires usage access)
+ * Capabilities:
+ * ✅ Share intent (android.intent.action.SEND) — main mechanism
+ *    User shares product URL from Shopee/TikTok/etc → RoastMyWallet opens
+ * ✅ Deep link (roastmywallet://intercept?url=...)
+ * ✅ App link / Browser intent (shopping domain URLs from browser)
  *
- * What we do NOT use:
- * ✗ Accessibility APIs — Google Play policy restricts this to assistive apps
- * ✗ Overlay windows — restricted without special permissions
- * ✗ Background app detection without usage stats permission
- *
- * The primary intercept mechanism: Share Intent
- * User finds a product → shares URL → RoastMyWallet opens and pre-fills the form.
- * This is frictionless, opt-in, and platform-policy compliant.
+ * NOT used (Google Play policy):
+ * ✗ Accessibility API  ✗ Overlay window  ✗ Background app detection
  */
 
 import * as Linking from 'expo-linking';
+import { Platform } from 'react-native';
 import type { IInterceptService } from './InterceptService';
 import type { InterceptEvent } from '@/types';
 import { detectPlatformFromUrl, isShoppingUrl } from './InterceptService';
@@ -26,87 +21,75 @@ type Callback = (event: InterceptEvent) => void;
 
 export class AndroidInterceptService implements IInterceptService {
   private callbacks: Set<Callback> = new Set();
-  private linkingSubscription: { remove: () => void } | null = null;
+  private linkingSub: { remove: () => void } | null = null;
   private isRunning = false;
 
-  isSupported(): boolean {
-    return true; // Share intents always available on Android
-  }
-
-  async hasPermission(): Promise<boolean> {
-    // Share intents don't require special permissions
-    return true;
-  }
-
-  async requestPermission(): Promise<boolean> {
-    // No special permission needed for share intents
-    return true;
-  }
+  isSupported()                           { return Platform.OS === 'android'; }
+  async hasPermission(): Promise<boolean> { return true; }  // Share intents: no permission
+  async requestPermission(): Promise<boolean> { return true; }
 
   async start(): Promise<void> {
     if (this.isRunning) return;
     this.isRunning = true;
 
-    // Listen for URLs opened via deep links or share intents
-    this.linkingSubscription = Linking.addEventListener('url', this.handleUrl);
+    this.linkingSub = Linking.addEventListener('url', ({ url }) => this.handleUrl(url));
 
-    // Check if app was opened with a URL (cold start)
-    const initialUrl = await Linking.getInitialURL();
-    if (initialUrl) {
-      this.handleUrl({ url: initialUrl });
-    }
+    // Cold-start: app opened via intent
+    try {
+      const initial = await Linking.getInitialURL();
+      if (initial) this.handleUrl(initial);
+    } catch {}
   }
 
   async stop(): Promise<void> {
     this.isRunning = false;
-    this.linkingSubscription?.remove();
-    this.linkingSubscription = null;
+    this.linkingSub?.remove();
+    this.linkingSub = null;
   }
 
-  subscribe(callback: Callback): () => void {
-    this.callbacks.add(callback);
-    return () => this.callbacks.delete(callback);
+  subscribe(cb: Callback): () => void {
+    this.callbacks.add(cb);
+    return () => this.callbacks.delete(cb);
   }
 
   getCapabilityDescription(): string {
-    return 'Share any product URL from a shopping app directly to RoastMyWallet. Tap Share → RoastMyWallet in any browser or app to add it to your pause list instantly.';
+    return 'กดแชร์ในแอปช้อปปิ้ง แล้วเลือก RoastMyWallet — ระบบจะดักจับและถามว่าซื้อจริงไหม';
   }
 
-  private handleUrl = ({ url }: { url: string }) => {
+  private handleUrl(url: string) {
     if (!url) return;
 
-    // Handle our deep link scheme: roastmywallet://intercept?url=<shopping_url>
+    // 1. Our deep link: roastmywallet://intercept?url=<shopping_url>
     if (url.startsWith('roastmywallet://intercept')) {
       const parsed = Linking.parse(url);
-      const shoppingUrl = parsed.queryParams?.url as string | undefined;
-
-      if (shoppingUrl && isShoppingUrl(shoppingUrl)) {
-        const event: InterceptEvent = {
-          trigger: 'share_intent',
-          platform: detectPlatformFromUrl(shoppingUrl),
-          url: shoppingUrl,
-          detectedAt: new Date().toISOString(),
-        };
-        this.emit(event);
-      }
+      const target = parsed.queryParams?.url as string | undefined;
+      if (target) this.emit('share_intent', target);
       return;
     }
 
-    // Direct shopping URL (app link)
-    if (isShoppingUrl(url)) {
-      const event: InterceptEvent = {
-        trigger: 'url_open',
-        platform: detectPlatformFromUrl(url),
-        url,
-        detectedAt: new Date().toISOString(),
-      };
-      this.emit(event);
+    // 2. roastmywallet://share?url=<shopping_url>
+    if (url.startsWith('roastmywallet://share')) {
+      const parsed = Linking.parse(url);
+      const target = parsed.queryParams?.url as string | undefined;
+      if (target) this.emit('share_intent', target);
+      return;
     }
-  };
 
-  private emit(event: InterceptEvent) {
+    // 3. Direct shopping URL (app link from browser / intent filter)
+    if (isShoppingUrl(url)) {
+      this.emit('url_open', url);
+    }
+  }
+
+  private emit(trigger: InterceptEvent['trigger'], url: string) {
+    const event: InterceptEvent = {
+      trigger,
+      platform: detectPlatformFromUrl(url),
+      url,
+      detectedAt: new Date().toISOString(),
+    };
     this.callbacks.forEach(cb => {
-      try { cb(event); } catch (e) { console.error('[AndroidIntercept] Callback error:', e); }
+      try { cb(event); } catch (e) { console.error('[AndroidIntercept]', e); }
     });
   }
 }
