@@ -1,42 +1,97 @@
 import { Tabs } from 'expo-router';
 import { Platform, View, Text, StyleSheet } from 'react-native';
 import type { ColorValue } from 'react-native';
-import { Home, Clock, BarChart2, Users, User } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
+import { HomeIcon, ClockIcon, ChartIcon, SquadIcon, UserIcon } from '@/components/icons/RmwIcons';
 
 export default function TabLayout() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.tabBar,
+          backgroundColor: isDark ? '#141927' : '#FFFFFF',
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 64,
-          paddingBottom: 8,
+          height: Platform.OS === 'ios' ? 80 : 64,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
           paddingTop: 8,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -1 },
-          shadowOpacity: 0.04,
-          shadowRadius: 4,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: isDark ? 0.3 : 0.06,
+          shadowRadius: 12,
           elevation: 0,
         },
-        tabBarActiveTintColor: colors.tabActive,
+        tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.tabInactive,
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '500', marginTop: 2 },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginTop: 1, letterSpacing: 0.2 },
         tabBarHideOnKeyboard: true,
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ color, focused }) => <Home size={22} color={color} strokeWidth={focused ? 2.2 : 1.7} /> }} />
-      <Tabs.Screen name="waiting" options={{ title: 'Waiting', tabBarIcon: ({ color, focused }) => <WaitingTabIcon color={color} focused={focused} /> }} />
-      <Tabs.Screen name="insights" options={{ title: 'Insights', tabBarIcon: ({ color, focused }) => <BarChart2 size={22} color={color} strokeWidth={focused ? 2.2 : 1.7} /> }} />
-      <Tabs.Screen name="squad" options={{ title: 'Squad', tabBarIcon: ({ color, focused }) => <Users size={22} color={color} strokeWidth={focused ? 2.2 : 1.7} /> }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({ color, focused }) => <User size={22} color={color} strokeWidth={focused ? 2.2 : 1.7} /> }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'หน้าหลัก',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIconWrap focused={focused} color={colors.primary}>
+              <HomeIcon size={22} color={String(color)} strokeWidth={focused ? 2.2 : 1.7} />
+            </TabIconWrap>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="waiting"
+        options={{
+          title: 'รอซื้อ',
+          tabBarIcon: ({ color, focused }) => <WaitingTabIcon color={color} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="insights"
+        options={{
+          title: 'วิเคราะห์',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIconWrap focused={focused} color={colors.primary}>
+              <ChartIcon size={22} color={String(color)} strokeWidth={focused ? 2.2 : 1.7} />
+            </TabIconWrap>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="squad"
+        options={{
+          title: 'สควอด',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIconWrap focused={focused} color={colors.primary}>
+              <SquadIcon size={22} color={String(color)} strokeWidth={focused ? 2.2 : 1.7} />
+            </TabIconWrap>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'โปรไฟล์',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIconWrap focused={focused} color={colors.primary}>
+              <UserIcon size={22} color={String(color)} strokeWidth={focused ? 2.2 : 1.7} />
+            </TabIconWrap>
+          ),
+        }}
+      />
     </Tabs>
+  );
+}
+
+function TabIconWrap({ children, focused, color }: { children: React.ReactNode; focused: boolean; color: string }) {
+  if (!focused) return <>{children}</>;
+  return (
+    <View style={[styles.activeWrap, { backgroundColor: color + '15' }]}>
+      {children}
+    </View>
   );
 }
 
@@ -45,19 +100,26 @@ function WaitingTabIcon({ color, focused }: { color: ColorValue; focused: boolea
   const { colors } = useTheme();
 
   return (
-    <View style={styles.iconWrapper}>
-      <Clock size={22} color={color} strokeWidth={focused ? 2.2 : 1.7} />
-      {waitingCount > 0 && (
-        <View style={[styles.badge, { backgroundColor: colors.primary }]}>
-          <Text style={styles.badgeText}>{waitingCount > 99 ? '99+' : waitingCount}</Text>
-        </View>
-      )}
-    </View>
+    <TabIconWrap focused={focused} color={colors.primary}>
+      <View style={styles.badgeWrap}>
+        <ClockIcon size={22} color={String(color)} strokeWidth={focused ? 2.2 : 1.7} />
+        {waitingCount > 0 && (
+          <View style={[styles.badge, { backgroundColor: '#E8A030' }]}>
+            <Text style={styles.badgeText}>{waitingCount > 99 ? '99+' : waitingCount}</Text>
+          </View>
+        )}
+      </View>
+    </TabIconWrap>
   );
 }
 
 const styles = StyleSheet.create({
-  iconWrapper: { position: 'relative', width: 28, height: 24, alignItems: 'center', justifyContent: 'center' },
-  badge: { position: 'absolute', top: -3, right: -6, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
-  badgeText: { color: '#fff', fontSize: 9, fontWeight: '700' },
+  activeWrap: { width: 40, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  badgeWrap: { position: 'relative', width: 28, height: 24, alignItems: 'center', justifyContent: 'center' },
+  badge: {
+    position: 'absolute', top: -4, right: -6,
+    minWidth: 16, height: 16, borderRadius: 8,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
+  },
+  badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
 });

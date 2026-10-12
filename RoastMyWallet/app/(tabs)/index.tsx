@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  StyleSheet,
-  Modal,
-  SafeAreaView,
+  View, Text, ScrollView, TouchableOpacity,
+  RefreshControl, StyleSheet, Modal, SafeAreaView, Platform,
 } from 'react-native';
-import { Bell, Plus } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
@@ -19,24 +13,18 @@ import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { PurchaseCard } from '@/features/purchases/PurchaseCard';
 import { AddPurchaseSheet } from '@/features/purchases/AddPurchaseSheet';
 import { MechaCard } from '@/components/ui/MechaCard';
-import { TechnicalDivider } from '@/components/ui/Badge';
 import { spacing, typography } from '@/theme/tokens';
 import { formatCurrency, formatPercent } from '@/utils/formatting';
+import {
+  BellIcon, PlusIcon, ShieldIcon, FlameIcon, ClockIcon, CornerMark,
+} from '@/components/icons/RmwIcons';
 
 export default function HomeScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { interceptUrl } = useLocalSearchParams<{ interceptUrl?: string }>();
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [prefillUrl, setPrefillUrl] = useState<string | undefined>(undefined);
-
-  // Auto-open sheet when arriving via intercept modal
-  useEffect(() => {
-    if (interceptUrl && typeof interceptUrl === 'string') {
-      setPrefillUrl(interceptUrl);
-      setShowAddSheet(true);
-    }
-  }, [interceptUrl]);
   const [refreshing, setRefreshing] = useState(false);
 
   const profile = useAuthStore(selectProfile);
@@ -45,8 +33,13 @@ export default function HomeScreen() {
   const { isPro } = useSubscriptionStore();
 
   useEffect(() => {
-    loadPurchases();
-  }, []);
+    if (interceptUrl && typeof interceptUrl === 'string') {
+      setPrefillUrl(interceptUrl);
+      setShowAddSheet(true);
+    }
+  }, [interceptUrl]);
+
+  useEffect(() => { loadPurchases(); }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -54,98 +47,101 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, []);
 
-  const currency = profile?.currency ?? 'THB';
+  const currency      = profile?.currency ?? 'THB';
   const monthlyAvoided = getThisMonthAvoided();
-  const avoidedCount = getThisMonthAvoidedCount();
-
-  // Calculate impulse rate from this month's decided purchases
-  const thisMonthDecided = purchases.filter(p =>
-    p.status === 'bought' || p.status === 'avoided'
-  );
+  const avoidedCount  = getThisMonthAvoidedCount();
+  const thisMonthDecided = purchases.filter(p => p.status === 'bought' || p.status === 'avoided');
   const impulseRate = thisMonthDecided.length > 0
-    ? Math.round(
-        (thisMonthDecided.filter(p => p.status === 'bought' && p.impulseRisk === 'high').length
-         / thisMonthDecided.length) * 100
-      )
+    ? Math.round((thisMonthDecided.filter(p => p.status === 'bought' && p.impulseRisk === 'high').length / thisMonthDecided.length) * 100)
     : 0;
 
-  const greeting = getGreeting();
+  const hour = new Date().getHours();
+  const greeting = hour < 5 ? 'ยังไม่นอนเลยเหรอ' : hour < 12 ? 'อรุณสวัสดิ์' : hour < 17 ? 'สวัสดีตอนบ่าย' : hour < 21 ? 'สวัสดีตอนเย็น' : 'กลางคืนแล้วนะ';
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + 100 },
-        ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary}
-          />
-        }
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ─────────────────────────────────────────────────── */}
-        <View
-          style={[
-            styles.header,
-            { paddingTop: insets.top + spacing[4] },
-          ]}
-        >
+        {/* ── Header ─────────────────────────────────────── */}
+        <View style={[styles.header, { paddingTop: insets.top + spacing[4] }]}>
           <View>
-            <Text style={[styles.headerGreeting, { color: colors.textMuted }]}>
-              {greeting}
-            </Text>
+            <Text style={[styles.headerGreeting, { color: colors.textSecondary }]}>{greeting}</Text>
             <Text style={[styles.headerName, { color: colors.textPrimary }]}>
               {profile?.displayName ?? 'Welcome back'}
             </Text>
           </View>
-
           <TouchableOpacity
-            onPress={() => {/* Navigate to notifications */}}
+            style={[styles.iconButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
             accessibilityRole="button"
             accessibilityLabel="Notifications"
-            style={[styles.iconButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
-            <Bell size={20} color={colors.textSecondary} strokeWidth={1.8} />
+            <BellIcon size={20} color={colors.textSecondary} hasAlert={waitingPurchases.length > 0} />
           </TouchableOpacity>
         </View>
 
-        {/* ── Savings Hero Card ───────────────────────────────────────── */}
-        <SavingsHeroCard
+        {/* ── Hero Card ───────────────────────────────────── */}
+        <HeroCard
           monthlyAvoided={monthlyAvoided}
           currency={currency}
           avoidedCount={avoidedCount}
-          impulseRate={impulseRate}
-          isPro={isPro()}
+          isDark={isDark}
           colors={colors}
         />
 
-        {/* ── Waiting List ────────────────────────────────────────────── */}
-        <View style={styles.section}>
-          <TechnicalDivider
-            label={`WAITING${waitingPurchases.length > 0 ? ` · ${waitingPurchases.length}` : ''}`}
-            showStatusDot={waitingPurchases.length > 0}
+        {/* ── Stats Row ───────────────────────────────────── */}
+        <View style={[styles.statsRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <StatItem
+            value={String(avoidedCount)}
+            label="Avoided"
+            icon={<ShieldIcon size={16} color={colors.primary} />}
+            colors={colors}
           />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <StatItem
+            value={formatCurrency(monthlyAvoided, currency, { compact: true })}
+            label="Saved"
+            icon={<FlameIcon size={16} color="#E8A030" />}
+            highlight
+            colors={colors}
+          />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <StatItem
+            value={formatPercent(impulseRate)}
+            label="Impulse"
+            icon={<ClockIcon size={16} color={colors.textMuted} />}
+            colors={colors}
+          />
+        </View>
+
+        {/* ── Waiting List ────────────────────────────────── */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              Waiting List
+            </Text>
+            {waitingPurchases.length > 0 && (
+              <View style={[styles.countBadge, { backgroundColor: colors.primarySubtle }]}>
+                <Text style={[styles.countBadgeText, { color: colors.primary }]}>
+                  {waitingPurchases.length}
+                </Text>
+              </View>
+            )}
+          </View>
 
           {loadingState === 'loading' && waitingPurchases.length === 0 ? (
             <SkeletonCards count={2} colors={colors} />
           ) : waitingPurchases.length === 0 ? (
-            <EmptyWaiting colors={colors} onAdd={() => setShowAddSheet(true)} />
+            <EmptyWaiting colors={colors} isDark={isDark} onAdd={() => setShowAddSheet(true)} />
           ) : (
             <View style={styles.cardList}>
-              {waitingPurchases.slice(0, 5).map(purchase => (
-                <PurchaseCard key={purchase.id} purchase={purchase} />
-              ))}
+              {waitingPurchases.slice(0, 5).map(p => <PurchaseCard key={p.id} purchase={p} />)}
               {waitingPurchases.length > 5 && (
-                <TouchableOpacity
-                  style={[styles.viewMoreButton, { borderColor: colors.border }]}
-                  onPress={() => {/* navigate to waiting tab */}}
-                >
+                <TouchableOpacity style={[styles.viewMoreBtn, { borderColor: colors.border }]}>
                   <Text style={[styles.viewMoreText, { color: colors.textSecondary }]}>
-                    View {waitingPurchases.length - 5} more
+                    ดูอีก {waitingPurchases.length - 5} รายการ
                   </Text>
                 </TouchableOpacity>
               )}
@@ -153,455 +149,213 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* ── Monthly Stats Row ────────────────────────────────────────── */}
-        <View style={styles.section}>
-          <TechnicalDivider label="THIS MONTH" />
-          <View style={styles.statsRow}>
-            <MiniStat
-              value={String(avoidedCount)}
-              label="Avoided"
-              colors={colors}
-            />
-            <StatDivider colors={colors} />
-            <MiniStat
-              value={formatCurrency(monthlyAvoided, currency, { compact: true })}
-              label="Saved"
-              colors={colors}
-              highlight
-            />
-            <StatDivider colors={colors} />
-            <MiniStat
-              value={formatPercent(impulseRate)}
-              label="Impulse rate"
-              colors={colors}
-            />
-          </View>
-        </View>
-
-        {/* ── Pro value callout (for free users) ─────────────────────── */}
-        {!isPro() && monthlyAvoided > 0 && (
-          <ProValueCallout
-            monthlyAvoided={monthlyAvoided}
-            currency={currency}
-            colors={colors}
-          />
+        {/* ── Pro callout ─────────────────────────────────── */}
+        {!isPro() && monthlyAvoided > 500 && (
+          <MechaCard accent="primary" showAccentLine showCornerMark style={styles.proCallout}>
+            <Text style={[styles.proTitle, { color: colors.textPrimary }]}>
+              ประหยัดไปแล้ว {formatCurrency(monthlyAvoided, currency as any)} เดือนนี้
+            </Text>
+            <Text style={[styles.proSub, { color: colors.textSecondary }]}>
+              Pro ราคาแค่ {formatCurrency(39, currency as any)}/เดือน
+            </Text>
+            <Text style={[styles.proCta, { color: colors.primary }]}>อัพเกรด Pro →</Text>
+          </MechaCard>
         )}
       </ScrollView>
 
-      {/* ── FAB ─────────────────────────────────────────────────────── */}
-      <View
-        style={[
-          styles.fab,
-          { bottom: insets.bottom + spacing[6] },
-        ]}
-      >
+      {/* ── FAB ────────────────────────────────────────────── */}
+      <View style={[styles.fab, { bottom: insets.bottom + spacing[6] }]}>
         <TouchableOpacity
           onPress={() => setShowAddSheet(true)}
-          accessibilityRole="button"
-          accessibilityLabel="Add purchase"
           style={[styles.fabButton, { backgroundColor: colors.primary }]}
           activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Add purchase"
         >
-          <Plus size={24} color="#fff" strokeWidth={2.5} />
-          <Text style={styles.fabLabel}>Add Purchase</Text>
+          <PlusIcon size={20} color="#fff" />
+          <Text style={styles.fabLabel}>เพิ่มสิ่งที่อยากซื้อ</Text>
         </TouchableOpacity>
       </View>
 
-      {/* ── Add Purchase Modal ──────────────────────────────────────── */}
-      <Modal
-        visible={showAddSheet}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowAddSheet(false)}
-      >
+      <Modal visible={showAddSheet} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowAddSheet(false)}>
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.surface }]}>
-          <AddPurchaseSheet onClose={() => { setShowAddSheet(false); setPrefillUrl(undefined); }}
-          prefillUrl={prefillUrl} />
+          <AddPurchaseSheet
+            onClose={() => { setShowAddSheet(false); setPrefillUrl(undefined); }}
+            prefillUrl={prefillUrl}
+          />
         </SafeAreaView>
       </Modal>
     </View>
   );
 }
 
-// ─── SAVINGS HERO CARD ────────────────────────────────────────────────────────
+// ── Hero Card ─────────────────────────────────────────────────────────────────
 
-interface HeroCardProps {
-  monthlyAvoided: number;
-  currency: string;
-  avoidedCount: number;
-  impulseRate: number;
-  isPro: boolean;
-  colors: any;
-}
+function HeroCard({ monthlyAvoided, currency, avoidedCount, isDark, colors }: any) {
+  const gradStart = isDark ? '#0D1F35' : '#1B3557';
+  const gradEnd   = isDark ? '#1A2D42' : '#22487A';
+  const gradMid   = isDark ? '#162235' : '#1E3D6B';
 
-function SavingsHeroCard({ monthlyAvoided, currency, avoidedCount, colors }: HeroCardProps) {
   return (
-    <View style={[styles.heroCard, { backgroundColor: colors.primary }]}>
-      {/* Corner decoration — mecha detail */}
-      <View style={[styles.heroCornerTL, { borderColor: 'rgba(255,255,255,0.15)' }]} />
-      <View style={[styles.heroCornerBR, { borderColor: 'rgba(255,255,255,0.1)' }]} />
+    <LinearGradient
+      colors={[gradStart, gradMid, gradEnd]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.heroCard}
+    >
+      {/* Corner marks */}
+      <View style={styles.cornerTL}><CornerMark size={14} color="rgba(255,255,255,0.2)" position="tl" /></View>
+      <View style={styles.cornerTR}><CornerMark size={14} color="rgba(255,255,255,0.15)" position="tr" /></View>
+      <View style={styles.cornerBR}><CornerMark size={14} color="rgba(255,255,255,0.1)" position="br" /></View>
+
+      {/* Glow blob */}
+      <View style={styles.heroGlow} />
 
       <View style={styles.heroContent}>
-        <Text style={[styles.heroLabel, { color: 'rgba(255,255,255,0.55)' }]}>
-          Est. avoided this month
-        </Text>
-        <Text style={styles.heroAmount}>
-          {formatCurrency(monthlyAvoided, currency as any)}
-        </Text>
-
+        <Text style={styles.heroEyebrow}>ประหยัดได้เดือนนี้</Text>
+        <Text style={styles.heroAmount}>{formatCurrency(monthlyAvoided, currency)}</Text>
         <View style={styles.heroMeta}>
-          <View style={styles.heroMetaItem}>
-            <View style={[styles.heroDot, { backgroundColor: 'rgba(255,255,255,0.4)' }]} />
-            <Text style={[styles.heroMetaText, { color: 'rgba(255,255,255,0.65)' }]}>
-              {avoidedCount} purchase{avoidedCount !== 1 ? 's' : ''} paused
+          <View style={[styles.heroPill, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
+            <ShieldIcon size={12} color="rgba(255,255,255,0.7)" />
+            <Text style={styles.heroPillText}>
+              {avoidedCount} รายการ หยุดไว้ก่อน
             </Text>
           </View>
         </View>
       </View>
 
-      {/* System label — mecha detail */}
       <View style={styles.heroSysLabel}>
-        <Text style={[styles.heroSysLabelText, { color: 'rgba(255,255,255,0.25)' }]}>
-          SYS ▸ SHIELD
-        </Text>
+        <View style={[styles.heroSysDot, { backgroundColor: '#00D4A0' }]} />
+        <Text style={styles.heroSysText}>SHIELD · ACTIVE</Text>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
-// ─── MINI STAT ────────────────────────────────────────────────────────────────
+// ── Stat Item ─────────────────────────────────────────────────────────────────
 
-interface MiniStatProps {
-  value: string;
-  label: string;
-  highlight?: boolean;
-  colors: any;
-}
-
-function MiniStat({ value, label, highlight, colors }: MiniStatProps) {
+function StatItem({ value, label, icon, highlight, colors }: any) {
   return (
-    <View style={styles.miniStat}>
-      <Text
-        style={[
-          styles.miniStatValue,
-          { color: highlight ? colors.primary : colors.textPrimary },
-        ]}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-      >
+    <View style={styles.statItem}>
+      {icon}
+      <Text style={[styles.statValue, { color: highlight ? '#E8A030' : colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
-      <Text style={[styles.miniStatLabel, { color: colors.textMuted }]}>
-        {label}
-      </Text>
+      <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label}</Text>
     </View>
   );
 }
 
-function StatDivider({ colors }: { colors: any }) {
-  return <View style={[styles.statDivider, { backgroundColor: colors.border }]} />;
-}
+// ── Empty State ───────────────────────────────────────────────────────────────
 
-// ─── EMPTY STATE ──────────────────────────────────────────────────────────────
-
-function EmptyWaiting({ colors, onAdd }: { colors: any; onAdd: () => void }) {
+function EmptyWaiting({ colors, isDark, onAdd }: any) {
   return (
-    <View style={[styles.emptyState, { borderColor: colors.border, borderStyle: 'dashed' }]}>
-      <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>
-        Nothing waiting
+    <TouchableOpacity
+      onPress={onAdd}
+      style={[styles.emptyCard, { borderColor: colors.border, backgroundColor: isDark ? colors.surface : '#FAFAF8' }]}
+      activeOpacity={0.7}
+    >
+      <View style={[styles.emptyIconWrap, { backgroundColor: colors.primarySubtle }]}>
+        <ClockIcon size={28} color={colors.primary} />
+      </View>
+      <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>ยังไม่มีรายการ</Text>
+      <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+        เห็นอะไรอยากซื้อ? เพิ่มไว้ที่นี่ก่อน แล้วค่อยตัดสินใจ
       </Text>
-      <Text style={[styles.emptyHint, { color: colors.textMuted }]}>
-        See something you want? Add it here before you buy it.
-      </Text>
-      <TouchableOpacity onPress={onAdd} accessibilityRole="button">
-        <Text style={[styles.emptyAction, { color: colors.primary }]}>
-          Add your first purchase →
-        </Text>
-      </TouchableOpacity>
-    </View>
+      <View style={[styles.emptyAction, { backgroundColor: colors.primary }]}>
+        <PlusIcon size={14} color="#fff" />
+        <Text style={styles.emptyActionText}>เพิ่มรายการแรก</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
-// ─── PRO VALUE CALLOUT ────────────────────────────────────────────────────────
+// ── Skeleton ──────────────────────────────────────────────────────────────────
 
-function ProValueCallout({ monthlyAvoided, currency, colors }: { monthlyAvoided: number; currency: string; colors: any }) {
-  const subCost = 39; // ฿39/month
-  const netSavings = monthlyAvoided - subCost;
-  if (netSavings <= 0) return null;
-
-  return (
-    <MechaCard accent="primary" showAccentLine showCornerMark style={styles.proCallout}>
-      <Text style={[styles.proCalloutTitle, { color: colors.textPrimary }]}>
-        You've avoided {formatCurrency(monthlyAvoided, currency as any)} this month
-      </Text>
-      <Text style={[styles.proCalloutSub, { color: colors.textSecondary }]}>
-        Pro costs {formatCurrency(subCost, currency as any)}/month. That's a{' '}
-        <Text style={{ color: colors.success, fontWeight: typography.weight.semibold }}>
-          {formatCurrency(netSavings, currency as any)} net gain
-        </Text>{' '}
-        on your first month alone.
-      </Text>
-      <Text style={[styles.proCalloutCta, { color: colors.primary }]}>
-        Upgrade to Pro →
-      </Text>
-    </MechaCard>
-  );
-}
-
-// ─── SKELETON ─────────────────────────────────────────────────────────────────
-
-function SkeletonCards({ count, colors }: { count: number; colors: any }) {
+function SkeletonCards({ count, colors }: any) {
   return (
     <View style={styles.cardList}>
       {Array.from({ length: count }, (_, i) => (
-        <View
-          key={i}
-          style={[styles.skeletonCard, { backgroundColor: colors.skeleton, borderColor: colors.border }]}
-        />
+        <View key={i} style={[styles.skeleton, { backgroundColor: colors.skeleton, borderColor: colors.border }]} />
       ))}
     </View>
   );
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 5) return 'Still up?';
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  if (hour < 21) return 'Good evening';
-  return 'Good night';
-}
+// ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  scrollContent: {
-    gap: spacing[5],
-    paddingHorizontal: spacing[4],
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingBottom: spacing[2],
-  },
-  headerGreeting: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-    marginBottom: 2,
-  },
-  headerName: {
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.bold,
-    letterSpacing: -0.5,
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  root: { flex: 1 },
+  scrollContent: { gap: spacing[4], paddingHorizontal: spacing[4] },
 
-  // Hero card
-  heroCard: {
-    borderRadius: 16,
-    padding: spacing[5],
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  heroCornerTL: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    width: 16,
-    height: 16,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-  },
-  heroCornerBR: {
-    position: 'absolute',
-    bottom: 12,
-    right: 12,
-    width: 16,
-    height: 16,
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-  },
-  heroContent: {
-    gap: spacing[2],
-  },
-  heroLabel: {
-    fontSize: typography.size.xs,
-    fontWeight: typography.weight.medium,
-    letterSpacing: typography.tracking.wider,
-    fontFamily: 'Courier New',
-    textTransform: 'uppercase',
-  },
-  heroAmount: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -2,
-    includeFontPadding: false,
-    lineHeight: 44,
-  },
-  heroMeta: {
-    marginTop: spacing[1],
-    gap: spacing[1],
-  },
-  heroMetaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[1.5],
-  },
-  heroDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-  },
-  heroMetaText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-  },
-  heroSysLabel: {
-    position: 'absolute',
-    bottom: spacing[3],
-    right: spacing[4],
-  },
-  heroSysLabelText: {
-    fontSize: 9,
-    fontFamily: 'Courier New',
-    letterSpacing: 1,
-  },
+  // Header
+  header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingBottom: spacing[1] },
+  headerGreeting: { fontSize: 13, fontWeight: '400', marginBottom: 2 },
+  headerName: { fontSize: 26, fontWeight: '800', letterSpacing: -0.8 },
+  iconButton: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 
-  // Sections
-  section: {
-    gap: spacing[3],
+  // Hero
+  heroCard: { borderRadius: 20, padding: spacing[5], overflow: 'hidden', position: 'relative', minHeight: 160 },
+  cornerTL: { position: 'absolute', top: 14, left: 14 },
+  cornerTR: { position: 'absolute', top: 14, right: 14 },
+  cornerBR: { position: 'absolute', bottom: 14, right: 14 },
+  heroGlow: {
+    position: 'absolute', right: -20, top: -20, width: 160, height: 160,
+    borderRadius: 80, backgroundColor: 'rgba(90,150,195,0.18)',
   },
-  cardList: {
-    gap: spacing[3],
-  },
-  viewMoreButton: {
-    paddingVertical: spacing[3],
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-    borderStyle: 'dashed',
-  },
-  viewMoreText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
+  heroContent: { gap: spacing[2] },
+  heroEyebrow: { fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.2, textTransform: 'uppercase' },
+  heroAmount: { fontSize: 44, fontWeight: '800', color: '#fff', letterSpacing: -2, lineHeight: 48 },
+  heroMeta: { marginTop: 4 },
+  heroPill: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100 },
+  heroPillText: { fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
+  heroSysLabel: { position: 'absolute', bottom: 14, right: 16, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  heroSysDot: { width: 5, height: 5, borderRadius: 3 },
+  heroSysText: { fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: 1.2, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
 
-  // Stats row
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    gap: 0,
-  },
-  miniStat: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 3,
-    paddingVertical: spacing[3],
-  },
-  miniStatValue: {
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.bold,
-    letterSpacing: -0.5,
-    includeFontPadding: false,
-  },
-  miniStatLabel: {
-    fontSize: typography.size.xs,
-    fontWeight: typography.weight.regular,
-    textAlign: 'center',
-  },
-  statDivider: {
-    width: 1,
-    height: 28,
-  },
+  // Stats
+  statsRow: { flexDirection: 'row', borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  statItem: { flex: 1, alignItems: 'center', paddingVertical: spacing[3], gap: 3 },
+  statValue: { fontSize: 20, fontWeight: '800', letterSpacing: -0.5, lineHeight: 24 },
+  statLabel: { fontSize: 11, fontWeight: '500' },
+  statDivider: { width: 1, marginVertical: spacing[3] },
 
-  // Empty state
-  emptyState: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: spacing[6],
-    gap: spacing[2],
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
-  emptyHint: {
-    fontSize: typography.size.sm,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  emptyAction: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-    marginTop: spacing[1],
-  },
+  // Section
+  section: { gap: spacing[3] },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
+  sectionTitle: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3 },
+  countBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 100 },
+  countBadgeText: { fontSize: 12, fontWeight: '700' },
+  cardList: { gap: spacing[3] },
+  viewMoreBtn: { paddingVertical: 12, borderRadius: 12, borderWidth: 1, alignItems: 'center', borderStyle: 'dashed' },
+  viewMoreText: { fontSize: 13, fontWeight: '500' },
 
-  // Pro callout
-  proCallout: {
-    marginBottom: spacing[2],
-  },
-  proCalloutTitle: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-    marginBottom: spacing[1],
-  },
-  proCalloutSub: {
-    fontSize: typography.size.sm,
-    lineHeight: 20,
-    marginBottom: spacing[2],
-  },
-  proCalloutCta: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-  },
+  // Empty
+  emptyCard: { borderWidth: 1.5, borderRadius: 20, borderStyle: 'dashed', padding: spacing[6], alignItems: 'center', gap: spacing[3] },
+  emptyIconWrap: { width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  emptyTitle: { fontSize: 16, fontWeight: '700' },
+  emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  emptyAction: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 100, marginTop: 4 },
+  emptyActionText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+
+  // Pro
+  proCallout: {},
+  proTitle: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
+  proSub: { fontSize: 13, lineHeight: 18, marginBottom: 8 },
+  proCta: { fontSize: 13, fontWeight: '600' },
 
   // Skeleton
-  skeletonCard: {
-    height: 120,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
+  skeleton: { height: 110, borderRadius: 16, borderWidth: 1 },
 
   // FAB
-  fab: {
-    position: 'absolute',
-    alignSelf: 'center',
-  },
+  fab: { position: 'absolute', alignSelf: 'center' },
   fabButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[2],
-    paddingHorizontal: spacing[6],
-    paddingVertical: spacing[3.5],
-    borderRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8,
+    flexDirection: 'row', alignItems: 'center', gap: spacing[2],
+    paddingHorizontal: spacing[6], paddingVertical: 14,
+    borderRadius: 100,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25, shadowRadius: 16, elevation: 10,
   },
-  fabLabel: {
-    color: '#fff',
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
-
-  // Modal
-  modalContainer: {
-    flex: 1,
-  },
+  fabLabel: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  modalContainer: { flex: 1 },
 });
