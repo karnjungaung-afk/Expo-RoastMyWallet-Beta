@@ -1,405 +1,217 @@
 import React, { useState, useRef } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Dimensions,
-  type ListRenderItem,
+  View, Text, StyleSheet, FlatList, TouchableOpacity,
+  Dimensions, Animated, Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useTheme } from '@/hooks/useTheme';
-import { Button } from '@/components/ui/Button';
-import { spacing, typography } from '@/theme/tokens';
+import Svg, { Path, Circle, Rect, G, Line, Text as SvgText } from 'react-native-svg';
+import { spacing } from '@/theme/tokens';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: W } = Dimensions.get('window');
 
-interface OnboardingSlide {
-  id: string;
-  title: string;
-  subtitle: string;
-  visual: React.ReactNode;
-  accent: string;
+const SLIDES = [
+  {
+    id: '1',
+    title: 'เห็นของอยากได้?\nหยุดก่อนสักแป๊บ',
+    sub: 'แค่เพิ่มสินค้าไว้ที่นี่ก่อนกด Order แอพจะช่วยให้คุณตัดสินใจได้ดีขึ้น',
+    grad: ['#0D1F35', '#1B3557'] as [string, string],
+    accent: '#5A96C3',
+    Visual: Visual1,
+  },
+  {
+    id: '2',
+    title: 'AI วิเคราะห์ให้\nตรงไปตรงมา',
+    sub: 'ระบบคำนวณ Need Score จากคำตอบของคุณ แล้วบอกตรงๆ ว่าซื้อควรไหม',
+    grad: ['#1A3A28', '#235E3B'] as [string, string],
+    accent: '#52B57D',
+    Visual: Visual2,
+  },
+  {
+    id: '3',
+    title: 'รอแล้วค่อยตัดสินใจ\nไม่รีบ ไม่เสียใจ',
+    sub: 'หลังจากรอครบเวลา เลือกได้เลย: ซื้อ, ไม่ซื้อ หรือรออีก ส่วนใหญ่จะไม่ซื้อแล้ว',
+    grad: ['#3D2A10', '#7A3E0A'] as [string, string],
+    accent: '#DFA53C',
+    Visual: Visual3,
+  },
+  {
+    id: '4',
+    title: 'เห็นเงินที่ประหยัดได้\nทุกบาท ทุกเดือน',
+    sub: 'หน้า Insights บอกชัดเจนว่าคุณหยุดใช้เงินไปเท่าไหร่ ตัวเลขพูดแทนทุกอย่าง',
+    grad: ['#1A1A3A', '#2A2060'] as [string, string],
+    accent: '#88B8D9',
+    Visual: Visual4,
+  },
+] as const;
+
+// ── SVG Visuals ───────────────────────────────────────────────────────────────
+
+function Visual1({ accent }: { accent: string }) {
+  return (
+    <Svg width={200} height={180} viewBox="0 0 200 180">
+      {/* Phone frame */}
+      <Rect x="60" y="10" width="80" height="140" rx="14" fill="rgba(255,255,255,0.06)" stroke={accent} strokeWidth="1.5" />
+      <Rect x="72" y="24" width="56" height="8" rx="4" fill={accent} opacity="0.5" />
+      <Rect x="72" y="40" width="56" height="30" rx="6" fill={accent} opacity="0.15" />
+      <Rect x="78" y="46" width="20" height="4" rx="2" fill={accent} opacity="0.6" />
+      <Rect x="78" y="54" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.25)" />
+      {/* Shopping bag */}
+      <Rect x="72" y="78" width="24" height="20" rx="4" fill={accent} opacity="0.3" stroke={accent} strokeWidth="1.2" />
+      <Path d="M76 78 C76 74 84 74 84 78" stroke={accent} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      {/* Pause icon overlay */}
+      <Circle cx="145" cy="85" r="18" fill="#E8A030" opacity="0.9" />
+      <Rect x="138" y="78" width="5" height="14" rx="2.5" fill="#fff" />
+      <Rect x="146" y="78" width="5" height="14" rx="2.5" fill="#fff" />
+    </Svg>
+  );
 }
 
-function useSlides() {
-  const { colors } = useTheme();
-
-  const slides: OnboardingSlide[] = [
-    {
-      id: '1',
-      title: 'Pause before you buy.',
-      subtitle:
-        'See something on TikTok Shop, Shopee, or Instagram? Add it here first. Give yourself time to decide.',
-      visual: <SlideVisual1 colors={colors} />,
-      accent: colors.primary,
-    },
-    {
-      id: '2',
-      title: 'The AI scores your decision.',
-      subtitle:
-        'RoastMyWallet calculates a Need Score based on your answers. It gives you an honest, slightly sarcastic verdict.',
-      visual: <SlideVisual2 colors={colors} />,
-      accent: colors.success,
-    },
-    {
-      id: '3',
-      title: 'Wait. Then decide.',
-      subtitle:
-        'After the waiting period ends, you choose: buy, skip, or wait longer. Most impulse buys never make it to "buy".',
-      visual: <SlideVisual3 colors={colors} />,
-      accent: colors.warning,
-    },
-    {
-      id: '4',
-      title: 'See what you saved.',
-      subtitle:
-        'Your insights screen tracks exactly how much impulse spending you avoided. The math speaks for itself.',
-      visual: <SlideVisual4 colors={colors} />,
-      accent: colors.primary,
-    },
-  ];
-
-  return slides;
+function Visual2({ accent }: { accent: string }) {
+  const bars = [60, 90, 45, 75, 100, 55, 80];
+  return (
+    <Svg width={200} height={180} viewBox="0 0 200 180">
+      {/* Chart bars */}
+      {bars.map((h, i) => (
+        <G key={i}>
+          <Rect x={20 + i * 24} y={140 - h} width="16" height={h} rx="5"
+            fill={i === 4 ? accent : 'rgba(255,255,255,0.12)'} />
+        </G>
+      ))}
+      <Line x1="14" y1="141" x2="186" y2="141" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+      {/* Score badge */}
+      <Rect x="60" y="20" width="80" height="36" rx="12" fill={accent} opacity="0.2" stroke={accent} strokeWidth="1.5" />
+      <SvgText fill={accent} x="100" y="44" fontSize="22" fontWeight="800" textAnchor="middle">78</SvgText>
+    </Svg>
+  );
 }
+
+function Visual3({ accent }: { accent: string }) {
+  return (
+    <Svg width={200} height={180} viewBox="0 0 200 180">
+      {/* Clock face */}
+      <Circle cx="100" cy="90" r="60" fill="rgba(255,255,255,0.04)" stroke={accent} strokeWidth="1.5" />
+      <Circle cx="100" cy="90" r="4" fill={accent} />
+      <Path d="M100 90 L100 50" stroke={accent} strokeWidth="2.5" strokeLinecap="round" />
+      <Path d="M100 90 L125 90" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" />
+      {/* Tick marks */}
+      {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg, i) => {
+        const r = i % 3 === 0 ? 50 : 54;
+        const rad = (deg - 90) * Math.PI / 180;
+        const x1 = 100 + 58 * Math.cos(rad); const y1 = 90 + 58 * Math.sin(rad);
+        const x2 = 100 + r * Math.cos(rad); const y2 = 90 + r * Math.sin(rad);
+        return <Line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke={accent} strokeWidth="1.5" opacity="0.5" />;
+      })}
+      {/* "24h" label */}
+      <Rect x="70" y="130" width="60" height="22" rx="11" fill={accent} opacity="0.25" />
+      <SvgText fill={accent} x="100" y="146" fontSize="11" fontWeight="700" textAnchor="middle">24 ชั่วโมง</SvgText>
+    </Svg>
+  );
+}
+
+function Visual4({ accent }: { accent: string }) {
+  return (
+    <Svg width={200} height={180} viewBox="0 0 200 180">
+      {/* Wallet */}
+      <Rect x="30" y="60" width="140" height="80" rx="16" fill="rgba(255,255,255,0.06)" stroke={accent} strokeWidth="1.5" />
+      <Rect x="30" y="78" width="140" height="2" fill={accent} opacity="0.3" />
+      {/* Coin stack */}
+      <Circle cx="150" cy="100" r="16" fill={accent} opacity="0.3" />
+      <Circle cx="150" cy="100" r="10" fill={accent} opacity="0.6" />
+      {/* Amount text */}
+      <SvgText fill="#fff" x="70" y="104" fontSize="20" fontWeight="800">฿2,340</SvgText>
+      <SvgText fill={accent} x="70" y="120" fontSize="10" opacity={0.7}>ประหยัดได้เดือนนี้</SvgText>
+      {/* Upward arrow */}
+      <Path d="M110 48 L120 35 L130 48" stroke={accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <Line x1="120" y1="35" x2="120" y2="58" stroke={accent} strokeWidth="2.5" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+// ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function OnboardingScreen() {
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const slides = useSlides();
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList<OnboardingSlide>>(null);
-
-  const isLast = currentIndex === slides.length - 1;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const flatRef = useRef<FlatList>(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   const goNext = () => {
-    if (isLast) {
-      router.replace('/(tabs)');
-      return;
+    if (activeIndex < SLIDES.length - 1) {
+      flatRef.current?.scrollToIndex({ index: activeIndex + 1, animated: true });
+    } else {
+      router.replace('/(auth)/register');
     }
-    const next = currentIndex + 1;
-    flatListRef.current?.scrollToIndex({ index: next, animated: true });
-    setCurrentIndex(next);
   };
 
-  const skip = () => {
-    router.replace('/(tabs)');
-  };
-
-  const renderSlide: ListRenderItem<OnboardingSlide> = ({ item }) => (
-    <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
-      <View style={styles.visualContainer}>{item.visual}</View>
-      <View style={styles.textBlock}>
-        <Text style={[styles.slideTitle, { color: colors.textPrimary }]}>
-          {item.title}
-        </Text>
-        <Text style={[styles.slideSubtitle, { color: colors.textSecondary }]}>
-          {item.subtitle}
-        </Text>
-      </View>
-    </View>
-  );
+  const current = SLIDES[activeIndex];
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      {/* Skip button */}
-      <View style={[styles.skipRow, { paddingTop: insets.top + spacing[3] }]}>
-        <TouchableOpacity
-          onPress={skip}
-          accessibilityRole="button"
-          accessibilityLabel="Skip onboarding"
-          style={styles.skipButton}
-        >
-          <Text style={[styles.skipText, { color: colors.textMuted }]}>Skip</Text>
-        </TouchableOpacity>
-      </View>
+    <LinearGradient colors={current.grad} style={styles.root}>
+      <View style={[styles.blob, { backgroundColor: current.accent + '18' }]} />
 
-      {/* Slides */}
-      <FlatList
-        ref={flatListRef}
-        data={slides}
-        renderItem={renderSlide}
-        keyExtractor={item => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        scrollEnabled={false} // Controlled navigation only
-        style={styles.flatList}
+      <Animated.FlatList
+        ref={flatRef}
+        data={SLIDES}
+        keyExtractor={s => s.id}
+        horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], { useNativeDriver: true })}
+        onMomentumScrollEnd={e => setActiveIndex(Math.round(e.nativeEvent.contentOffset.x / W))}
+        renderItem={({ item }) => (
+          <View style={[styles.slide, { width: W }]}>
+            <View style={styles.visual}><item.Visual accent={item.accent} /></View>
+            <View style={styles.copy}>
+              <Text style={[styles.title]}>{item.title}</Text>
+              <Text style={[styles.sub]}>{item.sub}</Text>
+            </View>
+          </View>
+        )}
       />
 
-      {/* Footer */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing[6] }]}>
-        {/* Page dots */}
-        <View style={styles.dots}>
-          {slides.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                {
-                  backgroundColor:
-                    i === currentIndex ? colors.primary : colors.border,
-                  width: i === currentIndex ? 20 : 6,
-                },
-              ]}
-            />
-          ))}
-        </View>
+      {/* Dots */}
+      <View style={styles.dots}>
+        {SLIDES.map((_, i) => {
+          const inputRange = [(i - 1) * W, i * W, (i + 1) * W];
+          const scale = scrollX.interpolate({ inputRange, outputRange: [0.7, 1, 0.7], extrapolate: 'clamp' });
+          const opacity = scrollX.interpolate({ inputRange, outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' });
+          return (
+            <Animated.View key={i} style={[styles.dot, { backgroundColor: current.accent, transform: [{ scale }], opacity }]} />
+          );
+        })}
+      </View>
 
-        <Button
-          label={isLast ? 'Start saving money' : 'Next'}
-          variant="primary"
-          size="lg"
-          fullWidth
-          onPress={goNext}
-        />
+      {/* Buttons */}
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 24 }]}>
+        <TouchableOpacity onPress={goNext} style={[styles.nextBtn, { backgroundColor: current.accent }]} activeOpacity={0.85}>
+          <Text style={styles.nextBtnText}>
+            {activeIndex < SLIDES.length - 1 ? 'ถัดไป' : 'เริ่มต้นใช้งาน'}
+          </Text>
+        </TouchableOpacity>
+        {activeIndex < SLIDES.length - 1 && (
+          <TouchableOpacity onPress={() => router.replace('/(auth)/register')} style={styles.skipBtn}>
+            <Text style={styles.skipText}>ข้ามไปเลย</Text>
+          </TouchableOpacity>
+        )}
       </View>
-    </View>
-  );
-}
-
-// ─── SLIDE VISUALS ────────────────────────────────────────────────────────────
-// Abstract geometric visuals — no copyrighted characters
-
-function SlideVisual1({ colors }: { colors: any }) {
-  return (
-    <View style={[visualStyles.container, { backgroundColor: colors.primarySubtle }]}>
-      {/* Shopping cart with pause symbol overlay */}
-      <View style={[visualStyles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <Text style={[visualStyles.cardPrice, { color: colors.textPrimary }]}>฿890</Text>
-        <Text style={[visualStyles.cardName, { color: colors.textSecondary }]}>Gaming Mouse</Text>
-        <View style={[visualStyles.cardBar, { backgroundColor: colors.border }]}>
-          <View style={[visualStyles.cardBarFill, { backgroundColor: colors.warning, width: '45%' }]} />
-        </View>
-        <Text style={[visualStyles.cardTimer, { color: colors.textMuted }]}>18h 24m remaining</Text>
-      </View>
-      <View style={[visualStyles.pauseBadge, { backgroundColor: colors.primary }]}>
-        <Text style={visualStyles.pauseBadgeText}>⏸ PAUSED</Text>
-      </View>
-    </View>
-  );
-}
-
-function SlideVisual2({ colors }: { colors: any }) {
-  return (
-    <View style={[visualStyles.container, { backgroundColor: colors.successSubtle }]}>
-      <View style={[visualStyles.scoreCircle, { borderColor: colors.success }]}>
-        <Text style={[visualStyles.scoreNum, { color: colors.success }]}>72</Text>
-        <Text style={[visualStyles.scoreLabel, { color: colors.textMuted }]}>/100</Text>
-      </View>
-      <View style={[visualStyles.riskBadge, { backgroundColor: colors.successSubtle, borderColor: colors.success }]}>
-        <Text style={[visualStyles.riskText, { color: colors.success }]}>◆◇◇ LOW RISK</Text>
-      </View>
-    </View>
-  );
-}
-
-function SlideVisual3({ colors }: { colors: any }) {
-  return (
-    <View style={[visualStyles.container, { backgroundColor: colors.warningSubtle }]}>
-      <View style={visualStyles.decisionRow}>
-        {[
-          { label: 'Skip', icon: '✕', bg: colors.surface, border: colors.border, textColor: colors.textSecondary },
-          { label: 'Buy', icon: '✓', bg: colors.danger, border: colors.danger, textColor: '#fff' },
-        ].map(btn => (
-          <View
-            key={btn.label}
-            style={[visualStyles.decisionBtn, { backgroundColor: btn.bg, borderColor: btn.border }]}
-          >
-            <Text style={[visualStyles.decisionIcon, { color: btn.textColor }]}>{btn.icon}</Text>
-            <Text style={[visualStyles.decisionLabel, { color: btn.textColor }]}>{btn.label}</Text>
-          </View>
-        ))}
-      </View>
-      <Text style={[visualStyles.decisionPrompt, { color: colors.textSecondary }]}>
-        Still want it after 24h?
-      </Text>
-    </View>
-  );
-}
-
-function SlideVisual4({ colors }: { colors: any }) {
-  return (
-    <View style={[visualStyles.container, { backgroundColor: colors.primarySubtle }]}>
-      <View style={[visualStyles.savingsCard, { backgroundColor: colors.primary }]}>
-        <Text style={[visualStyles.savingsLabel, { color: 'rgba(255,255,255,0.6)' }]}>
-          AVOIDED THIS MONTH
-        </Text>
-        <Text style={visualStyles.savingsAmount}>฿2,450</Text>
-        <Text style={[visualStyles.savingsSub, { color: 'rgba(255,255,255,0.5)' }]}>
-          8 purchases paused
-        </Text>
-      </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  skipRow: {
-    paddingHorizontal: spacing[5],
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  skipButton: {
-    paddingVertical: spacing[2],
-    paddingHorizontal: spacing[1],
-  },
-  skipText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  flatList: {
-    flex: 1,
-  },
-  slide: {
-    flex: 1,
-    paddingHorizontal: spacing[6],
-    gap: spacing[6],
-    justifyContent: 'center',
-  },
-  visualContainer: {
-    height: 240,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textBlock: {
-    gap: spacing[3],
-  },
-  slideTitle: {
-    fontSize: typography.size['2xl'],
-    fontWeight: '800',
-    letterSpacing: -0.8,
-    lineHeight: 34,
-  },
-  slideSubtitle: {
-    fontSize: typography.size.base,
-    lineHeight: 26,
-  },
-  footer: {
-    paddingHorizontal: spacing[6],
-    gap: spacing[5],
-    paddingTop: spacing[4],
-  },
-  dots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing[1.5],
-    alignItems: 'center',
-  },
-  dot: {
-    // width is set inline per-dot via style prop on each <View>
-    // RN does not support CSS transitions; animated width requires Animated.Value
-    height: 6,
-    borderRadius: 3,
-  },
-});
-
-const visualStyles = StyleSheet.create({
-  container: {
-    width: 260,
-    height: 200,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing[3],
-  },
-  card: {
-    width: 200,
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: spacing[3],
-    gap: spacing[1.5],
-  },
-  cardPrice: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
-  },
-  cardName: { fontSize: typography.size.sm },
-  cardBar: { height: 3, borderRadius: 2, overflow: 'hidden' },
-  cardBarFill: { height: '100%', borderRadius: 2 },
-  cardTimer: {
-    fontSize: typography.size.xs,
-    fontFamily: 'Courier New',
-  },
-  pauseBadge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    paddingHorizontal: spacing[2],
-    paddingVertical: spacing[1],
-    borderRadius: 6,
-  },
-  pauseBadgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  scoreCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 2,
-  },
-  scoreNum: {
-    fontSize: 32,
-    fontWeight: '800',
-    fontFamily: 'Courier New',
-  },
-  scoreLabel: { fontSize: 12, marginTop: 10 },
-  riskBadge: {
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1.5],
-    borderRadius: 6,
-    borderWidth: 1.5,
-  },
-  riskText: {
-    fontFamily: 'Courier New',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  decisionRow: {
-    flexDirection: 'row',
-    gap: spacing[3],
-  },
-  decisionBtn: {
-    width: 80,
-    height: 80,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing[1],
-  },
-  decisionIcon: { fontSize: 24, fontWeight: '700' },
-  decisionLabel: { fontSize: 12, fontWeight: '600' },
-  decisionPrompt: { fontSize: 13 },
-  savingsCard: {
-    width: 220,
-    borderRadius: 16,
-    padding: spacing[4],
-    gap: spacing[1.5],
-  },
-  savingsLabel: {
-    fontSize: 10,
-    fontFamily: 'Courier New',
-    letterSpacing: 1,
-  },
-  savingsAmount: {
-    color: '#fff',
-    fontSize: 36,
-    fontWeight: '800',
-    letterSpacing: -1.5,
-  },
-  savingsSub: { fontSize: 12 },
+  blob: { position: 'absolute', top: -80, right: -80, width: 300, height: 300, borderRadius: 150 },
+  slide: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 32, paddingHorizontal: 32 },
+  visual: { width: 200, height: 180 },
+  copy: { gap: 14, alignItems: 'center' },
+  title: { fontSize: 30, fontWeight: '800', color: '#fff', textAlign: 'center', letterSpacing: -0.8, lineHeight: 38 },
+  sub: { fontSize: 16, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 24 },
+  dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingBottom: 16 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  footer: { paddingHorizontal: 24, gap: 12 },
+  nextBtn: { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
+  nextBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  skipBtn: { alignItems: 'center', paddingVertical: 8 },
+  skipText: { color: 'rgba(255,255,255,0.35)', fontSize: 14 },
 });

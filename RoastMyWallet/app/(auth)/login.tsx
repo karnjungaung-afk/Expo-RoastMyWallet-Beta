@@ -1,259 +1,246 @@
 import React, { useState, useRef } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  KeyboardAvoidingView, Platform, ScrollView, Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Mail, Lock } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuthStore } from '@/store/authStore';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { spacing, typography } from '@/theme/tokens';
+import { RoastMascot } from '@/components/icons/RoastMascot';
+import { FlameIcon, ShieldIcon } from '@/components/icons/RmwIcons';
+import { spacing } from '@/theme/tokens';
 
 export default function LoginScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
   const { signIn, isLoading } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const passwordRef = useRef<TextInput>(null);
+  const shakeAnim = useRef(new Animated.Value(0)).current;
 
-  const validate = (): boolean => {
-    const newErrors: typeof errors = {};
-    if (!email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Enter a valid email';
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6) newErrors.password = 'At least 6 characters';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const shake = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: 8, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -8, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 6, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 60, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const validate = () => {
+    const e: typeof errors = {};
+    if (!email.trim()) e.email = 'กรุณาใส่อีเมล';
+    else if (!/\S+@\S+\.\S+/.test(email)) e.email = 'รูปแบบอีเมลไม่ถูกต้อง';
+    if (!password) e.password = 'กรุณาใส่รหัสผ่าน';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleLogin = async () => {
-    if (!validate()) return;
+    if (!validate()) { shake(); return; }
     try {
       await signIn(email.trim(), password);
       router.replace('/(tabs)');
-    } catch (err: any) {
-      const msg = err?.message ?? 'Login failed. Please check your credentials.';
-      Alert.alert('Login failed', msg);
+    } catch {
+      setErrors({ password: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+      shake();
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <LinearGradient
+      colors={isDark ? ['#070D1A', '#0D1F35', '#111827'] : ['#0D1F35', '#1B3557', '#22487A']}
+      style={styles.root}
     >
-      <View style={[styles.root, { backgroundColor: colors.background }]}>
+      {/* Glow blobs */}
+      <View style={[styles.blob1, { backgroundColor: 'rgba(90,150,195,0.15)' }]} />
+      <View style={[styles.blob2, { backgroundColor: 'rgba(232,160,48,0.08)' }]} />
+
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            { paddingTop: insets.top + spacing[8], paddingBottom: insets.bottom + spacing[8] },
-          ]}
+          contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Logo + wordmark */}
-          <View style={styles.logoSection}>
-            <LogoMark colors={colors} />
-            <Text style={[styles.wordmark, { color: colors.textPrimary }]}>
-              RoastMyWallet
-            </Text>
-            <Text style={[styles.tagline, { color: colors.textMuted }]}>
-              Think before you buy.
-            </Text>
+          {/* Mascot + Brand */}
+          <View style={styles.brand}>
+            <RoastMascot size={88} mode="neutral" />
+            <Text style={styles.brandName}>RoastMyWallet</Text>
+            <Text style={styles.brandTagline}>คิดก่อนซื้อ — จ่ายน้อยลง</Text>
           </View>
 
-          {/* Form */}
-          <View style={styles.form}>
-            <Input
-              label="Email"
+          {/* Form Card */}
+          <Animated.View style={[styles.card, { transform: [{ translateX: shakeAnim }] }]}>
+            <Text style={styles.cardTitle}>เข้าสู่ระบบ</Text>
+
+            {/* Email */}
+            <FloatInput
+              label="อีเมล"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={t => { setEmail(t); setErrors(e => ({ ...e, email: undefined })); }}
               error={errors.email}
               keyboardType="email-address"
               autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="email"
               returnKeyType="next"
               onSubmitEditing={() => passwordRef.current?.focus()}
-              leftIcon={<Mail size={16} color={colors.textMuted} />}
+              isFocused={focusedField === 'email'}
+              onFocus={() => setFocusedField('email')}
+              onBlur={() => setFocusedField(null)}
             />
 
-            <Input
+            {/* Password */}
+            <FloatInput
               ref={passwordRef}
-              label="Password"
+              label="รหัสผ่าน"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={t => { setPassword(t); setErrors(e => ({ ...e, password: undefined })); }}
               error={errors.password}
               secureTextEntry
-              autoComplete="password"
               returnKeyType="done"
               onSubmitEditing={handleLogin}
-              leftIcon={<Lock size={16} color={colors.textMuted} />}
+              isFocused={focusedField === 'password'}
+              onFocus={() => setFocusedField('password')}
+              onBlur={() => setFocusedField(null)}
             />
 
+            {/* Forgot password */}
             <TouchableOpacity
               onPress={() => router.push('/(auth)/forgot-password')}
-              accessibilityRole="link"
-              style={styles.forgotLink}
+              style={styles.forgotWrap}
             >
-              <Text style={[styles.forgotText, { color: colors.primary }]}>
-                Forgot password?
-              </Text>
+              <Text style={styles.forgotText}>ลืมรหัสผ่าน?</Text>
             </TouchableOpacity>
-          </View>
 
-          {/* Submit */}
-          <Button
-            label="Sign in"
-            variant="primary"
-            size="lg"
-            fullWidth
-            loading={isLoading}
-            onPress={handleLogin}
-          />
+            {/* Login button */}
+            <LinearGradient colors={['#1B3557', '#2F6293']} style={styles.loginGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+              <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={isLoading} activeOpacity={0.85}>
+                {isLoading
+                  ? <Text style={styles.loginBtnText}>กำลังเข้าสู่ระบบ...</Text>
+                  : <>
+                      <ShieldIcon size={18} color="#fff" />
+                      <Text style={styles.loginBtnText}>เข้าสู่ระบบ</Text>
+                    </>
+                }
+              </TouchableOpacity>
+            </LinearGradient>
 
-          {/* Register link */}
-          <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.textMuted }]}>
-              Don't have an account?{' '}
-            </Text>
-            <TouchableOpacity
-              onPress={() => router.push('/(auth)/register')}
-              accessibilityRole="link"
-            >
-              <Text style={[styles.footerLink, { color: colors.primary }]}>
-                Create one
-              </Text>
+            {/* Register link */}
+            <TouchableOpacity onPress={() => router.push('/(auth)/register')} style={styles.switchWrap}>
+              <Text style={styles.switchText}>ยังไม่มีบัญชี? </Text>
+              <Text style={[styles.switchText, styles.switchLink]}>สมัครสมาชิก</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
 
-          {/* Legal note */}
-          <Text style={[styles.legal, { color: colors.textMuted }]}>
-            By signing in, you agree to our Terms of Service and Privacy Policy.
-          </Text>
+          {/* Value props */}
+          <View style={styles.valueProps}>
+            {[
+              { icon: <FlameIcon size={14} color="#E8A030" />, label: 'ช่วยหยุดซื้อของแบบหุนหันพลันแล่น' },
+              { icon: <ShieldIcon size={14} color="#5A96C3" />, label: 'บันทึกเงินที่ประหยัดได้ทุกเดือน' },
+            ].map((v, i) => (
+              <View key={i} style={styles.valuePropRow}>
+                {v.icon}
+                <Text style={styles.valuePropText}>{v.label}</Text>
+              </View>
+            ))}
+          </View>
         </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
-// ─── LOGO MARK ────────────────────────────────────────────────────────────────
-// Geometric mark — no copyrighted characters, purely abstract
-
-function LogoMark({ colors }: { colors: any }) {
-  return (
-    <View style={[styles.logoMark, { borderColor: colors.primary }]}>
-      {/* Inner pause symbol — two rectangles */}
-      <View style={styles.pauseSymbol}>
-        <View style={[styles.pauseBar, { backgroundColor: colors.primary }]} />
-        <View style={[styles.pauseBar, { backgroundColor: colors.primary }]} />
-      </View>
-      {/* Corner marks — mecha detail */}
-      <View style={[styles.cornerTL, { borderColor: colors.mecha }]} />
-      <View style={[styles.cornerBR, { borderColor: colors.mecha }]} />
-    </View>
-  );
+// ── Float-label Input ─────────────────────────────────────────────────────────
+interface FloatInputProps {
+  label: string; value: string; error?: string;
+  isFocused: boolean; onFocus: () => void; onBlur: () => void;
+  [key: string]: any;
 }
+const FloatInput = React.forwardRef<TextInput, FloatInputProps>(
+  ({ label, value, error, isFocused, onFocus, onBlur, ...rest }, ref) => {
+    const hasValue = value.length > 0;
+    const active = isFocused || hasValue;
+    const labelScale = useRef(new Animated.Value(active ? 0 : 1)).current;
+    const labelY = useRef(new Animated.Value(active ? -22 : 0)).current;
+
+    React.useEffect(() => {
+      Animated.parallel([
+        Animated.timing(labelScale, { toValue: active ? 0.78 : 1, duration: 160, useNativeDriver: true }),
+        Animated.timing(labelY, { toValue: active ? -22 : 0, duration: 160, useNativeDriver: true }),
+      ]).start();
+    }, [active]);
+
+    const borderColor = error ? '#D46060' : isFocused ? '#5A96C3' : 'rgba(255,255,255,0.12)';
+
+    return (
+      <View style={floatStyles.wrap}>
+        <Animated.Text
+          style={[floatStyles.floatLabel, {
+            transform: [{ scale: labelScale }, { translateY: labelY }],
+            color: error ? '#D46060' : isFocused ? '#88B8D9' : 'rgba(255,255,255,0.4)',
+          }]}
+        >
+          {label}
+        </Animated.Text>
+        <TextInput
+          ref={ref}
+          style={[floatStyles.input, { borderColor }]}
+          value={value}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          placeholderTextColor="transparent"
+          {...rest}
+        />
+        {error && <Text style={floatStyles.error}>{error}</Text>}
+      </View>
+    );
+  }
+);
+
+const floatStyles = StyleSheet.create({
+  wrap: { marginBottom: 20, position: 'relative' },
+  floatLabel: {
+    position: 'absolute', top: 18, left: 16,
+    fontSize: 15, zIndex: 1, transformOrigin: 'left center' as any,
+  },
+  input: {
+    height: 56, borderWidth: 1.5, borderRadius: 14,
+    paddingHorizontal: 16, paddingTop: 18, paddingBottom: 6,
+    fontSize: 16, color: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  error: { marginTop: 4, fontSize: 12, color: '#D46060', marginLeft: 4 },
+});
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  content: {
-    paddingHorizontal: spacing[6],
-    gap: spacing[5],
+  blob1: { position: 'absolute', top: -60, right: -80, width: 260, height: 260, borderRadius: 130 },
+  blob2: { position: 'absolute', bottom: 100, left: -60, width: 200, height: 200, borderRadius: 100 },
+  scroll: { paddingHorizontal: 24, gap: 28 },
+  brand: { alignItems: 'center', gap: 10 },
+  brandName: { fontSize: 28, fontWeight: '800', color: '#fff', letterSpacing: -0.8 },
+  brandTagline: { fontSize: 14, color: 'rgba(255,255,255,0.45)' },
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 24, padding: 24,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  logoSection: {
-    alignItems: 'center',
-    gap: spacing[2],
-    marginBottom: spacing[4],
-  },
-  logoMark: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  pauseSymbol: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  pauseBar: {
-    width: 6,
-    height: 22,
-    borderRadius: 2,
-  },
-  cornerTL: {
-    position: 'absolute',
-    top: 4,
-    left: 4,
-    width: 8,
-    height: 8,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-  },
-  cornerBR: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 8,
-    height: 8,
-    borderBottomWidth: 1.5,
-    borderRightWidth: 1.5,
-  },
-  wordmark: {
-    fontSize: typography.size['2xl'],
-    fontWeight: '800',
-    letterSpacing: -1,
-  },
-  tagline: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-  },
-  form: {
-    gap: spacing[4],
-  },
-  forgotLink: {
-    alignSelf: 'flex-end',
-    marginTop: -spacing[2],
-  },
-  forgotText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: typography.size.sm,
-  },
-  footerLink: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-  },
-  legal: {
-    fontSize: typography.size.xs,
-    textAlign: 'center',
-    lineHeight: 16,
-    paddingHorizontal: spacing[4],
-  },
+  cardTitle: { fontSize: 20, fontWeight: '800', color: '#fff', marginBottom: 20, letterSpacing: -0.4 },
+  forgotWrap: { alignItems: 'flex-end', marginTop: -8, marginBottom: 20 },
+  forgotText: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
+  loginGradient: { borderRadius: 14, overflow: 'hidden' },
+  loginBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16 },
+  loginBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  switchWrap: { flexDirection: 'row', justifyContent: 'center', marginTop: 16 },
+  switchText: { fontSize: 14, color: 'rgba(255,255,255,0.4)' },
+  switchLink: { color: '#88B8D9', fontWeight: '600' },
+  valueProps: { gap: 10, paddingHorizontal: 8 },
+  valuePropRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  valuePropText: { fontSize: 13, color: 'rgba(255,255,255,0.35)' },
 });
