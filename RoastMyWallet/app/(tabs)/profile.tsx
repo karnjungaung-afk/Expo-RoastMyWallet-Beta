@@ -1,501 +1,244 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Switch,
-  Alert,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  User,
-  CreditCard,
-  Bell,
-  Shield,
-  Download,
-  Trash2,
-  ChevronRight,
-  LogOut,
-  Zap,
-} from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuthStore, selectUser, selectProfile } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
-import { MechaCard } from '@/components/ui/MechaCard';
-import { StatusBadge, TechnicalDivider } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { spacing, typography, radius } from '@/theme/tokens';
+import { usePurchaseStore } from '@/store/purchaseStore';
+import { FlameIcon, ShieldIcon, WalletIcon, BellIcon, UserIcon, ArrowRightIcon } from '@/components/icons/RmwIcons';
 import { formatCurrency } from '@/utils/formatting';
+import { calculateAvoidedSpending } from '@/utils/scoring';
+import { spacing } from '@/theme/tokens';
 
 export default function ProfileScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
+  const router  = useRouter();
 
-  const user = useAuthStore(selectUser);
+  const user    = useAuthStore(selectUser);
   const profile = useAuthStore(selectProfile);
-  const { status, isPro } = useSubscriptionStore();
   const { signOut } = useAuthStore();
+  const { isPro } = useSubscriptionStore();
+  const { purchases } = usePurchaseStore();
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(
-    profile?.notificationsEnabled ?? true
-  );
-  const [aiEnabled, setAiEnabled] = useState(profile?.aiEnabled ?? true);
+  const [notifs, setNotifs] = useState(profile?.notificationsEnabled ?? true);
+  const [aiOn,   setAiOn]   = useState(profile?.aiEnabled ?? true);
 
-  const handleSignOut = () => {
-    Alert.alert(
-      'Sign out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign out',
-          style: 'destructive',
-          onPress: async () => {
-            await signOut();
-            router.replace('/(auth)/login');
-          },
-        },
-      ]
-    );
-  };
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete account',
-      'This will permanently delete your account and all your data. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => { /* implement */ } },
-      ]
-    );
-  };
-
-  const currency = profile?.currency ?? 'THB';
+  const currency  = profile?.currency ?? 'THB';
   const isProUser = isPro();
+  const avoided   = calculateAvoidedSpending(purchases);
+  const avoidedCount = purchases.filter(p => p.status === 'avoided').length;
+  const initials  = (profile?.displayName ?? user?.email ?? 'U').charAt(0).toUpperCase();
+
+  const handleSignOut = () => Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
+    { text: 'ยกเลิก', style: 'cancel' },
+    { text: 'ออกจากระบบ', style: 'destructive', onPress: async () => { await signOut(); router.replace('/(auth)/login'); } },
+  ]);
+
+  const handleDeleteAccount = () => Alert.alert('ลบบัญชี', 'การดำเนินการนี้ไม่สามารถย้อนกลับได้ และจะลบข้อมูลทั้งหมดของคุณ', [
+    { text: 'ยกเลิก', style: 'cancel' },
+    { text: 'ลบบัญชี', style: 'destructive', onPress: () => {} },
+  ]);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + spacing[4], paddingBottom: insets.bottom + 100 },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Account header ─────────────────────────────────────────── */}
-        <View style={styles.accountHeader}>
-          <View style={[styles.avatarLarge, { backgroundColor: colors.primarySubtle }]}>
-            <Text style={[styles.avatarLargeText, { color: colors.primary }]}>
-              {(profile?.displayName ?? user?.email ?? 'U').charAt(0).toUpperCase()}
-            </Text>
-          </View>
-          <View style={styles.accountInfo}>
-            <Text style={[styles.accountName, { color: colors.textPrimary }]}>
-              {profile?.displayName ?? 'No name set'}
-            </Text>
-            <Text style={[styles.accountEmail, { color: colors.textMuted }]}>
-              {user?.email ?? ''}
-            </Text>
-            <StatusBadge
-              variant={isProUser ? 'pro' : 'free'}
-              label={isProUser ? 'Pro Member' : 'Free Plan'}
-            />
-          </View>
-        </View>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}>
 
-        {/* ── Subscription ────────────────────────────────────────────── */}
-        <TechnicalDivider label="SUBSCRIPTION" />
-
-        {isProUser ? (
-          <MechaCard accent="primary" showAccentLine showCornerMark>
-            <View style={styles.subscriptionRow}>
-              <Zap size={20} color={colors.primary} />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.subTitle, { color: colors.textPrimary }]}>
-                  RoastMyWallet Pro
-                </Text>
-                <Text style={[styles.subNote, { color: colors.textMuted }]}>
-                  All features unlocked
-                </Text>
+        {/* ── Hero header ─────────────────────────────────── */}
+        <LinearGradient
+          colors={isDark ? ['#0D1F35', '#141927'] : ['#1B3557', '#22487A']}
+          style={[styles.hero, { paddingTop: insets.top + 20 }]}
+        >
+          {/* Avatar */}
+          <View style={styles.avatarWrap}>
+            <LinearGradient colors={['#2F6293', '#1B3557']} style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </LinearGradient>
+            {isProUser && (
+              <View style={styles.proBadge}>
+                <FlameIcon size={10} color="#fff" />
               </View>
-              <StatusBadge variant="pro" />
+            )}
+          </View>
+
+          <Text style={styles.heroName}>{profile?.displayName ?? 'ผู้ใช้ RoastMyWallet'}</Text>
+          <Text style={styles.heroEmail}>{user?.email ?? ''}</Text>
+
+          {/* Stats row */}
+          <View style={styles.heroStats}>
+            <HeroStat value={formatCurrency(avoided, currency, { compact: true })} label="ประหยัดได้" accent="#E8A030" />
+            <View style={styles.heroStatDiv} />
+            <HeroStat value={String(avoidedCount)} label="ไม่ซื้อแล้ว" accent="#52B57D" />
+            <View style={styles.heroStatDiv} />
+            <HeroStat value={String(purchases.filter(p => p.status === 'waiting').length)} label="กำลังรอ" accent="#5A96C3" />
+          </View>
+        </LinearGradient>
+
+        <View style={[styles.content, { paddingHorizontal: 16 }]}>
+          {/* ── Subscription ────────────────────────────────── */}
+          {isProUser ? (
+            <View style={[styles.proCard, { borderColor: '#E8A030' + '30', backgroundColor: isDark ? '#1A1A0D' : '#FFFBF0' }]}>
+              <FlameIcon size={22} color="#E8A030" />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.proTitle, { color: colors.textPrimary }]}>RoastMyWallet Pro</Text>
+                <Text style={[styles.proSub, { color: colors.textSecondary }]}>ได้รับสิทธิ์ทุกฟีเจอร์แบบไม่จำกัด</Text>
+              </View>
+              <TouchableOpacity>
+                <Text style={[styles.proManage, { color: '#E8A030' }]}>จัดการ</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.manageSubLink}>
-              <Text style={[styles.linkText, { color: colors.primary }]}>
-                Manage subscription →
-              </Text>
-            </TouchableOpacity>
-          </MechaCard>
-        ) : (
-          <MechaCard accent="muted" showAccentLine>
-            <Text style={[styles.upgradeTitle, { color: colors.textPrimary }]}>
-              Upgrade to Pro
-            </Text>
-            <Text style={[styles.upgradeDesc, { color: colors.textSecondary }]}>
-              Unlock AI analysis, Squad Roasting, advanced insights, and more. Starting at {formatCurrency(39, currency as any)}/month.
-            </Text>
-            <Button
-              label="Upgrade — ฿39/month"
-              variant="primary"
-              size="md"
-              fullWidth
-              style={{ marginTop: spacing[3] }}
-              onPress={() => { /* Navigate to upgrade */ }}
+          ) : (
+            <LinearGradient colors={['#1B3557', '#2F6293']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.upgradeTitle}>อัพเกรดเป็น Pro</Text>
+                <Text style={styles.upgradeSub}>ปลดล็อค AI roast, Squad, Insights ขั้นสูง และอีกมาก</Text>
+              </View>
+              <TouchableOpacity style={styles.upgradeBtn}>
+                <Text style={styles.upgradeBtnText}>ดูแผน</Text>
+                <ArrowRightIcon size={14} color="#1B3557" />
+              </TouchableOpacity>
+            </LinearGradient>
+          )}
+
+          {/* ── Notifications & AI ──────────────────────────── */}
+          <SettingsGroup title="การแจ้งเตือน" colors={colors} isDark={isDark}>
+            <ToggleRow
+              label="การแจ้งเตือนรายวัน"
+              hint="Roast เตือนตอน 20:00 และ 13:15"
+              icon={<BellIcon size={18} color={colors.textSecondary} />}
+              value={notifs} onChange={setNotifs} colors={colors}
             />
-          </MechaCard>
-        )}
+            <Divider colors={colors} />
+            <ToggleRow
+              label="AI วิเคราะห์"
+              hint="ให้ AI ช่วยคำนวณ Need Score"
+              icon={<FlameIcon size={18} color={colors.textSecondary} />}
+              value={aiOn} onChange={setAiOn} colors={colors}
+            />
+          </SettingsGroup>
 
-        {/* ── Spending Limits ─────────────────────────────────────────── */}
-        <TechnicalDivider label="SPENDING LIMITS" />
-        <SettingsGroup colors={colors}>
-          <LimitRow
-            label="Monthly limit"
-            value={profile?.monthlyBudget ? formatCurrency(profile.monthlyBudget, currency as any) : 'Not set'}
-            onPress={() => { /* open edit sheet */ }}
-            colors={colors}
-          />
-          <SettingsDivider colors={colors} />
-          <LimitRow
-            label="Weekly limit"
-            value={profile?.weeklyBudget ? formatCurrency(profile.weeklyBudget, currency as any) : 'Not set'}
-            onPress={() => { /* open edit sheet */ }}
-            colors={colors}
-          />
-          <SettingsDivider colors={colors} />
-          <LimitRow
-            label="Daily limit"
-            value={profile?.dailyBudget ? formatCurrency(profile.dailyBudget, currency as any) : 'Not set'}
-            onPress={() => { /* open edit sheet */ }}
-            colors={colors}
-          />
-        </SettingsGroup>
+          {/* ── Account settings ─────────────────────────────── */}
+          <SettingsGroup title="บัญชีและความปลอดภัย" colors={colors} isDark={isDark}>
+            <SettingsRow label="แก้ไขโปรไฟล์" icon={<UserIcon size={18} color={colors.textSecondary} />} onPress={() => {}} colors={colors} />
+            <Divider colors={colors} />
+            <SettingsRow label="เปลี่ยนรหัสผ่าน" icon={<ShieldIcon size={18} color={colors.textSecondary} />} onPress={() => router.push('/(auth)/forgot-password')} colors={colors} />
+            <Divider colors={colors} />
+            <SettingsRow label="สกุลเงิน" value={currency} icon={<WalletIcon size={18} color={colors.textSecondary} />} onPress={() => {}} colors={colors} />
+          </SettingsGroup>
 
-        {/* ── Preferences ─────────────────────────────────────────────── */}
-        <TechnicalDivider label="PREFERENCES" />
-        <SettingsGroup colors={colors}>
-          <ToggleRow
-            label="Notifications"
-            hint="Decision reminders, limit alerts"
-            icon={<Bell size={16} color={colors.textMuted} />}
-            value={notificationsEnabled}
-            onChange={setNotificationsEnabled}
-            colors={colors}
-          />
-          <SettingsDivider colors={colors} />
-          <ToggleRow
-            label="AI analysis"
-            hint="AI roasting and insights"
-            icon={<Zap size={16} color={colors.textMuted} />}
-            value={aiEnabled}
-            onChange={setAiEnabled}
-            colors={colors}
-          />
-          <SettingsDivider colors={colors} />
-          <NavRow
-            label="Default wait time"
-            value={`${profile?.defaultWaitingHours ?? 24}h`}
-            onPress={() => { }}
-            colors={colors}
-          />
-          <SettingsDivider colors={colors} />
-          <NavRow
-            label="Currency"
-            value={profile?.currency ?? 'THB'}
-            onPress={() => { }}
-            colors={colors}
-          />
-          <SettingsDivider colors={colors} />
-          <NavRow
-            label="Theme"
-            value="Cozy Minimal"
-            onPress={() => { }}
-            colors={colors}
-          />
-        </SettingsGroup>
+          {/* ── Danger zone ──────────────────────────────────── */}
+          <SettingsGroup title="" colors={colors} isDark={isDark}>
+            <TouchableOpacity style={styles.dangerRow} onPress={handleSignOut}>
+              <Text style={[styles.dangerText, { color: colors.textSecondary }]}>ออกจากระบบ</Text>
+            </TouchableOpacity>
+            <Divider colors={colors} />
+            <TouchableOpacity style={styles.dangerRow} onPress={handleDeleteAccount}>
+              <Text style={[styles.dangerText, { color: '#D46060' }]}>ลบบัญชี</Text>
+            </TouchableOpacity>
+          </SettingsGroup>
 
-        {/* ── Account ──────────────────────────────────────────────────── */}
-        <TechnicalDivider label="ACCOUNT" />
-        <SettingsGroup colors={colors}>
-          <NavRow
-            label="Privacy settings"
-            icon={<Shield size={16} color={colors.textMuted} />}
-            onPress={() => { }}
-            colors={colors}
-          />
-          <SettingsDivider colors={colors} />
-          <NavRow
-            label="Export my data"
-            icon={<Download size={16} color={colors.textMuted} />}
-            onPress={() => { }}
-            colors={colors}
-          />
-        </SettingsGroup>
-
-        {/* ── Danger zone ─────────────────────────────────────────────── */}
-        <SettingsGroup colors={colors}>
-          <TouchableOpacity
-            style={styles.dangerRow}
-            onPress={handleSignOut}
-            accessibilityRole="button"
-            activeOpacity={0.7}
-          >
-            <LogOut size={16} color={colors.danger} />
-            <Text style={[styles.dangerLabel, { color: colors.danger }]}>
-              Sign out
-            </Text>
-          </TouchableOpacity>
-          <SettingsDivider colors={colors} />
-          <TouchableOpacity
-            style={styles.dangerRow}
-            onPress={handleDeleteAccount}
-            accessibilityRole="button"
-            activeOpacity={0.7}
-          >
-            <Trash2 size={16} color={colors.danger} />
-            <Text style={[styles.dangerLabel, { color: colors.danger }]}>
-              Delete account
-            </Text>
-          </TouchableOpacity>
-        </SettingsGroup>
-
-        {/* Version */}
-        <Text style={[styles.version, { color: colors.textMuted }]}>
-          RoastMyWallet v1.0.0 · Build 1
-        </Text>
+          {/* Version */}
+          <Text style={[styles.version, { color: colors.textMuted }]}>
+            RoastMyWallet v1.0.0 · SDK 57
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-// ─── SETTINGS GROUP ───────────────────────────────────────────────────────────
-
-function SettingsGroup({ children, colors }: { children: React.ReactNode; colors: any }) {
+function HeroStat({ value, label, accent }: { value: string; label: string; accent: string }) {
   return (
-    <View style={[styles.settingsGroup, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      {children}
+    <View style={styles.heroStatItem}>
+      <Text style={[styles.heroStatValue, { color: accent }]}>{value}</Text>
+      <Text style={styles.heroStatLabel}>{label}</Text>
     </View>
   );
 }
 
-function SettingsDivider({ colors }: { colors: any }) {
+function SettingsGroup({ title, children, colors, isDark }: any) {
   return (
-    <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
-  );
-}
-
-// ─── ROW TYPES ────────────────────────────────────────────────────────────────
-
-function NavRow({ label, value, icon, onPress, colors }: {
-  label: string;
-  value?: string;
-  icon?: React.ReactNode;
-  onPress: () => void;
-  colors: any;
-}) {
-  return (
-    <TouchableOpacity
-      style={styles.settingsRow}
-      onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityRole="button"
-    >
-      {icon && <View style={styles.rowIcon}>{icon}</View>}
-      <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{label}</Text>
-      <View style={styles.rowRight}>
-        {value && (
-          <Text style={[styles.rowValue, { color: colors.textMuted }]}>{value}</Text>
-        )}
-        <ChevronRight size={16} color={colors.textMuted} />
+    <View style={styles.group}>
+      {title ? <Text style={[styles.groupTitle, { color: colors.textMuted }]}>{title}</Text> : null}
+      <View style={[styles.groupCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+        {children}
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
-function ToggleRow({ label, hint, icon, value, onChange, colors }: {
-  label: string;
-  hint?: string;
-  icon?: React.ReactNode;
-  value: boolean;
-  onChange: (v: boolean) => void;
-  colors: any;
-}) {
+function SettingsRow({ label, hint, icon, value, onPress, colors }: any) {
   return (
-    <View style={styles.settingsRow}>
+    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
       {icon && <View style={styles.rowIcon}>{icon}</View>}
       <View style={{ flex: 1 }}>
         <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{label}</Text>
         {hint && <Text style={[styles.rowHint, { color: colors.textMuted }]}>{hint}</Text>}
       </View>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ false: colors.border, true: colors.primary }}
-        thumbColor="#fff"
-        accessibilityLabel={label}
-      />
-    </View>
-  );
-}
-
-function LimitRow({ label, value, onPress, colors }: {
-  label: string;
-  value: string;
-  onPress: () => void;
-  colors: any;
-}) {
-  return (
-    <TouchableOpacity
-      style={styles.settingsRow}
-      onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityRole="button"
-    >
-      <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{label}</Text>
       <View style={styles.rowRight}>
-        <Text
-          style={[
-            styles.rowValue,
-            {
-              color: value === 'Not set' ? colors.textMuted : colors.primary,
-              fontWeight: value !== 'Not set' ? typography.weight.semibold : typography.weight.regular,
-            },
-          ]}
-        >
-          {value}
-        </Text>
-        <ChevronRight size={16} color={colors.textMuted} />
+        {value && <Text style={[styles.rowValue, { color: colors.textMuted }]}>{value}</Text>}
+        <ArrowRightIcon size={14} color={colors.textMuted} />
       </View>
     </TouchableOpacity>
   );
 }
 
+function ToggleRow({ label, hint, icon, value, onChange, colors }: any) {
+  return (
+    <View style={styles.row}>
+      {icon && <View style={styles.rowIcon}>{icon}</View>}
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{label}</Text>
+        {hint && <Text style={[styles.rowHint, { color: colors.textMuted }]}>{hint}</Text>}
+      </View>
+      <Switch value={value} onValueChange={onChange}
+        trackColor={{ false: colors.border, true: colors.primary }}
+        thumbColor="#fff" />
+    </View>
+  );
+}
+
+function Divider({ colors }: { colors: any }) {
+  return <View style={[styles.divider, { backgroundColor: colors.border }]} />;
+}
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  content: {
-    paddingHorizontal: spacing[4],
-    gap: spacing[4],
-  },
-
-  // Account header
-  accountHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[4],
-    paddingBottom: spacing[2],
-  },
-  avatarLarge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarLargeText: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold,
-  },
-  accountInfo: {
-    flex: 1,
-    gap: spacing[1],
-  },
-  accountName: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
-  },
-  accountEmail: {
-    fontSize: typography.size.sm,
-  },
-
-  // Subscription card
-  subscriptionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    marginBottom: spacing[2],
-  },
-  subTitle: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
-  subNote: {
-    fontSize: typography.size.xs,
-    marginTop: 2,
-  },
-  manageSubLink: {
-    marginTop: spacing[1],
-  },
-  linkText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  upgradeTitle: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-    marginBottom: spacing[1],
-  },
-  upgradeDesc: {
-    fontSize: typography.size.sm,
-    lineHeight: 20,
-  },
-
-  // Settings group
-  settingsGroup: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  settingsDivider: {
-    height: 1,
-    marginLeft: spacing[4],
-  },
-
-  // Row types
-  settingsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing[4],
-    paddingVertical: spacing[3.5],
-    minHeight: 52,
-    gap: spacing[3],
-  },
+  hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8 },
+  avatarWrap: { position: 'relative', marginBottom: 4 },
+  avatar: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
+  proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0D1F35' },
+  heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
+  heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
+  heroStats: { flexDirection: 'row', marginTop: 12, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  heroStatItem: { flex: 1, alignItems: 'center', paddingVertical: 12 },
+  heroStatValue: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
+  heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
+  heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
+  content: { gap: 12, paddingTop: 16 },
+  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, padding: 16, borderWidth: 1 },
+  proTitle: { fontSize: 15, fontWeight: '700' },
+  proSub: { fontSize: 12, marginTop: 2 },
+  proManage: { fontSize: 13, fontWeight: '600' },
+  upgradeCard: { borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  upgradeTitle: { fontSize: 16, fontWeight: '800', color: '#fff' },
+  upgradeSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 3, lineHeight: 17 },
+  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  upgradeBtnText: { color: '#1B3557', fontSize: 13, fontWeight: '700' },
+  group: { gap: 6 },
+  groupTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
+  groupCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12, minHeight: 52 },
   rowIcon: {},
-  rowLabel: {
-    flex: 1,
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.regular,
-  },
-  rowHint: {
-    fontSize: typography.size.xs,
-    marginTop: 2,
-  },
-  rowRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[2],
-  },
-  rowValue: {
-    fontSize: typography.size.sm,
-  },
-  dangerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing[4],
-    paddingVertical: spacing[3.5],
-    gap: spacing[3],
-    minHeight: 52,
-  },
-  dangerLabel: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.medium,
-  },
-  version: {
-    textAlign: 'center',
-    fontSize: typography.size.xs,
-    fontFamily: 'Courier New',
-    paddingBottom: spacing[4],
-  },
+  rowLabel: { fontSize: 15 },
+  rowHint: { fontSize: 11, marginTop: 2 },
+  rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rowValue: { fontSize: 13 },
+  divider: { height: 1, marginLeft: 16 },
+  dangerRow: { paddingHorizontal: 16, paddingVertical: 14, minHeight: 52, justifyContent: 'center' },
+  dangerText: { fontSize: 15 },
+  version: { textAlign: 'center', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', paddingVertical: 8 },
 });
