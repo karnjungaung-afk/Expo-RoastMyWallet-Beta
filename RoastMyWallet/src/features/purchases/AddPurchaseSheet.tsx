@@ -1,398 +1,404 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Alert,
+  View, Text, ScrollView, TouchableOpacity,
+  KeyboardAvoidingView, Platform, StyleSheet,
+  TextInput, Alert,
 } from 'react-native';
-import { ChevronRight, ChevronLeft, X, Link, Tag, DollarSign, MessageSquare } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
-import { Button } from '@/components/ui/Button';
-import { Input, SelectTrigger } from '@/components/ui/Input';
-import { TechnicalDivider } from '@/components/ui/Badge';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
-import { spacing, typography, radius } from '@/theme/tokens';
+import { spacing, radius } from '@/theme/tokens';
+import { detectPlatformFromUrl } from '@/features/intercept/InterceptService';
+import { ArrowRightIcon, CheckIcon, FlameIcon, ShieldIcon, WalletIcon, ClockIcon } from '@/components/icons/RmwIcons';
 import type {
-  PurchaseReason,
-  PurchaseCategory,
-  ShoppingPlatform,
-  UsageFrequency,
-  BudgetImpact,
-  CreatePurchaseInput,
+  PurchaseReason, PurchaseCategory, ShoppingPlatform,
+  UsageFrequency, BudgetImpact, CreatePurchaseInput,
 } from '@/types';
 
-// ─── STEP DEFINITIONS ─────────────────────────────────────────────────────────
+// ─── TYPES ───────────────────────────────────────────────────────────────────
 
 type Step = 'basics' | 'questions' | 'reviewing';
 
 interface FormData {
-  productName: string;
-  priceStr: string;
-  url: string;
-  reason: PurchaseReason | '';
-  category: PurchaseCategory | '';
-  notes: string;
-  // Questionnaire
-  plannedBefore: boolean | null;
-  hasAlternative: boolean | null;
-  usageFrequency: UsageFrequency | '';
-  wouldBuyAtFullPrice: boolean | null;
+  productName: string; priceStr: string; url: string;
+  reason: PurchaseReason | ''; category: PurchaseCategory | ''; notes: string;
+  plannedBefore: boolean | null; hasAlternative: boolean | null;
+  usageFrequency: UsageFrequency | ''; wouldBuyAtFullPrice: boolean | null;
   budgetImpact: BudgetImpact | '';
 }
 
-const INITIAL_FORM: FormData = {
-  productName: '',
-  priceStr: '',
-  url: '',
-  reason: '',
-  category: '',
-  notes: '',
-  plannedBefore: null,
-  hasAlternative: null,
-  usageFrequency: '',
-  wouldBuyAtFullPrice: null,
-  budgetImpact: '',
+const INITIAL: FormData = {
+  productName: '', priceStr: '', url: '', reason: '', category: '', notes: '',
+  plannedBefore: null, hasAlternative: null,
+  usageFrequency: '', wouldBuyAtFullPrice: null, budgetImpact: '',
 };
 
-interface AddPurchaseSheetProps {
-  onClose: () => void;
-  prefillUrl?: string;
-}
+interface Props { onClose: () => void; prefillUrl?: string; }
 
-export function AddPurchaseSheet({ onClose, prefillUrl }: AddPurchaseSheetProps) {
-  const { colors } = useTheme();
-  const [step, setStep] = useState<Step>('basics');
-  const [form, setForm] = useState<FormData>({ ...INITIAL_FORM, url: prefillUrl ?? '' });
+// ─── SHEET ───────────────────────────────────────────────────────────────────
+
+export function AddPurchaseSheet({ onClose, prefillUrl }: Props) {
+  const { colors, isDark } = useTheme();
+  const [step, setStep]   = useState<Step>('basics');
+  const [form, setForm]   = useState<FormData>({ ...INITIAL, url: prefillUrl ?? '' });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
   const { addPurchase, addingState } = usePurchaseStore();
   const { isPro } = useSubscriptionStore();
-
   const isLoading = addingState === 'loading';
 
-  // ── Form helpers ─────────────────────────────────────────────────────────
-
-  const set = useCallback((key: keyof FormData, value: any) => {
-    setForm(f => ({ ...f, [key]: value }));
+  const set = useCallback(<K extends keyof FormData>(key: K, val: FormData[K]) => {
+    setForm(f => ({ ...f, [key]: val }));
     setErrors(e => ({ ...e, [key]: undefined }));
   }, []);
 
-  // ── Step validation ───────────────────────────────────────────────────────
-
-  const validateBasics = (): boolean => {
-    const newErrors: typeof errors = {};
-    if (!form.productName.trim()) newErrors.productName = 'Product name is required';
-    if (!form.priceStr.trim()) newErrors.priceStr = 'Price is required';
-    else if (isNaN(Number(form.priceStr)) || Number(form.priceStr) <= 0) {
-      newErrors.priceStr = 'Enter a valid price';
-    }
-    if (!form.reason) newErrors.reason = 'Select a reason';
-    if (!form.category) newErrors.category = 'Select a category';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validateBasics = () => {
+    const e: typeof errors = {};
+    if (!form.productName.trim()) e.productName = 'กรุณาใส่ชื่อสินค้า';
+    if (!form.priceStr.trim()) e.priceStr = 'กรุณาใส่ราคา';
+    else if (isNaN(Number(form.priceStr)) || Number(form.priceStr) <= 0) e.priceStr = 'ราคาไม่ถูกต้อง';
+    if (!form.reason) e.reason = 'กรุณาเลือกเหตุผล';
+    if (!form.category) e.category = 'กรุณาเลือกหมวดหมู่';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  // ── Navigation ────────────────────────────────────────────────────────────
-
   const handleNext = () => {
-    if (step === 'basics') {
-      if (!validateBasics()) return;
-      setStep('questions');
-    } else if (step === 'questions') {
-      handleSubmit();
-    }
+    if (step === 'basics') { if (validateBasics()) setStep('questions'); }
+    else if (step === 'questions') setStep('reviewing');
   };
 
   const handleBack = () => {
     if (step === 'questions') setStep('basics');
+    else if (step === 'reviewing') setStep('questions');
     else onClose();
   };
 
-  // ── Submit ────────────────────────────────────────────────────────────────
-
   const handleSubmit = async () => {
+    const price = Number(form.priceStr);
     const input: CreatePurchaseInput = {
       productName: form.productName.trim(),
-      price: Number(form.priceStr),
-      currency: 'THB',
+      price, currency: 'THB',
       url: form.url.trim() || null,
-      imageUrl: null,
-      platform: detectPlatform(form.url),
-      category: (form.category as PurchaseCategory) || 'other',
-      reason: (form.reason as PurchaseReason) || 'other',
+      category: form.category as PurchaseCategory,
+      platform: form.url ? detectPlatformFromUrl(form.url) : 'unknown',
+      reason: form.reason as PurchaseReason,
       notes: form.notes.trim() || null,
-      waitingHours: 0, // will be auto-calculated
-      questionnaire: {
-        plannedBefore: form.plannedBefore ?? false,
-        hasAlternative: form.hasAlternative ?? false,
-        usageFrequency: (form.usageFrequency as UsageFrequency) || 'monthly',
-        wouldBuyAtFullPrice: form.wouldBuyAtFullPrice ?? (form.reason !== 'sale'),
-        budgetImpact: (form.budgetImpact as BudgetImpact) || 'minor',
-        emotionalState: 'unknown',
-      },
+      questionnaire: form.plannedBefore !== null && form.hasAlternative !== null && form.usageFrequency && form.wouldBuyAtFullPrice !== null && form.budgetImpact
+        ? {
+            plannedBefore: form.plannedBefore,
+            hasAlternative: form.hasAlternative,
+            usageFrequency: form.usageFrequency as import('@/types').UsageFrequency,
+            wouldBuyAtFullPrice: form.wouldBuyAtFullPrice,
+            budgetImpact: form.budgetImpact as import('@/types').BudgetImpact,
+            emotionalState: 'neutral' as import('@/types').EmotionalState,
+          }
+        : null,
+      imageUrl: null,
+      waitingHours: isPro() ? 48 : 24,
     };
-
-    const result = await addPurchase(input, isPro());
-
-    if (result) {
+    try {
+      await addPurchase(input, isPro());
       onClose();
-    } else {
-      Alert.alert('Something went wrong', 'Failed to add purchase. Please try again.');
+    } catch {
+      Alert.alert('เกิดข้อผิดพลาด', 'กรุณาลองใหม่อีกครั้ง');
     }
   };
 
-  // ─── RENDER ───────────────────────────────────────────────────────────────
+  const stepIndex = step === 'basics' ? 0 : step === 'questions' ? 1 : 2;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
-    >
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity
-          onPress={handleBack}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <ChevronLeft size={22} color={colors.textSecondary} />
+    <View style={[styles.root, { backgroundColor: isDark ? '#0D1A2B' : '#F8F7F5' }]}>
+      {/* ── Header ──────────────────────────────────────── */}
+      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: isDark ? '#141927' : '#fff' }]}>
+        <TouchableOpacity onPress={handleBack} style={styles.headerSide} hitSlop={8}>
+          {step === 'basics'
+            ? <Text style={[styles.cancelText, { color: colors.textMuted }]}>ยกเลิก</Text>
+            : <Text style={[styles.cancelText, { color: colors.textSecondary }]}>← ย้อนกลับ</Text>
+          }
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-            {step === 'basics' ? 'Pause & Think' : 'A few questions'}
+            {step === 'basics' ? 'เพิ่มสิ่งที่อยากซื้อ' : step === 'questions' ? 'ถามตัวเองก่อน' : 'ยืนยัน'}
           </Text>
           <View style={styles.stepDots}>
-            {(['basics', 'questions'] as Step[]).map((s, i) => (
-              <View
-                key={s}
-                style={[
-                  styles.stepDot,
-                  {
-                    backgroundColor: step === s
-                      ? colors.primary
-                      : i < (['basics', 'questions'] as Step[]).indexOf(step)
-                      ? colors.success
-                      : colors.border,
-                  },
-                ]}
-              />
+            {[0, 1, 2].map(i => (
+              <View key={i} style={[styles.stepDot, {
+                backgroundColor: i <= stepIndex ? colors.primary : colors.border,
+                width: i === stepIndex ? 24 : 8,
+              }]} />
             ))}
           </View>
         </View>
 
-        <TouchableOpacity
-          onPress={onClose}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityRole="button"
-          accessibilityLabel="Close"
+        <View style={styles.headerSide} />
+      </View>
+
+      {/* ── Content ─────────────────────────────────────── */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <X size={20} color={colors.textMuted} />
-        </TouchableOpacity>
-      </View>
+          {step === 'basics'  && <BasicsStep form={form} errors={errors} set={set} colors={colors} isDark={isDark} />}
+          {step === 'questions' && <QuestionsStep form={form} set={set} colors={colors} isDark={isDark} />}
+          {step === 'reviewing' && <ReviewStep form={form} colors={colors} isDark={isDark} />}
+        </ScrollView>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {step === 'basics' && (
-          <BasicsStep form={form} errors={errors} set={set} colors={colors} />
-        )}
+        {/* ── Footer ──────────────────────────────────────── */}
+        <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: isDark ? '#141927' : '#fff' }]}>
+          <LinearGradient
+            colors={step === 'reviewing' ? ['#235E3B', '#3A9960'] : ['#1B3557', '#2F6293']}
+            style={styles.ctaGrad}
+          >
+            <TouchableOpacity
+              style={styles.ctaBtn}
+              onPress={step === 'reviewing' ? handleSubmit : handleNext}
+              disabled={isLoading}
+              activeOpacity={0.85}
+            >
+              {step === 'reviewing'
+                ? <><CheckIcon size={18} color="#fff" /><Text style={styles.ctaText}>{isLoading ? 'กำลังบันทึก...' : 'เพิ่มใน Waiting List'}</Text></>
+                : <><Text style={styles.ctaText}>ถัดไป</Text><ArrowRightIcon size={16} color="#fff" /></>
+              }
+            </TouchableOpacity>
+          </LinearGradient>
+          {step === 'reviewing' && (
+            <Text style={[styles.waitNote, { color: colors.textMuted }]}>
+              รอ {isPro() ? '48' : '24'} ชม. ก่อนตัดสินใจ
+            </Text>
+          )}
+        </View>
+      </KeyboardAvoidingView>
+    </View>
+  );
+}
 
-        {step === 'questions' && (
-          <QuestionsStep form={form} set={set} colors={colors} />
-        )}
-      </ScrollView>
+// ─── STEP 1: BASICS ───────────────────────────────────────────────────────────
 
-      {/* Footer CTA */}
-      <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.surface }]}>
-        <Button
-          label={step === 'questions' ? 'Add to Pause List' : 'Next'}
-          variant="primary"
-          size="lg"
-          fullWidth
-          loading={isLoading}
-          onPress={handleNext}
-          icon={<ChevronRight size={18} color="#fff" />}
-          iconPosition="right"
+function BasicsStep({ form, errors, set, colors, isDark }: any) {
+  return (
+    <View style={styles.stepWrap}>
+      <Text style={[styles.stepHint, { color: colors.textMuted }]}>
+        บอกเราว่าคุณอยากได้อะไร แล้วเราจะช่วยตัดสินใจ
+      </Text>
+
+      <FormField label="ชื่อสินค้า *" error={errors.productName} colors={colors} isDark={isDark}>
+        <StyledInput
+          value={form.productName} onChangeText={(t: string) => set('productName', t)}
+          placeholder="เช่น AirPods Pro, รองเท้า Nike"
+          hasError={!!errors.productName} colors={colors} isDark={isDark}
         />
+      </FormField>
+
+      <FormField label="ราคา (บาท) *" error={errors.priceStr} colors={colors} isDark={isDark}>
+        <StyledInput
+          value={form.priceStr} onChangeText={(t: string) => set('priceStr', t)}
+          placeholder="0.00" keyboardType="decimal-pad"
+          hasError={!!errors.priceStr} colors={colors} isDark={isDark}
+        />
+      </FormField>
+
+      <FormField label="ลิงก์สินค้า (ถ้ามี)" colors={colors} isDark={isDark}>
+        <StyledInput
+          value={form.url} onChangeText={(t: string) => set('url', t)}
+          placeholder="https://shopee.co.th/..."
+          keyboardType="url" autoCapitalize="none"
+          colors={colors} isDark={isDark}
+        />
+      </FormField>
+
+      <PickerField label="เหตุผลที่อยากได้ *" error={errors.reason} colors={colors}>
+        <ChipGroup
+          options={REASONS} selected={form.reason}
+          onSelect={(v: string) => set('reason', v)}
+          colors={colors} isDark={isDark}
+        />
+      </PickerField>
+
+      <PickerField label="หมวดหมู่ *" error={errors.category} colors={colors}>
+        <ChipGroup
+          options={CATEGORIES} selected={form.category}
+          onSelect={(v: string) => set('category', v)}
+          colors={colors} isDark={isDark} wrap
+        />
+      </PickerField>
+
+      <FormField label="บันทึก (ไม่บังคับ)" colors={colors} isDark={isDark}>
+        <StyledInput
+          value={form.notes} onChangeText={(t: string) => set('notes', t)}
+          placeholder="เขียนเหตุผลเพิ่มเติมให้ตัวเองอ่านทีหลัง..."
+          multiline numberOfLines={3}
+          colors={colors} isDark={isDark}
+        />
+      </FormField>
+    </View>
+  );
+}
+
+// ─── STEP 2: QUESTIONS ───────────────────────────────────────────────────────
+
+function QuestionsStep({ form, set, colors, isDark }: any) {
+  return (
+    <View style={styles.stepWrap}>
+      <Text style={[styles.stepHint, { color: colors.textMuted }]}>
+        คำถามต่อไปนี้ช่วยให้ AI คำนวณ Need Score ได้แม่นขึ้น
+      </Text>
+
+      <QuestionCard
+        q="คุณวางแผนซื้อสิ่งนี้ก่อนเข้าแอปไหม?"
+        value={form.plannedBefore} onChange={(v: boolean) => set('plannedBefore', v)}
+        colors={colors} isDark={isDark}
+      />
+
+      <QuestionCard
+        q="มีสิ่งทดแทนที่ใช้อยู่แล้วไหม?"
+        value={form.hasAlternative} onChange={(v: boolean) => set('hasAlternative', v)}
+        colors={colors} isDark={isDark}
+      />
+
+      <PickerField label="จะได้ใช้บ่อยแค่ไหน?" colors={colors}>
+        <RadioGroup
+          options={FREQUENCIES} selected={form.usageFrequency}
+          onSelect={(v: string) => set('usageFrequency', v)}
+          colors={colors} isDark={isDark}
+        />
+      </PickerField>
+
+      <QuestionCard
+        q="ถ้าไม่มีโปรโมชั่น คุณยังซื้อในราคาเต็มอยู่ไหม?"
+        value={form.wouldBuyAtFullPrice} onChange={(v: boolean) => set('wouldBuyAtFullPrice', v)}
+        colors={colors} isDark={isDark}
+      />
+
+      <PickerField label="กระทบงบประมาณเดือนนี้แค่ไหน?" colors={colors}>
+        <ChipGroup
+          options={BUDGET_IMPACTS} selected={form.budgetImpact}
+          onSelect={(v: string) => set('budgetImpact', v)}
+          colors={colors} isDark={isDark}
+        />
+      </PickerField>
+    </View>
+  );
+}
+
+// ─── STEP 3: REVIEW ──────────────────────────────────────────────────────────
+
+function ReviewStep({ form, colors, isDark }: any) {
+  const price = Number(form.priceStr);
+  return (
+    <View style={styles.stepWrap}>
+      {/* Summary card */}
+      <View style={[styles.reviewCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+        <Text style={[styles.reviewName, { color: colors.textPrimary }]}>{form.productName}</Text>
+        <Text style={[styles.reviewPrice, { color: colors.primary }]}>฿{price.toLocaleString()}</Text>
+        {form.url ? (
+          <Text style={[styles.reviewUrl, { color: colors.textMuted }]} numberOfLines={1}>{form.url}</Text>
+        ) : null}
       </View>
-    </KeyboardAvoidingView>
-  );
-}
 
-// ─── STEP: BASICS ─────────────────────────────────────────────────────────────
+      {/* Key details */}
+      <View style={[styles.detailRows, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+        {[
+          { label: 'หมวดหมู่', value: CATEGORIES.find(c => c.value === form.category)?.label ?? form.category, icon: <WalletIcon size={14} color={colors.textMuted} /> },
+          { label: 'เหตุผล', value: REASONS.find(r => r.value === form.reason)?.label ?? form.reason, icon: <FlameIcon size={14} color={colors.textMuted} /> },
+          { label: 'ใช้บ่อยแค่ไหน', value: FREQUENCIES.find(f => f.value === form.usageFrequency)?.label ?? 'ไม่ได้ระบุ', icon: <ClockIcon size={14} color={colors.textMuted} /> },
+        ].map((row, i) => (
+          <React.Fragment key={row.label}>
+            {i > 0 && <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />}
+            <View style={styles.detailRow}>
+              {row.icon}
+              <Text style={[styles.detailLabel, { color: colors.textMuted }]}>{row.label}</Text>
+              <Text style={[styles.detailValue, { color: colors.textPrimary }]}>{row.value}</Text>
+            </View>
+          </React.Fragment>
+        ))}
+      </View>
 
-interface StepProps {
-  form: FormData;
-  errors: Partial<Record<keyof FormData, string>>;
-  set: (key: keyof FormData, value: any) => void;
-  colors: any;
-}
+      {/* Planned tip */}
+      {form.plannedBefore === false && (
+        <View style={[styles.roastTip, { backgroundColor: '#E8A030' + '15', borderColor: '#E8A030' + '30' }]}>
+          <FlameIcon size={14} color="#E8A030" />
+          <Text style={[styles.roastTipText, { color: '#E8A030' }]}>
+            คุณไม่ได้วางแผนซื้อสิ่งนี้มาก่อน — นี่แหละคือสัญญาณของการซื้อแบบหุนหันพลันแล่น!
+          </Text>
+        </View>
+      )}
 
-function BasicsStep({ form, errors, set, colors }: StepProps) {
-  return (
-    <View style={styles.stepContainer}>
-      <Text style={[styles.stepHint, { color: colors.textMuted }]}>
-        What are you about to buy?
-      </Text>
-
-      <Input
-        label="Product name"
-        value={form.productName}
-        onChangeText={v => set('productName', v)}
-        placeholder="e.g. Mechanical Keyboard"
-        error={errors.productName}
-        required
-        autoFocus
-        returnKeyType="next"
-      />
-
-      <Input
-        label="Price (฿)"
-        value={form.priceStr}
-        onChangeText={v => {
-          // Strip commas, spaces, currency symbols so "1,500" or "฿890" parse correctly
-          const cleaned = v.replace(/[^0-9.]/g, '');
-          set('priceStr', cleaned);
-        }}
-        placeholder="0"
-        error={errors.priceStr}
-        keyboardType="decimal-pad"
-        required
-        leftIcon={<DollarSign size={16} color={colors.textMuted} />}
-        returnKeyType="next"
-      />
-
-      <Input
-        label="Product URL"
-        value={form.url}
-        onChangeText={v => set('url', v)}
-        placeholder="https://..."
-        keyboardType="url"
-        autoCapitalize="none"
-        autoCorrect={false}
-        leftIcon={<Link size={16} color={colors.textMuted} />}
-      />
-
-      <TechnicalDivider label="CLASSIFY" />
-
-      <ReasonPicker
-        selected={form.reason as PurchaseReason}
-        onSelect={v => set('reason', v)}
-        error={errors.reason}
-        colors={colors}
-      />
-
-      <CategoryPicker
-        selected={form.category as PurchaseCategory}
-        onSelect={v => set('category', v)}
-        error={errors.category}
-        colors={colors}
-      />
-
-      <Input
-        label="Notes (optional)"
-        value={form.notes}
-        onChangeText={v => set('notes', v)}
-        placeholder="Anything else to add?"
-        multiline
-        numberOfLines={2}
-        leftIcon={<MessageSquare size={16} color={colors.textMuted} />}
-      />
+      {form.notes ? (
+        <View style={[styles.notesBox, { backgroundColor: isDark ? '#141927' : '#F4F6F9', borderColor: colors.border }]}>
+          <Text style={[styles.notesLabel, { color: colors.textMuted }]}>บันทึก</Text>
+          <Text style={[styles.notesText, { color: colors.textPrimary }]}>{form.notes}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
 
-// ─── STEP: QUESTIONS ──────────────────────────────────────────────────────────
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
 
-function QuestionsStep({ form, set, colors }: Omit<StepProps, 'errors'>) {
+function FormField({ label, error, children, colors, isDark }: any) {
   return (
-    <View style={styles.stepContainer}>
-      <Text style={[styles.stepHint, { color: colors.textMuted }]}>
-        Help us give you a better score.
-      </Text>
-
-      <YesNoQuestion
-        question="Did you plan to buy this before seeing it?"
-        value={form.plannedBefore}
-        onChange={v => set('plannedBefore', v)}
-        colors={colors}
-      />
-
-      <YesNoQuestion
-        question="Do you already own something similar?"
-        value={form.hasAlternative}
-        onChange={v => set('hasAlternative', v)}
-        colors={colors}
-      />
-
-      <FrequencyPicker
-        selected={form.usageFrequency as UsageFrequency}
-        onSelect={v => set('usageFrequency', v)}
-        colors={colors}
-      />
-
-      <YesNoQuestion
-        question="Would you buy this at full price?"
-        value={form.wouldBuyAtFullPrice}
-        onChange={v => set('wouldBuyAtFullPrice', v)}
-        colors={colors}
-      />
-
-      <BudgetImpactPicker
-        selected={form.budgetImpact as BudgetImpact}
-        onSelect={v => set('budgetImpact', v)}
-        colors={colors}
-      />
+    <View style={styles.fieldWrap}>
+      <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{label}</Text>
+      {children}
+      {error && <Text style={[styles.fieldError, { color: colors.danger ?? '#D46060' }]}>{error}</Text>}
     </View>
   );
 }
 
-// ─── YES / NO QUESTION ────────────────────────────────────────────────────────
-
-interface YesNoProps {
-  question: string;
-  value: boolean | null;
-  onChange: (v: boolean) => void;
-  colors: any;
+function PickerField({ label, error, children, colors }: any) {
+  return (
+    <View style={styles.fieldWrap}>
+      <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{label}</Text>
+      {children}
+      {error && <Text style={[styles.fieldError, { color: colors.danger ?? '#D46060' }]}>{error}</Text>}
+    </View>
+  );
 }
 
-function YesNoQuestion({ question, value, onChange, colors }: YesNoProps) {
+function StyledInput({ colors, isDark, hasError, multiline, ...rest }: any) {
+  const [focused, setFocused] = useState(false);
   return (
-    <View style={styles.questionBlock}>
-      <Text style={[styles.questionText, { color: colors.textPrimary }]}>
-        {question}
-      </Text>
+    <TextInput
+      style={[styles.input, {
+        borderColor: hasError ? '#D46060' : focused ? colors.primary : colors.border,
+        backgroundColor: isDark ? '#1E2A3A' : '#fff',
+        color: colors.textPrimary,
+        height: multiline ? 80 : 52,
+        textAlignVertical: multiline ? 'top' : 'center',
+        paddingTop: multiline ? 12 : 0,
+      }]}
+      placeholderTextColor={colors.textMuted}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      multiline={multiline}
+      {...rest}
+    />
+  );
+}
+
+function QuestionCard({ q, value, onChange, colors, isDark }: any) {
+  return (
+    <View style={styles.fieldWrap}>
+      <Text style={[styles.questionText, { color: colors.textPrimary }]}>{q}</Text>
       <View style={styles.yesNoRow}>
-        {([true, false] as const).map(bool => (
+        {[{ v: true, label: 'ใช่' }, { v: false, label: 'ไม่ใช่' }].map(opt => (
           <TouchableOpacity
-            key={String(bool)}
-            onPress={() => onChange(bool)}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: value === bool }}
-            style={[
-              styles.yesNoButton,
-              {
-                borderColor: value === bool ? colors.primary : colors.border,
-                backgroundColor: value === bool ? colors.primarySubtle : colors.surface,
-              },
-            ]}
+            key={String(opt.v)}
+            onPress={() => onChange(opt.v)}
+            style={[styles.yesNoBtn, {
+              borderColor: value === opt.v ? colors.primary : colors.border,
+              backgroundColor: value === opt.v ? colors.primarySubtle : (isDark ? '#1E2A3A' : '#fff'),
+            }]}
           >
-            <Text style={[
-              styles.yesNoLabel,
-              { color: value === bool ? colors.primary : colors.textSecondary },
-            ]}>
-              {bool ? 'Yes' : 'No'}
+            {value === opt.v && <CheckIcon size={14} color={colors.primary} />}
+            <Text style={[styles.yesNoText, { color: value === opt.v ? colors.primary : colors.textSecondary }]}>
+              {opt.label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -401,342 +407,142 @@ function YesNoQuestion({ question, value, onChange, colors }: YesNoProps) {
   );
 }
 
-// ─── REASON PICKER ────────────────────────────────────────────────────────────
-
-const REASONS: Array<{ value: PurchaseReason; label: string }> = [
-  { value: 'need', label: 'Need' },
-  { value: 'want', label: 'Want' },
-  { value: 'sale', label: 'On Sale' },
-  { value: 'influencer', label: 'Influencer' },
-  { value: 'fomo', label: 'FOMO' },
-  { value: 'bored', label: 'Bored' },
-  { value: 'replacement', label: 'Replacement' },
-  { value: 'other', label: 'Other' },
-];
-
-function ReasonPicker({ selected, onSelect, error, colors }: { selected: PurchaseReason | ''; onSelect: (v: PurchaseReason) => void; error?: string; colors: any }) {
+function ChipGroup({ options, selected, onSelect, colors, isDark, wrap }: any) {
   return (
-    <View style={styles.pickerBlock}>
-      <Text style={[styles.pickerLabel, { color: colors.textSecondary }]}>
-        Why are you buying this? *
-      </Text>
-      <View style={styles.chipGrid}>
-        {REASONS.map(({ value, label }) => (
-          <TouchableOpacity
-            key={value}
-            onPress={() => onSelect(value)}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: selected === value }}
-            style={[
-              styles.chip,
-              {
-                borderColor: selected === value ? colors.primary : colors.border,
-                backgroundColor: selected === value ? colors.primarySubtle : colors.surface,
-              },
-            ]}
-          >
-            <Text style={[
-              styles.chipText,
-              { color: selected === value ? colors.primary : colors.textSecondary },
-            ]}>
-              {label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {error && <Text style={[styles.fieldError, { color: colors.danger }]}>{error}</Text>}
+    <View style={[styles.chipWrap, wrap && { flexWrap: 'wrap' }]}>
+      {options.map((o: any) => (
+        <TouchableOpacity
+          key={o.value}
+          onPress={() => onSelect(o.value)}
+          style={[styles.chip, {
+            borderColor: selected === o.value ? colors.primary : colors.border,
+            backgroundColor: selected === o.value ? colors.primarySubtle : (isDark ? '#1E2A3A' : '#fff'),
+          }]}
+        >
+          <Text style={[styles.chipText, { color: selected === o.value ? colors.primary : colors.textSecondary }]}>
+            {o.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 }
 
-// ─── CATEGORY PICKER ──────────────────────────────────────────────────────────
-
-const CATEGORIES: Array<{ value: PurchaseCategory; label: string }> = [
-  { value: 'electronics', label: 'Electronics' },
-  { value: 'fashion', label: 'Fashion' },
-  { value: 'beauty', label: 'Beauty' },
-  { value: 'gaming', label: 'Gaming' },
-  { value: 'home', label: 'Home' },
-  { value: 'food', label: 'Food' },
-  { value: 'sports', label: 'Sports' },
-  { value: 'health', label: 'Health' },
-  { value: 'books', label: 'Books' },
-  { value: 'travel', label: 'Travel' },
-  { value: 'entertainment', label: 'Entertainment' },
-  { value: 'tools', label: 'Tools' },
-  { value: 'other', label: 'Other' },
-];
-
-function CategoryPicker({ selected, onSelect, error, colors }: { selected: PurchaseCategory | ''; onSelect: (v: PurchaseCategory) => void; error?: string; colors: any }) {
+function RadioGroup({ options, selected, onSelect, colors, isDark }: any) {
   return (
-    <View style={styles.pickerBlock}>
-      <Text style={[styles.pickerLabel, { color: colors.textSecondary }]}>
-        Category *
-      </Text>
-      <View style={styles.chipGrid}>
-        {CATEGORIES.map(({ value, label }) => (
-          <TouchableOpacity
-            key={value}
-            onPress={() => onSelect(value)}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: selected === value }}
-            style={[
-              styles.chip,
-              {
-                borderColor: selected === value ? colors.primary : colors.border,
-                backgroundColor: selected === value ? colors.primarySubtle : colors.surface,
-              },
-            ]}
-          >
-            <Text style={[
-              styles.chipText,
-              { color: selected === value ? colors.primary : colors.textSecondary },
-            ]}>
-              {label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {error && <Text style={[styles.fieldError, { color: colors.danger }]}>{error}</Text>}
+    <View style={{ gap: 8 }}>
+      {options.map((o: any) => (
+        <TouchableOpacity
+          key={o.value}
+          onPress={() => onSelect(o.value)}
+          style={[styles.radioRow, {
+            borderColor: selected === o.value ? colors.primary : colors.border,
+            backgroundColor: selected === o.value ? colors.primarySubtle : (isDark ? '#1E2A3A' : '#fff'),
+          }]}
+        >
+          <View style={[styles.radioOuter, { borderColor: selected === o.value ? colors.primary : colors.border }]}>
+            {selected === o.value && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.radioLabel, { color: colors.textPrimary }]}>{o.label}</Text>
+            {o.sub && <Text style={[styles.radioSub, { color: colors.textMuted }]}>{o.sub}</Text>}
+          </View>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 }
 
-// ─── FREQUENCY PICKER ────────────────────────────────────────────────────────
+// ─── DATA ────────────────────────────────────────────────────────────────────
 
-const FREQUENCIES: Array<{ value: UsageFrequency; label: string; sub: string }> = [
-  { value: 'daily', label: 'Daily', sub: 'Every day' },
-  { value: 'weekly', label: 'Weekly', sub: 'A few times a week' },
-  { value: 'monthly', label: 'Monthly', sub: 'A few times a month' },
-  { value: 'rarely', label: 'Rarely', sub: 'Once in a while' },
-  { value: 'never', label: 'Never', sub: 'Honestly, never' },
+const REASONS = [
+  { value: 'want',        label: 'แค่อยากได้' },
+  { value: 'need',        label: 'จำเป็นต้องใช้' },
+  { value: 'impulse',     label: 'เห็นแล้วอยากได้เลย' },
+  { value: 'gift',        label: 'ซื้อเป็นของขวัญ' },
+  { value: 'replacement', label: 'ของเดิมพังแล้ว' },
+  { value: 'deal',        label: 'โปรโมชั่นน่าสนใจ' },
 ];
 
-function FrequencyPicker({ selected, onSelect, colors }: { selected: UsageFrequency | ''; onSelect: (v: UsageFrequency) => void; colors: any }) {
-  return (
-    <View style={styles.questionBlock}>
-      <Text style={[styles.questionText, { color: colors.textPrimary }]}>
-        How often will you realistically use this?
-      </Text>
-      <View style={styles.verticalOptions}>
-        {FREQUENCIES.map(({ value, label, sub }) => (
-          <TouchableOpacity
-            key={value}
-            onPress={() => onSelect(value)}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: selected === value }}
-            style={[
-              styles.optionRow,
-              {
-                borderColor: selected === value ? colors.primary : colors.border,
-                backgroundColor: selected === value ? colors.primarySubtle : colors.surface,
-              },
-            ]}
-          >
-            <View style={[
-              styles.radioOuter,
-              { borderColor: selected === value ? colors.primary : colors.border },
-            ]}>
-              {selected === value && (
-                <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
-              )}
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.optionLabel, { color: colors.textPrimary }]}>{label}</Text>
-              <Text style={[styles.optionSub, { color: colors.textMuted }]}>{sub}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-// ─── BUDGET IMPACT PICKER ────────────────────────────────────────────────────
-
-const BUDGET_IMPACTS: Array<{ value: BudgetImpact; label: string }> = [
-  { value: 'none', label: 'No impact' },
-  { value: 'minor', label: 'Minor' },
-  { value: 'moderate', label: 'Moderate' },
-  { value: 'significant', label: 'Significant' },
+const CATEGORIES = [
+  { value: 'electronics',   label: 'อิเล็กทรอนิกส์' },
+  { value: 'fashion',       label: 'แฟชั่น' },
+  { value: 'beauty',        label: 'ความงาม' },
+  { value: 'gaming',        label: 'เกมมิ่ง' },
+  { value: 'home',          label: 'ของใช้บ้าน' },
+  { value: 'food',          label: 'อาหาร' },
+  { value: 'sports',        label: 'กีฬา' },
+  { value: 'health',        label: 'สุขภาพ' },
+  { value: 'books',         label: 'หนังสือ' },
+  { value: 'travel',        label: 'ท่องเที่ยว' },
+  { value: 'entertainment', label: 'ความบันเทิง' },
+  { value: 'tools',         label: 'เครื่องมือ' },
+  { value: 'other',         label: 'อื่นๆ' },
 ];
 
-function BudgetImpactPicker({ selected, onSelect, colors }: { selected: BudgetImpact | ''; onSelect: (v: BudgetImpact) => void; colors: any }) {
-  return (
-    <View style={styles.questionBlock}>
-      <Text style={[styles.questionText, { color: colors.textPrimary }]}>
-        How does this affect your budget this month?
-      </Text>
-      <View style={styles.chipGrid}>
-        {BUDGET_IMPACTS.map(({ value, label }) => (
-          <TouchableOpacity
-            key={value}
-            onPress={() => onSelect(value)}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: selected === value }}
-            style={[
-              styles.chip,
-              {
-                borderColor: selected === value ? colors.primary : colors.border,
-                backgroundColor: selected === value ? colors.primarySubtle : colors.surface,
-              },
-            ]}
-          >
-            <Text style={[
-              styles.chipText,
-              { color: selected === value ? colors.primary : colors.textSecondary },
-            ]}>
-              {label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-}
+const FREQUENCIES = [
+  { value: 'daily',   label: 'ทุกวัน',       sub: 'ใช้เป็นประจำ' },
+  { value: 'weekly',  label: 'ทุกสัปดาห์',   sub: 'ไม่กี่ครั้งต่อสัปดาห์' },
+  { value: 'monthly', label: 'ทุกเดือน',     sub: 'บางครั้ง' },
+  { value: 'rarely',  label: 'นานๆ ครั้ง',   sub: 'ใช้แค่โอกาสพิเศษ' },
+  { value: 'never',   label: 'แทบไม่ได้ใช้', sub: 'พูดตรงๆ กับตัวเอง' },
+];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const BUDGET_IMPACTS = [
+  { value: 'none',        label: 'ไม่กระทบ' },
+  { value: 'minor',       label: 'นิดหน่อย' },
+  { value: 'moderate',    label: 'พอสมควร' },
+  { value: 'significant', label: 'กระทบมาก' },
+];
 
-function detectPlatform(url: string): ShoppingPlatform {
-  if (!url) return 'unknown';
-  const lower = url.toLowerCase();
-  if (lower.includes('shopee')) return 'shopee';
-  if (lower.includes('lazada')) return 'lazada';
-  if (lower.includes('tiktok')) return 'tiktok_shop';
-  if (lower.includes('instagram')) return 'instagram';
-  if (lower.includes('facebook')) return 'facebook';
-  if (lower.includes('amazon')) return 'amazon';
-  return 'other_website';
-}
+// ─── STYLES ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing[4],
-    paddingTop: spacing[3],
-    paddingBottom: spacing[3],
-    borderBottomWidth: 1,
-  },
-  headerCenter: {
-    alignItems: 'center',
-    gap: spacing[1.5],
-  },
-  headerTitle: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
-  stepDots: {
-    flexDirection: 'row',
-    gap: spacing[1],
-  },
-  stepDot: {
-    width: 20,
-    height: 3,
-    borderRadius: 1.5,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: spacing[6],
-  },
-  footer: {
-    padding: spacing[4],
-    borderTopWidth: 1,
-  },
-  stepContainer: {
-    padding: spacing[4],
-    gap: spacing[4],
-  },
-  stepHint: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-  },
-  questionBlock: {
-    gap: spacing[2],
-  },
-  questionText: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.medium,
-    lineHeight: 22,
-  },
-  yesNoRow: {
-    flexDirection: 'row',
-    gap: spacing[2],
-  },
-  yesNoButton: {
-    flex: 1,
-    paddingVertical: spacing[3],
-    borderWidth: 1.5,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    minHeight: 48,
-    justifyContent: 'center',
-  },
-  yesNoLabel: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
-  pickerBlock: {
-    gap: spacing[2],
-  },
-  pickerLabel: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  chipGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing[2],
-  },
-  chip: {
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[2],
-    borderWidth: 1.5,
-    borderRadius: radius.full,
-    minHeight: 36,
-    justifyContent: 'center',
-  },
-  chipText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  verticalOptions: {
-    gap: spacing[2],
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[3],
-    borderWidth: 1.5,
-    borderRadius: radius.md,
-  },
-  optionLabel: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.medium,
-  },
-  optionSub: {
-    fontSize: typography.size.xs,
-    marginTop: 2,
-  },
-  radioOuter: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  fieldError: {
-    fontSize: typography.size.xs,
-  },
+  root: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1 },
+  headerSide: { width: 80 },
+  headerCenter: { flex: 1, alignItems: 'center', gap: 8 },
+  headerTitle: { fontSize: 16, fontWeight: '700' },
+  cancelText: { fontSize: 14 },
+  stepDots: { flexDirection: 'row', gap: 5, alignItems: 'center' },
+  stepDot: { height: 4, borderRadius: 2 },
+  scroll: { flex: 1 },
+  scrollContent: { paddingBottom: 16 },
+  stepWrap: { padding: 16, gap: 20 },
+  stepHint: { fontSize: 13, lineHeight: 19 },
+  footer: { padding: 16, gap: 8, borderTopWidth: 1 },
+  ctaGrad: { borderRadius: 14 },
+  ctaBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16 },
+  ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  waitNote: { textAlign: 'center', fontSize: 12 },
+  fieldWrap: { gap: 8 },
+  fieldLabel: { fontSize: 13, fontWeight: '600', letterSpacing: 0.2 },
+  fieldError: { fontSize: 12, marginTop: -4 },
+  input: { borderWidth: 1.5, borderRadius: 14, paddingHorizontal: 14, fontSize: 15 },
+  questionText: { fontSize: 15, fontWeight: '600', lineHeight: 22 },
+  yesNoRow: { flexDirection: 'row', gap: 10 },
+  yesNoBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 13, borderRadius: 12, borderWidth: 1.5 },
+  yesNoText: { fontSize: 15, fontWeight: '600' },
+  chipWrap: { flexDirection: 'row', gap: 8 },
+  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 100, borderWidth: 1.5 },
+  chipText: { fontSize: 13, fontWeight: '600' },
+  radioRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 13, borderRadius: 12, borderWidth: 1.5 },
+  radioLabel: { fontSize: 15, fontWeight: '600' },
+  radioSub: { fontSize: 12, marginTop: 1 },
+  radioOuter: { width: 18, height: 18, borderRadius: 9, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  radioInner: { width: 8, height: 8, borderRadius: 4 },
+  reviewCard: { borderRadius: 16, borderWidth: 1, padding: 18, gap: 6 },
+  reviewName: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
+  reviewPrice: { fontSize: 28, fontWeight: '800', letterSpacing: -1 },
+  reviewUrl: { fontSize: 12, marginTop: 2 },
+  detailRows: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  detailRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 13 },
+  detailLabel: { flex: 1, fontSize: 13 },
+  detailValue: { fontSize: 13, fontWeight: '600', textAlign: 'right' },
+  rowDivider: { height: 1, marginLeft: 14 },
+  roastTip: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 14, borderWidth: 1, alignItems: 'flex-start' },
+  roastTipText: { flex: 1, fontSize: 13, lineHeight: 19, fontWeight: '500' },
+  notesBox: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 5 },
+  notesLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6 },
+  notesText: { fontSize: 14, lineHeight: 20 },
 });
