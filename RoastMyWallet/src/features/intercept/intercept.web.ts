@@ -14,7 +14,7 @@
 
 import type { IInterceptService } from './InterceptService';
 import type { InterceptEvent } from '@/types';
-import { detectPlatformFromUrl, isShoppingUrl } from './InterceptService';
+import { detectPlatformFromUrl, isShoppingUrl } from './intercept.utils';
 
 type Callback = (event: InterceptEvent) => void;
 
