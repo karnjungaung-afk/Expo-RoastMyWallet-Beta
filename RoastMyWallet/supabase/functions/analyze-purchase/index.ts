@@ -135,50 +135,94 @@ serve(async (req) => {
       return jsonError('AI service is not configured', 503);
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+    // Gemini can temporarily return 503 UNAVAILABLE during demand spikes.
+    // Retry transient provider errors, then fall back to the previously used model.
+    const aiModels = [...new Set([aiModel, 'gemini-3.6-flash'])];
+    const deadline = Date.now() + AI_TIMEOUT_MS;
+    let aiResponse: Response | null = null;
+    let lastProviderError = '';
 
-    let aiResponse: Response;
-    try {
-      aiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(aiModel)}:generateContent`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': aiKey,
-          },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: SYSTEM_PROMPT }],
+    for (const model of aiModels) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const remainingMs = deadline - Date.now();
+        if (remainingMs < 1500) break;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          Math.min(8000, remainingMs - 250),
+        );
+
+        try {
+          aiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': aiKey,
+              },
+              body: JSON.stringify({
+                systemInstruction: {
+                  parts: [{ text: SYSTEM_PROMPT }],
+                },
+                contents: [{
+                  role: 'user',
+                  parts: [{ text: prompt }],
+                }],
+                generationConfig: {
+                  maxOutputTokens: 1024,
+                  responseMimeType: 'application/json',
+                  temperature: 0.7,
+                },
+              }),
+              signal: controller.signal,
             },
-            contents: [{
-              role: 'user',
-              parts: [{ text: prompt }],
-            }],
-            generationConfig: {
-              maxOutputTokens: 1024,
-              responseMimeType: 'application/json',
-              temperature: 0.7,
-            },
-          }),
-          signal: controller.signal,
-        },
-      );
-    } catch (fetchErr) {
-      if ((fetchErr as Error).name === 'AbortError') {
-        return jsonError('AI service timed out. Core score is still valid.', 503);
+          );
+        } catch (fetchErr) {
+          if ((fetchErr as Error).name === 'AbortError') {
+            lastProviderError = 'Gemini request timed out';
+          } else {
+            lastProviderError = (fetchErr as Error).message;
+          }
+          console.error('[analyze-purchase] Gemini request failed:', {
+            model,
+            attempt: attempt + 1,
+            message: lastProviderError,
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
+
+        if (aiResponse?.ok) break;
+
+        if (aiResponse) {
+          lastProviderError = await aiResponse.text().catch(() => '');
+          const status = aiResponse.status;
+          console.error('[analyze-purchase] Gemini provider error:', {
+            model,
+            attempt: attempt + 1,
+            status,
+            body: lastProviderError.slice(0, 1000),
+          });
+
+          // Retry only transient errors. A different model is tried next if needed.
+          if (![408, 429, 500, 502, 503, 504].includes(status)) break;
+        }
+
+        if (attempt === 0 && Date.now() + 500 < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
       }
-      throw fetchErr;
-    } finally {
-      clearTimeout(timeoutId);
+
+      if (aiResponse?.ok) break;
+      aiResponse = null;
     }
 
-    if (!aiResponse.ok) {
-      const providerErrorBody = await aiResponse.text().catch(() => '');
-      console.error('[analyze-purchase] Gemini provider error:', {
-        status: aiResponse.status,
-        body: providerErrorBody.slice(0, 1000),
+    if (!aiResponse?.ok) {
+      console.error('[analyze-purchase] All Gemini model attempts failed:', {
+        modelsTried: aiModels,
+        lastProviderError: lastProviderError.slice(0, 500),
       });
       return jsonError('AI service temporarily unavailable', 503);
     }
