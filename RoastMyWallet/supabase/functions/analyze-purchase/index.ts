@@ -147,6 +147,7 @@ serve(async (req) => {
         const remainingMs = deadline - Date.now();
         if (remainingMs < 1500) break;
 
+        aiResponse = null;
         const controller = new AbortController();
         const timeoutId = setTimeout(
           () => controller.abort(),
