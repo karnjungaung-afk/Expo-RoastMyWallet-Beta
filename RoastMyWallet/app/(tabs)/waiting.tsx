@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
+import { useShallow } from 'zustand/react/shallow';
 import { PurchaseCard } from '@/features/purchases/PurchaseCard';
 import { spacing } from '@/theme/tokens';
 import { FlameIcon, ClockIcon, ShieldIcon, CheckIcon } from '@/components/icons/RmwIcons';
@@ -25,7 +26,11 @@ export default function WaitingScreen() {
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<Filter>('all');
   const [refreshing, setRefreshing] = useState(false);
-  const { purchases, loadPurchases, loadingState } = usePurchaseStore();
+  const { purchases, loadPurchases, loadingState } = usePurchaseStore(useShallow(state => ({
+    purchases: state.purchases,
+    loadPurchases: state.loadPurchases,
+    loadingState: state.loadingState,
+  })));
 
   useEffect(() => { loadPurchases(); }, []);
   const onRefresh = async () => { setRefreshing(true); await loadPurchases(); setRefreshing(false); };
