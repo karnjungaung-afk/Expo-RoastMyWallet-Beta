@@ -21,7 +21,7 @@ export default function ProfileScreen() {
   const profile = useAuthStore(selectProfile);
   const { signOut } = useAuthStore();
   const { isPro } = useSubscriptionStore();
-  const { purchases } = usePurchaseStore();
+  const purchases = usePurchaseStore(state => state.purchases);
 
   const [notifs, setNotifs] = useState(profile?.notificationsEnabled ?? true);
   const [aiOn,   setAiOn]   = useState(profile?.aiEnabled ?? true);
