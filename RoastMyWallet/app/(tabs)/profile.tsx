@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -19,12 +19,21 @@ export default function ProfileScreen() {
 
   const user    = useAuthStore(selectUser);
   const profile = useAuthStore(selectProfile);
-  const { signOut } = useAuthStore();
+  const { signOut, updateProfile } = useAuthStore();
   const { isPro } = useSubscriptionStore();
   const purchases = usePurchaseStore(state => state.purchases);
 
   const [notifs, setNotifs] = useState(profile?.notificationsEnabled ?? true);
   const [aiOn,   setAiOn]   = useState(profile?.aiEnabled ?? true);
+  const [editVisible, setEditVisible] = useState(false);
+  const [editName, setEditName] = useState(profile?.displayName ?? '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setNotifs(profile?.notificationsEnabled ?? true);
+    setAiOn(profile?.aiEnabled ?? true);
+    setEditName(profile?.displayName ?? '');
+  }, [profile?.notificationsEnabled, profile?.aiEnabled, profile?.displayName]);
 
   const currency  = profile?.currency ?? 'THB';
   const isProUser = isPro();
@@ -32,15 +41,58 @@ export default function ProfileScreen() {
   const avoidedCount = purchases.filter(p => p.status === 'avoided').length;
   const initials  = (profile?.displayName ?? user?.email ?? 'U').charAt(0).toUpperCase();
 
+  const saveSetting = async (key: 'notificationsEnabled' | 'aiEnabled', value: boolean) => {
+    const previous = key === 'notificationsEnabled' ? notifs : aiOn;
+    if (key === 'notificationsEnabled') setNotifs(value); else setAiOn(value);
+    try {
+      await updateProfile({ [key]: value });
+    } catch (error) {
+      if (key === 'notificationsEnabled') setNotifs(previous); else setAiOn(previous);
+      Alert.alert('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+    }
+  };
+
+  const saveDisplayName = async () => {
+    const name = editName.trim();
+    if (!name) { Alert.alert('ชื่อไม่ถูกต้อง', 'กรุณากรอกชื่อที่ต้องการใช้'); return; }
+    setSaving(true);
+    try {
+      await updateProfile({ displayName: name });
+      setEditVisible(false);
+      Alert.alert('บันทึกแล้ว', 'อัปเดตชื่อโปรไฟล์เรียบร้อย');
+    } catch (error) {
+      Alert.alert('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+    } finally { setSaving(false); }
+  };
+
+  const saveCurrency = async (nextCurrency: 'THB' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'SGD' | 'MYR') => {
+    try { await updateProfile({ currency: nextCurrency }); }
+    catch (error) { Alert.alert('บันทึกสกุลเงินไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่'); }
+  };
+
+  const chooseCurrency = () => Alert.alert('เลือกสกุลเงิน', 'สกุลเงินที่ใช้แสดงผลในแอป', [
+    ...(['THB', 'USD', 'EUR', 'GBP', 'JPY', 'SGD', 'MYR'] as const).map(value => ({
+      text: value === currency ? `✓ ${value}` : value, onPress: () => { void saveCurrency(value); },
+    })),
+    { text: 'ยกเลิก', style: 'cancel' },
+  ]);
+
+  const showProInfo = () => Alert.alert(
+    'RoastMyWallet Pro',
+    'ระบบชำระเงินจริงยังไม่ได้เชื่อมต่อ จึงยังไม่สามารถซื้อหรือจัดการสมาชิก Pro จากแอปได้',
+    [{ text: 'เข้าใจแล้ว' }],
+  );
+
   const handleSignOut = () => Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
     { text: 'ยกเลิก', style: 'cancel' },
     { text: 'ออกจากระบบ', style: 'destructive', onPress: async () => { await signOut(); router.replace('/(auth)/login'); } },
   ]);
 
-  const handleDeleteAccount = () => Alert.alert('ลบบัญชี', 'การดำเนินการนี้ไม่สามารถย้อนกลับได้ และจะลบข้อมูลทั้งหมดของคุณ', [
-    { text: 'ยกเลิก', style: 'cancel' },
-    { text: 'ลบบัญชี', style: 'destructive', onPress: () => {} },
-  ]);
+  const handleDeleteAccount = () => Alert.alert(
+    'ลบบัญชี',
+    'การลบบัญชีต้องใช้บริการฝั่งเซิร์ฟเวอร์ที่ตรวจสอบสิทธิ์อย่างปลอดภัย ซึ่งยังไม่ได้ติดตั้ง จึงยังไม่ลบบัญชีของคุณ',
+    [{ text: 'ตกลง' }],
+  );
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -85,7 +137,7 @@ export default function ProfileScreen() {
                 <Text style={[styles.proTitle, { color: colors.textPrimary }]}>RoastMyWallet Pro</Text>
                 <Text style={[styles.proSub, { color: colors.textSecondary }]}>ได้รับสิทธิ์ทุกฟีเจอร์แบบไม่จำกัด</Text>
               </View>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={showProInfo} accessibilityRole="button">
                 <Text style={[styles.proManage, { color: '#E8A030' }]}>จัดการ</Text>
               </TouchableOpacity>
             </View>
@@ -95,7 +147,7 @@ export default function ProfileScreen() {
                 <Text style={styles.upgradeTitle}>อัพเกรดเป็น Pro</Text>
                 <Text style={styles.upgradeSub}>ปลดล็อค AI roast, Squad, Insights ขั้นสูง และอีกมาก</Text>
               </View>
-              <TouchableOpacity style={styles.upgradeBtn}>
+              <TouchableOpacity style={styles.upgradeBtn} onPress={showProInfo} accessibilityRole="button">
                 <Text style={styles.upgradeBtnText}>ดูแผน</Text>
                 <ArrowRightIcon size={14} color="#1B3557" />
               </TouchableOpacity>
@@ -108,24 +160,24 @@ export default function ProfileScreen() {
               label="การแจ้งเตือนรายวัน"
               hint="Roast เตือนตอน 20:00 และ 13:15"
               icon={<BellIcon size={18} color={colors.textSecondary} />}
-              value={notifs} onChange={setNotifs} colors={colors}
+              value={notifs} onChange={(value: boolean) => { void saveSetting('notificationsEnabled', value); }} colors={colors}
             />
             <Divider colors={colors} />
             <ToggleRow
               label="AI วิเคราะห์"
               hint="ให้ AI ช่วยคำนวณ Need Score"
               icon={<FlameIcon size={18} color={colors.textSecondary} />}
-              value={aiOn} onChange={setAiOn} colors={colors}
+              value={aiOn} onChange={(value: boolean) => { void saveSetting('aiEnabled', value); }} colors={colors}
             />
           </SettingsGroup>
 
           {/* ── Account settings ─────────────────────────────── */}
           <SettingsGroup title="บัญชีและความปลอดภัย" colors={colors} isDark={isDark}>
-            <SettingsRow label="แก้ไขโปรไฟล์" icon={<UserIcon size={18} color={colors.textSecondary} />} onPress={() => {}} colors={colors} />
+            <SettingsRow label="แก้ไขโปรไฟล์" icon={<UserIcon size={18} color={colors.textSecondary} />} onPress={() => { setEditName(profile?.displayName ?? ''); setEditVisible(true); }} colors={colors} />
             <Divider colors={colors} />
             <SettingsRow label="เปลี่ยนรหัสผ่าน" icon={<ShieldIcon size={18} color={colors.textSecondary} />} onPress={() => router.push('/(auth)/forgot-password')} colors={colors} />
             <Divider colors={colors} />
-            <SettingsRow label="สกุลเงิน" value={currency} icon={<WalletIcon size={18} color={colors.textSecondary} />} onPress={() => {}} colors={colors} />
+            <SettingsRow label="สกุลเงิน" value={currency} icon={<WalletIcon size={18} color={colors.textSecondary} />} onPress={chooseCurrency} colors={colors} />
           </SettingsGroup>
 
           {/* ── Danger zone ──────────────────────────────────── */}
@@ -145,6 +197,36 @@ export default function ProfileScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      <Modal visible={editVisible} transparent animationType="fade" onRequestClose={() => setEditVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
+            <View style={[styles.modalCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>แก้ไขโปรไฟล์</Text>
+              <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>ชื่อที่แสดง</Text>
+              <TextInput
+                value={editName}
+                onChangeText={setEditName}
+                placeholder="ชื่อของคุณ"
+                placeholderTextColor={colors.textMuted}
+                maxLength={60}
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={saveDisplayName}
+                style={[styles.modalInput, { color: colors.textPrimary, borderColor: colors.border }]}
+              />
+              <View style={styles.modalActions}>
+                <TouchableOpacity style={styles.modalCancel} onPress={() => setEditVisible(false)} disabled={saving}>
+                  <Text style={{ color: colors.textSecondary }}>ยกเลิก</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalSave} onPress={saveDisplayName} disabled={saving}>
+                  <Text style={styles.modalSaveText}>{saving ? 'กำลังบันทึก...' : 'บันทึก'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -241,4 +323,14 @@ const styles = StyleSheet.create({
   dangerRow: { paddingHorizontal: 16, paddingVertical: 14, minHeight: 52, justifyContent: 'center' },
   dangerText: { fontSize: 15 },
   version: { textAlign: 'center', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', paddingVertical: 8 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', padding: 24 },
+  modalKeyboard: { width: '100%' },
+  modalCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 12 },
+  modalTitle: { fontSize: 19, fontWeight: '800' },
+  modalLabel: { fontSize: 13 },
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
+  modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
+  modalSave: { backgroundColor: '#2F6293', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
+  modalSaveText: { color: '#fff', fontWeight: '700' },
 });
