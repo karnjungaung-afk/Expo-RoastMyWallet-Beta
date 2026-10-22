@@ -13,35 +13,9 @@ export interface IInterceptService {
   getCapabilityDescription(): string;
 }
 
-// ─── SHOPPING PLATFORM METADATA ──────────────────────────────────────────────
-
-export interface PlatformMeta {
-  name: string;
-  emoji: string;
-  color: string;
-}
-
-export const PLATFORM_META: Record<ShoppingPlatform, PlatformMeta> = {
-  tiktok_shop:    { name: 'TikTok Shop',      emoji: '🎵', color: '#010101' },
-  shopee:         { name: 'Shopee',            emoji: '🛍️', color: '#EE4D2D' },
-  lazada:         { name: 'Lazada',            emoji: '🛒', color: '#0F146D' },
-  tokopedia:      { name: 'Tokopedia',         emoji: '🟢', color: '#42B549' },
-  jd_central:     { name: 'JD Central',        emoji: '❤️', color: '#CC0001' },
-  central_online: { name: 'Central Online',    emoji: '🏬', color: '#E31837' },
-  zalora:         { name: 'ZALORA',            emoji: '👗', color: '#000000' },
-  klook:          { name: 'Klook',             emoji: '✈️', color: '#FF5722' },
-  instagram:      { name: 'Instagram Shop',    emoji: '📸', color: '#E1306C' },
-  facebook:       { name: 'Facebook Shop',     emoji: '👍', color: '#1877F2' },
-  amazon:         { name: 'Amazon',            emoji: '📦', color: '#FF9900' },
-  aliexpress:     { name: 'AliExpress',        emoji: '🔴', color: '#E62E04' },
-  taobao:         { name: 'Taobao',            emoji: '🏮', color: '#FF4400' },
-  shein:          { name: 'SHEIN',             emoji: '✨', color: '#000000' },
-  grab_mart:      { name: 'GrabMart',          emoji: '🚗', color: '#00B14F' },
-  line_shopping:  { name: 'LINE Shopping',     emoji: '💬', color: '#06C755' },
-  other_website:  { name: 'ร้านค้าออนไลน์',  emoji: '🌐', color: '#555555' },
-  physical_store: { name: 'ร้านค้า',          emoji: '🏪', color: '#8B6914' },
-  unknown:        { name: 'Shopping',          emoji: '🛒', color: '#555555' },
-};
+// Shared platform metadata and URL detection live in a lightweight utility module.
+export { PLATFORM_META } from './intercept.utils';
+export type { PlatformMeta } from './intercept.utils';
 
 // ─── ROAST MESSAGES ──────────────────────────────────────────────────────────
 
