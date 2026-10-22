@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { useAuthStore } from '@/store/authStore';
 import type { AIAnalysis, Purchase, PurchaseReason, ScoringQuestionnaire, ServiceResult } from '@/types';
 
 // ─── AI SERVICE ───────────────────────────────────────────────────────────────
@@ -39,6 +40,11 @@ export async function analyzePurchase(
   needScore: number,
   options: { isPro: boolean; purchaseHistory?: PurchaseHistorySummary | null } = { isPro: false }
 ): Promise<ServiceResult<AIAnalysis>> {
+  // Respect the user's saved AI preference. Keep core scoring available via fallback.
+  if (useAuthStore.getState().profile?.aiEnabled === false) {
+    return { data: fallbackAnalysis(needScore, purchase.reason), error: null };
+  }
+
   try {
     const payload: AnalyzeRequest = {
       productName: purchase.productName,
