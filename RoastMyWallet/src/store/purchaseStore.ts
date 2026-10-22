@@ -55,7 +55,8 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   addPurchase: async (input, isPro) => {
-    set({ addingState: 'loading' });
+    set({ addingState: 'loading', error: null });
+    let optimisticId: string | null = null;
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -74,7 +75,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const waitingUntil = addHours(new Date(), waitingHours).toISOString();
 
       // Create purchase record (optimistic)
-      const optimisticId = `temp-${Date.now()}`;
+      optimisticId = `temp-${Date.now()}`;
       const optimisticPurchase: Purchase = {
         id: optimisticId,
         userId: user.id,
@@ -159,11 +160,15 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       set({ addingState: 'success' });
       return savedPurchase;
     } catch (err) {
-      set({ addingState: 'error', error: String(err) });
-      // Remove optimistic entry on failure
-      set(state => ({
-        purchases: state.purchases.filter(p => !p.id.startsWith('temp-')),
-      }));
+      const message = err instanceof Error ? err.message : String(err);
+      set({ addingState: 'error', error: message });
+      // Remove only this failed optimistic entry; don't discard other pending entries.
+      if (optimisticId) {
+        set(state => ({
+          purchases: state.purchases.filter(p => p.id !== optimisticId),
+        }));
+      }
+      console.error('[PurchaseStore] addPurchase failed:', message);
       return null;
     }
   },
