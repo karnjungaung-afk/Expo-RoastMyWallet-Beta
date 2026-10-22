@@ -86,53 +86,8 @@ export function getRoastMessage(platform: ShoppingPlatform): string {
   return String(msgs);
 }
 
-// ─── URL DETECTION ───────────────────────────────────────────────────────────
-
-export const SHOPPING_PATTERNS: Array<{ pattern: RegExp; platform: ShoppingPlatform }> = [
-  // TikTok
-  { pattern: /tiktok\.com\/(shop|@[^/]+\/video|@[^/]+\/product)/, platform: 'tiktok_shop' },
-  // Shopee — multi-country
-  { pattern: /shopee\.(co\.th|com|ph|sg|com\.br|com\.my|vn|tw|id)/, platform: 'shopee' },
-  // Lazada — multi-country
-  { pattern: /lazada\.(co\.th|com|sg|com\.my|com\.ph|vn)/, platform: 'lazada' },
-  // Tokopedia
-  { pattern: /tokopedia\.com/, platform: 'tokopedia' },
-  // JD Central (Thailand)
-  { pattern: /jd\.co\.th|central\.co\.th\/jd/, platform: 'jd_central' },
-  // Central Online
-  { pattern: /central\.co\.th/, platform: 'central_online' },
-  // ZALORA
-  { pattern: /zalora\.(co\.th|com|sg|com\.my|com\.ph)/, platform: 'zalora' },
-  // Klook
-  { pattern: /klook\.com/, platform: 'klook' },
-  // SHEIN
-  { pattern: /shein\.(com|co\.th)/, platform: 'shein' },
-  // AliExpress
-  { pattern: /aliexpress\.com/, platform: 'aliexpress' },
-  // Taobao
-  { pattern: /taobao\.com|world\.taobao\.com/, platform: 'taobao' },
-  // GrabMart
-  { pattern: /grab\.com\/(food|mart|express)/, platform: 'grab_mart' },
-  // LINE Shopping
-  { pattern: /shop\.line\.me|liff\.line\.me/, platform: 'line_shopping' },
-  // Instagram shopping
-  { pattern: /instagram\.com\/(p\/|reel\/|shop|products)/, platform: 'instagram' },
-  // Facebook shop / marketplace
-  { pattern: /facebook\.com\/(marketplace|groups|commerce|shop|products)/, platform: 'facebook' },
-  // Amazon — multi-country
-  { pattern: /amazon\.(com|co\.jp|co\.uk|de|fr|com\.au|sg)/, platform: 'amazon' },
-];
-
-export function detectPlatformFromUrl(url: string): ShoppingPlatform {
-  for (const { pattern, platform } of SHOPPING_PATTERNS) {
-    if (pattern.test(url)) return platform;
-  }
-  return 'other_website';
-}
-
-export function isShoppingUrl(url: string): boolean {
-  return SHOPPING_PATTERNS.some(({ pattern }) => pattern.test(url));
-}
+// URL detection lives in a dependency-free module to avoid platform-service cycles.
+export { SHOPPING_PATTERNS, detectPlatformFromUrl, isShoppingUrl } from './intercept.utils';
 
 // ─── PLATFORM FACTORY ────────────────────────────────────────────────────────
 
