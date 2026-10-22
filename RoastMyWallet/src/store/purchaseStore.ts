@@ -33,6 +33,9 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   error: null,
 
   loadPurchases: async () => {
+    // Keep purchases created while this network request is in flight. Otherwise,
+    // a slower stale fetch can overwrite a newly saved/optimistic item.
+    const requestStartedAt = Date.now();
     set({ loadingState: 'loading', error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -48,7 +51,15 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       if (error) throw error;
 
       const purchases = (data ?? []).map(mapSupabasePurchase);
-      set({ purchases, loadingState: 'success' });
+      const fetchedIds = new Set(purchases.map(p => p.id));
+      const locallyCreatedDuringRequest = get().purchases.filter(p =>
+        !fetchedIds.has(p.id) &&
+        (p.id.startsWith('temp-') || new Date(p.createdAt).getTime() >= requestStartedAt)
+      );
+      set({
+        purchases: [...locallyCreatedDuringRequest, ...purchases],
+        loadingState: 'success',
+      });
     } catch (err) {
       set({ loadingState: 'error', error: String(err) });
     }
