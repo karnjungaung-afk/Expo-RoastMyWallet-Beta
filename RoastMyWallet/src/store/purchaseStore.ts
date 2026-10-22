@@ -176,7 +176,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       set({ addingState: 'success' });
       return savedPurchase;
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      const message = getErrorMessage(err);
       set({ addingState: 'error', error: message });
       // Remove only this failed optimistic entry; don't discard other pending entries.
       if (optimisticId) {
@@ -184,7 +184,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
           purchases: state.purchases.filter(p => p.id !== optimisticId),
         }));
       }
-      console.error('[PurchaseStore] addPurchase failed:', message);
+      // Supabase/PostgREST errors are plain objects, so String(err) hides the useful details.
+      console.error('[PurchaseStore] addPurchase failed:', {
+        message,
+        error: err,
+      });
       return null;
     }
   },
@@ -341,3 +345,30 @@ export const selectWaitingPurchases = (state: PurchaseState) =>
 
 export const selectAvoidedThisMonth = (state: PurchaseState) =>
   state.getThisMonthAvoided();
+
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+
+  if (typeof err === 'string') return err;
+
+  if (err && typeof err === 'object') {
+    const value = err as Record<string, unknown>;
+    const parts = [
+      typeof value.message === 'string' ? value.message : null,
+      typeof value.details === 'string' ? value.details : null,
+      typeof value.hint === 'string' ? `Hint: ${value.hint}` : null,
+      typeof value.code === 'string' ? `Code: ${value.code}` : null,
+    ].filter(Boolean);
+
+    if (parts.length) return parts.join(' — ');
+
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return 'เกิดข้อผิดพลาดที่ไม่ทราบรายละเอียด';
+    }
+  }
+
+  return 'เกิดข้อผิดพลาดที่ไม่ทราบรายละเอียด';
+}
