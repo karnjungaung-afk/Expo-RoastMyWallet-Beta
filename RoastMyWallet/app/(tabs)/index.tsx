@@ -29,7 +29,14 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const profile = useAuthStore(selectProfile);
-  const { purchases, loadPurchases, loadingState, getThisMonthAvoided, getThisMonthAvoidedCount } = usePurchaseStore();
+  const { purchases, loadPurchases, loadingState, getThisMonthAvoided, getThisMonthAvoidedCount } =
+    usePurchaseStore(useShallow(state => ({
+      purchases: state.purchases,
+      loadPurchases: state.loadPurchases,
+      loadingState: state.loadingState,
+      getThisMonthAvoided: state.getThisMonthAvoided,
+      getThisMonthAvoidedCount: state.getThisMonthAvoidedCount,
+    })));
   const waitingPurchases = usePurchaseStore(useShallow(selectWaitingPurchases));
   const { isPro } = useSubscriptionStore();
 
