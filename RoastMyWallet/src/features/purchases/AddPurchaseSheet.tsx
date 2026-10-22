@@ -7,9 +7,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { spacing, radius } from '@/theme/tokens';
-import { detectPlatformFromUrl } from '@/features/intercept/InterceptService';
+import { detectPlatformFromUrl } from '@/features/intercept/intercept.utils';
 import { ArrowRightIcon, CheckIcon, FlameIcon, ShieldIcon, WalletIcon, ClockIcon } from '@/components/icons/RmwIcons';
 import type {
   PurchaseReason, PurchaseCategory, ShoppingPlatform,
@@ -44,7 +45,11 @@ export function AddPurchaseSheet({ onClose, prefillUrl }: Props) {
   const [form, setForm]   = useState<FormData>({ ...INITIAL, url: prefillUrl ?? '' });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
-  const { addPurchase, addingState } = usePurchaseStore();
+  const { addPurchase, addingState, error: purchaseError } = usePurchaseStore(useShallow(state => ({
+    addPurchase: state.addPurchase,
+    addingState: state.addingState,
+    error: state.error,
+  })));
   const { isPro } = useSubscriptionStore();
   const isLoading = addingState === 'loading';
 
@@ -99,8 +104,15 @@ export function AddPurchaseSheet({ onClose, prefillUrl }: Props) {
       waitingHours: isPro() ? 48 : 24,
     };
     try {
-      await addPurchase(input, isPro());
-      onClose();
+      const savedPurchase = await addPurchase(input, isPro());
+      if (savedPurchase) {
+        onClose();
+      } else {
+        Alert.alert(
+          'บันทึกรายการไม่สำเร็จ',
+          purchaseError || 'ไม่สามารถบันทึกรายการได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',
+        );
+      }
     } catch {
       Alert.alert('เกิดข้อผิดพลาด', 'กรุณาลองใหม่อีกครั้ง');
     }
