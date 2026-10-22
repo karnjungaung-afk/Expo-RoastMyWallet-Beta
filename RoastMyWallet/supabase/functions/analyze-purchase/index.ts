@@ -128,7 +128,7 @@ serve(async (req) => {
     // ── 6. Call AI with timeout ────────────────────────────────────────────
     // Gemini key is stored only in Supabase Edge Function secrets.
     const aiKey = Deno.env.get('GEMINI_API_KEY') ?? '';
-    const aiModel = Deno.env.get('AI_MODEL') ?? 'gemini-3.6-flash';
+    const aiModel = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.6-flash';
 
     if (!aiKey) {
       console.error('[analyze-purchase] Missing GEMINI_API_KEY secret');
