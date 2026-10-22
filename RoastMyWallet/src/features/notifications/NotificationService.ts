@@ -1,17 +1,34 @@
-import * as ExpoNotifications from 'expo-notifications';
+import type * as NotificationsTypes from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import type { NotificationType, NotificationData, Purchase } from '@/types';
 
-// Remote push tokens on Android are NOT supported inside Expo Go since SDK 53.
-// Local notification scheduling still works on all platforms including Expo Go.
+// Expo Go on Android may not contain the native notification module required by
+// this SDK version. Avoid loading expo-notifications at module startup there.
 const isExpoGo =
   Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const notificationsUnavailable =
+  Platform.OS === 'android' && isExpoGo;
 
-// ─── CONFIGURATION ────────────────────────────────────────────────────────────
+type NotificationsModule = typeof import('expo-notifications');
+let notificationsModule: NotificationsModule | null | undefined;
 
-ExpoNotifications.setNotificationHandler({
+function getNotifications(): NotificationsModule | null {
+  if (notificationsUnavailable) return null;
+  if (notificationsModule !== undefined) return notificationsModule;
+  try {
+    // Lazy-load so an unavailable native module cannot crash app startup.
+    notificationsModule = require('expo-notifications') as NotificationsModule;
+  } catch (error) {
+    console.warn('[Notifications] Native notifications unavailable:', error);
+    notificationsModule = null;
+  }
+  return notificationsModule;
+}
+
+const initialNotifications = getNotifications();
+initialNotifications?.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
     shouldShowList: true,
@@ -19,8 +36,6 @@ ExpoNotifications.setNotificationHandler({
     shouldSetBadge: true,
   }),
 });
-
-// ─── NOTIFICATION SERVICE ─────────────────────────────────────────────────────
 
 export class NotificationService {
   private static instance: NotificationService;
@@ -34,69 +49,56 @@ export class NotificationService {
 
   async requestPermission(): Promise<boolean> {
     if (!Device.isDevice) return false;
-    const { status: existingStatus } = await ExpoNotifications.getPermissionsAsync();
-    if (existingStatus === 'granted') return true;
-    const { status } = await ExpoNotifications.requestPermissionsAsync();
-    return status === 'granted';
+    const notifications = getNotifications();
+    if (!notifications) return false;
+    try {
+      const { status: existingStatus } = await notifications.getPermissionsAsync();
+      if (existingStatus === 'granted') return true;
+      const { status } = await notifications.requestPermissionsAsync();
+      return status === 'granted';
+    } catch (error) {
+      console.warn('[Notifications] Permission request unavailable:', error);
+      return false;
+    }
   }
 
   async hasPermission(): Promise<boolean> {
-    const { status } = await ExpoNotifications.getPermissionsAsync();
-    return status === 'granted';
+    const notifications = getNotifications();
+    if (!notifications) return false;
+    try {
+      const { status } = await notifications.getPermissionsAsync();
+      return status === 'granted';
+    } catch {
+      return false;
+    }
   }
 
-  /**
-   * Returns the Expo push token, or null when unavailable.
-   *
-   * - Returns null on Android Expo Go: remote push requires FCM/EAS infra
-   *   that Expo Go doesn't provide since SDK 53. Local scheduling still works.
-   * - Returns null on simulators/emulators (Device.isDevice is false).
-   * - Returns null when permission hasn't been granted.
-   * - All errors are caught — push-token failure is non-fatal.
-   */
   async getPushToken(): Promise<string | null> {
-    if (!Device.isDevice) return null;
-    if (!(await this.hasPermission())) return null;
-
-    // Android Expo Go doesn't support FCM-based push tokens since SDK 53.
-    // Skip silently so the rest of the app keeps working.
-    if (Platform.OS === 'android' && isExpoGo) {
-      if (__DEV__) {
-        console.log(
-          '[Notifications] Skipping push token on Android Expo Go — ' +
-            'use a development build for remote push support.',
-        );
-      }
-      return null;
-    }
-
+    if (!Device.isDevice || !(await this.hasPermission())) return null;
+    const notifications = getNotifications();
+    if (!notifications || (Platform.OS === 'android' && isExpoGo)) return null;
     try {
-      // Pass projectId explicitly when available so the call works outside
-      // an EAS build too. Falls back to app config auto-detection when absent.
       const projectId =
         (Constants.expoConfig?.extra?.eas?.projectId as string | undefined) ||
         undefined;
-
-      const token = await ExpoNotifications.getExpoPushTokenAsync(
+      const token = await notifications.getExpoPushTokenAsync(
         projectId ? { projectId } : undefined,
       );
       return token.data;
-    } catch (err) {
-      // Non-fatal: local scheduling works without a push token.
-      console.warn('[Notifications] Push token unavailable (non-fatal):', err);
+    } catch (error) {
+      console.warn('[Notifications] Push token unavailable (non-fatal):', error);
       return null;
     }
   }
 
   async scheduleDecisionReminder(purchase: Purchase): Promise<string | null> {
-    if (!purchase.waitingUntil) return null;
-    if (!(await this.hasPermission())) return null;
-
+    if (!purchase.waitingUntil || !(await this.hasPermission())) return null;
+    const notifications = getNotifications();
+    if (!notifications) return null;
     const triggerDate = new Date(purchase.waitingUntil);
     if (triggerDate <= new Date()) return null;
-
     try {
-      return await ExpoNotifications.scheduleNotificationAsync({
+      return await notifications.scheduleNotificationAsync({
         content: {
           title: 'Time to decide',
           body: `เมื่อวานคุณอยากซื้อ ${purchase.productName} — วันนี้ยังอยากได้อยู่ไหม?`,
@@ -107,12 +109,12 @@ export class NotificationService {
           sound: false,
         },
         trigger: {
-          type: ExpoNotifications.SchedulableTriggerInputTypes.DATE,
+          type: notifications.SchedulableTriggerInputTypes.DATE,
           date: triggerDate,
         },
       });
-    } catch (err) {
-      console.error('[Notifications] Schedule failed:', err);
+    } catch (error) {
+      console.error('[Notifications] Schedule failed:', error);
       return null;
     }
   }
@@ -122,51 +124,74 @@ export class NotificationService {
     percentUsed: number,
   ): Promise<void> {
     if (!(await this.hasPermission())) return;
-
+    const notifications = getNotifications();
+    if (!notifications) return;
     const titles: Record<string, string> = {
       daily: 'Daily limit warning',
       weekly: 'Weekly limit warning',
       monthly: 'Monthly limit warning',
     };
-
-    await ExpoNotifications.scheduleNotificationAsync({
-      content: {
-        title: titles[limitType],
-        body: `คุณใช้งบ ${Math.round(percentUsed)}% ของ ${limitType} limit แล้ว`,
-        data: { type: 'spending_limit_warning' as NotificationType } as NotificationData,
-        sound: false,
-      },
-      trigger: null,
-    });
+    try {
+      await notifications.scheduleNotificationAsync({
+        content: {
+          title: titles[limitType],
+          body: `คุณใช้งบ ${Math.round(percentUsed)}% ของ ${limitType} limit แล้ว`,
+          data: { type: 'spending_limit_warning' as NotificationType } as NotificationData,
+          sound: false,
+        },
+        trigger: null,
+      });
+    } catch (error) {
+      console.warn('[Notifications] Spending warning failed:', error);
+    }
   }
 
   async cancelPurchaseReminder(notificationId: string): Promise<void> {
+    const notifications = getNotifications();
+    if (!notifications) return;
     try {
-      await ExpoNotifications.cancelScheduledNotificationAsync(notificationId);
-    } catch (err) {
-      console.error('[Notifications] Cancel failed:', err);
+      await notifications.cancelScheduledNotificationAsync(notificationId);
+    } catch (error) {
+      console.error('[Notifications] Cancel failed:', error);
     }
   }
 
   async cancelAllReminders(): Promise<void> {
-    await ExpoNotifications.cancelAllScheduledNotificationsAsync();
+    const notifications = getNotifications();
+    if (!notifications) return;
+    try {
+      await notifications.cancelAllScheduledNotificationsAsync();
+    } catch (error) {
+      console.warn('[Notifications] Cancel all failed:', error);
+    }
   }
 
   addReceivedListener(
-    callback: (notification: ExpoNotifications.Notification) => void,
-  ): ExpoNotifications.EventSubscription {
-    return ExpoNotifications.addNotificationReceivedListener(callback);
+    callback: (notification: NotificationsTypes.Notification) => void,
+  ): NotificationsTypes.EventSubscription | null {
+    const notifications = getNotifications();
+    return notifications
+      ? notifications.addNotificationReceivedListener(callback)
+      : null;
   }
 
   addResponseListener(
-    callback: (response: ExpoNotifications.NotificationResponse) => void,
-  ): ExpoNotifications.EventSubscription {
-    return ExpoNotifications.addNotificationResponseReceivedListener(callback);
+    callback: (response: NotificationsTypes.NotificationResponse) => void,
+  ): NotificationsTypes.EventSubscription | null {
+    const notifications = getNotifications();
+    return notifications
+      ? notifications.addNotificationResponseReceivedListener(callback)
+      : null;
   }
 
   async setBadgeCount(count: number): Promise<void> {
-    if (Platform.OS === 'ios') {
-      await ExpoNotifications.setBadgeCountAsync(count);
+    if (Platform.OS !== 'ios') return;
+    const notifications = getNotifications();
+    if (!notifications) return;
+    try {
+      await notifications.setBadgeCountAsync(count);
+    } catch (error) {
+      console.warn('[Notifications] Badge update failed:', error);
     }
   }
 
@@ -176,28 +201,31 @@ export class NotificationService {
 
   async setupAndroidChannels(): Promise<void> {
     if (Platform.OS !== 'android') return;
-
-    await ExpoNotifications.setNotificationChannelAsync('decisions', {
-      name: 'Decision Reminders',
-      importance: ExpoNotifications.AndroidImportance.DEFAULT,
-      sound: null,
-      vibrationPattern: [0, 250],
-      lightColor: '#1B3557',
-    });
-
-    await ExpoNotifications.setNotificationChannelAsync('limits', {
-      name: 'Spending Limits',
-      importance: ExpoNotifications.AndroidImportance.HIGH,
-      sound: null,
-      vibrationPattern: [0, 500],
-      lightColor: '#C98A2A',
-    });
-
-    await ExpoNotifications.setNotificationChannelAsync('squad', {
-      name: 'Squad Activity',
-      importance: ExpoNotifications.AndroidImportance.DEFAULT,
-      sound: null,
-    });
+    const notifications = getNotifications();
+    if (!notifications) return;
+    try {
+      await notifications.setNotificationChannelAsync('decisions', {
+        name: 'Decision Reminders',
+        importance: notifications.AndroidImportance.DEFAULT,
+        sound: null,
+        vibrationPattern: [0, 250],
+        lightColor: '#1B3557',
+      });
+      await notifications.setNotificationChannelAsync('limits', {
+        name: 'Spending Limits',
+        importance: notifications.AndroidImportance.HIGH,
+        sound: null,
+        vibrationPattern: [0, 500],
+        lightColor: '#C98A2A',
+      });
+      await notifications.setNotificationChannelAsync('squad', {
+        name: 'Squad Activity',
+        importance: notifications.AndroidImportance.DEFAULT,
+        sound: null,
+      });
+    } catch (error) {
+      console.warn('[Notifications] Android channel setup failed:', error);
+    }
   }
 }
 
