@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { ClockIcon, ShieldIcon, FlameIcon, CheckIcon } from '@/components/icons/RmwIcons';
-import { PLATFORM_META } from '@/features/intercept/InterceptService';
+import { PLATFORM_META } from '@/features/intercept/intercept.utils';
 import { spacing } from '@/theme/tokens';
 import { formatCurrency, formatCountdown, formatCategoryName, truncate } from '@/utils/formatting';
 import type { Purchase, ShoppingPlatform } from '@/types';
