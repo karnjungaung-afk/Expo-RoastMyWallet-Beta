@@ -56,7 +56,21 @@ export async function analyzePurchase(
     });
 
     if (error) {
-      console.error('[AIService] Edge function error:', error);
+      // FunctionsHttpError carries the actual HTTP Response in context.
+      // Log its status/body so 404 (not deployed), 401 (auth), and 503 (provider)
+      // can be distinguished from the client without exposing request secrets.
+      const response = (error as { context?: Response }).context;
+      let responseBody: unknown = null;
+      if (response) {
+        try { responseBody = await response.clone().json(); }
+        catch { responseBody = await response.clone().text().catch(() => null); }
+      }
+      console.error('[AIService] Edge function error:', {
+        name: error.name,
+        message: error.message,
+        status: response?.status ?? null,
+        responseBody,
+      });
       return { data: fallbackAnalysis(needScore, purchase.reason), error: null };
     }
 
