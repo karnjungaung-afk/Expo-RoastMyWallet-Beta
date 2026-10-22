@@ -45,10 +45,9 @@ export function AddPurchaseSheet({ onClose, prefillUrl }: Props) {
   const [form, setForm]   = useState<FormData>({ ...INITIAL, url: prefillUrl ?? '' });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
-  const { addPurchase, addingState, error: purchaseError } = usePurchaseStore(useShallow(state => ({
+  const { addPurchase, addingState } = usePurchaseStore(useShallow(state => ({
     addPurchase: state.addPurchase,
     addingState: state.addingState,
-    error: state.error,
   })));
   const { isPro } = useSubscriptionStore();
   const isLoading = addingState === 'loading';
@@ -110,7 +109,7 @@ export function AddPurchaseSheet({ onClose, prefillUrl }: Props) {
       } else {
         Alert.alert(
           'บันทึกรายการไม่สำเร็จ',
-          purchaseError || 'ไม่สามารถบันทึกรายการได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',
+          usePurchaseStore.getState().error || 'ไม่สามารถบันทึกรายการได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',
         );
       }
     } catch {
