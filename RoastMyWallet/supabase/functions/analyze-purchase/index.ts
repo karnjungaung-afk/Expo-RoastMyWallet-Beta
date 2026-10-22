@@ -128,7 +128,7 @@ serve(async (req) => {
     // ── 6. Call AI with timeout ────────────────────────────────────────────
     // Gemini key is stored only in Supabase Edge Function secrets.
     const aiKey = Deno.env.get('GEMINI_API_KEY') ?? '';
-    const aiModel = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.6-flash';
+    const aiModel = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.8-flash';
 
     if (!aiKey) {
       console.error('[analyze-purchase] Missing GEMINI_API_KEY secret');
@@ -157,7 +157,7 @@ serve(async (req) => {
               parts: [{ text: prompt }],
             }],
             generationConfig: {
-              maxOutputTokens: 512,
+              maxOutputTokens: 1024,
               responseMimeType: 'application/json',
               temperature: 0.7,
             },
@@ -187,6 +187,13 @@ serve(async (req) => {
     const rawText: string = (aiData?.candidates?.[0]?.content?.parts ?? [])
       .map((part: { text?: string }) => part?.text ?? '')
       .join('');
+
+    if (!rawText.trim()) {
+      console.error('[analyze-purchase] Gemini returned no text:', {
+        finishReason: aiData?.candidates?.[0]?.finishReason ?? null,
+        promptFeedback: aiData?.promptFeedback?.blockReason ?? null,
+      });
+    }
 
     // ── 7. Parse and validate AI response ─────────────────────────────────
     const analysis = parseAIResponse(rawText, needScore, isProVerified);
@@ -300,7 +307,8 @@ function parseAIResponse(raw: string, needScore: number, isPro: boolean): Record
       patternNote:     isPro && typeof parsed.patternNote === 'string' ? parsed.patternNote.slice(0, 200) : null,
       confidenceNote:  null,
     };
-  } catch {
+  } catch (err) {
+    console.error('[analyze-purchase] Could not parse Gemini JSON response:', err);
     const risk = needScore < 40 ? 'high' : needScore < 70 ? 'medium' : 'low';
     return {
       roast: 'ระบบ AI กำลังประมวลผล กรุณารอสักครู่',
