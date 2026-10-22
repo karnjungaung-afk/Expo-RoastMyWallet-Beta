@@ -1,0 +1,4 @@
+project_id = "roastmywallet"
+
+[functions.analyze-purchase]
+verify_jwt = true
