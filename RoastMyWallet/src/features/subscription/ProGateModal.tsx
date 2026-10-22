@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { X, Zap, Check } from 'lucide-react-native';
+import { FlameIcon, CheckIcon } from '@/components/icons/RmwIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
@@ -71,7 +71,7 @@ export function ProGateModal({
             accessibilityLabel="Close"
             style={[styles.closeBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
-            <X size={16} color={colors.textMuted} />
+            <Text style={{ color: colors.textMuted, fontSize: 16, fontWeight: '600' }}>✕</Text>
           </TouchableOpacity>
         </View>
 
@@ -82,7 +82,7 @@ export function ProGateModal({
           {/* Hero */}
           <View style={styles.hero}>
             <View style={[styles.iconRing, { backgroundColor: colors.primarySubtle, borderColor: colors.primary }]}>
-              <Zap size={28} color={colors.primary} />
+              <FlameIcon size={28} color={colors.primary} />
             </View>
             <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>
               {featureTitle}
@@ -100,7 +100,7 @@ export function ProGateModal({
             <View style={styles.benefitsList}>
               {PRO_BENEFITS.map((benefit, i) => (
                 <View key={i} style={styles.benefitRow}>
-                  <Check size={14} color={colors.success} strokeWidth={2.5} />
+                  <CheckIcon size={14} color={colors.success} />
                   <Text style={[styles.benefitText, { color: colors.textSecondary }]}>
                     {benefit}
                   </Text>

@@ -16,7 +16,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
-import { Home, Clock, BarChart2, Users, User, Zap } from 'lucide-react-native';
+import { HomeIcon, ClockIcon, ChartIcon, SquadIcon, UserIcon, FlameIcon } from '@/components/icons/RmwIcons';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
@@ -34,11 +34,11 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Home', path: '/(tabs)', Icon: Home },
-  { label: 'Pause List', path: '/(tabs)/waiting', Icon: Clock, badgeKey: 'waiting' },
-  { label: 'Insights', path: '/(tabs)/insights', Icon: BarChart2 },
-  { label: 'Squad', path: '/(tabs)/squad', Icon: Users },
-  { label: 'Profile', path: '/(tabs)/profile', Icon: User },
+  { label: 'หน้าหลัก', path: '/(tabs)', Icon: HomeIcon },
+  { label: 'รอซื้อ', path: '/(tabs)/waiting', Icon: ClockIcon, badgeKey: 'waiting' },
+  { label: 'วิเคราะห์', path: '/(tabs)/insights', Icon: ChartIcon },
+  { label: 'สควอด', path: '/(tabs)/squad', Icon: SquadIcon },
+  { label: 'โปรไฟล์', path: '/(tabs)/profile', Icon: UserIcon },
 ];
 
 interface WebSidebarLayoutProps {
@@ -179,7 +179,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                   </Text>
                   {isPro() && (
                     <View style={styles.proLine}>
-                      <Zap size={10} color={colors.primary} />
+                      <FlameIcon size={10} color={colors.primary} />
                       <Text style={[styles.proBadgeText, { color: colors.primary }]}>Pro</Text>
                     </View>
                   )}
