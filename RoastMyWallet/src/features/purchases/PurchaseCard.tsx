@@ -15,7 +15,7 @@ const RISK_CONFIG = {
   low:    { color: '#52B57D', label: 'เสี่ยงต่ำ',    icon: (c: string) => <ShieldIcon size={11} color={c} /> },
 };
 
-export function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPress?: () => void }) {
+export const PurchaseCard = React.memo(function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPress?: () => void }) {
   const { colors, isDark } = useTheme();
   const router = useRouter();
 
@@ -110,7 +110,7 @@ export function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPres
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 function TimerBar({ progress, isReady, riskColor }: { progress: number; isReady: boolean; riskColor: string }) {
   const { colors } = useTheme();
