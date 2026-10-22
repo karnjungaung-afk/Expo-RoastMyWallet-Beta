@@ -126,29 +126,46 @@ serve(async (req) => {
     });
 
     // ── 6. Call AI with timeout ────────────────────────────────────────────
-    const aiKey = Deno.env.get('AI_API_KEY') ?? '';
-    const aiModel = Deno.env.get('AI_MODEL') ?? 'claude-haiku-4-5-20251001';
+    // Gemini key is stored only in Supabase Edge Function secrets.
+    // AI_API_KEY is retained as a temporary fallback for easier migration.
+    const aiKey = Deno.env.get('GEMINI_API_KEY') ?? Deno.env.get('AI_API_KEY') ?? '';
+    const aiModel = Deno.env.get('AI_MODEL') ?? 'gemini-3.6-flash';
+
+    if (!aiKey) {
+      console.error('[analyze-purchase] Missing GEMINI_API_KEY secret');
+      return jsonError('AI service is not configured', 503);
+    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
     let aiResponse: Response;
     try {
-      aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': aiKey,
-          'anthropic-version': '2023-06-01',
+      aiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(aiModel)}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': aiKey,
+          },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: SYSTEM_PROMPT }],
+            },
+            contents: [{
+              role: 'user',
+              parts: [{ text: prompt }],
+            }],
+            generationConfig: {
+              maxOutputTokens: 512,
+              responseMimeType: 'application/json',
+              temperature: 0.7,
+            },
+          }),
+          signal: controller.signal,
         },
-        body: JSON.stringify({
-          model: aiModel,
-          max_tokens: 512,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-        signal: controller.signal,
-      });
+      );
     } catch (fetchErr) {
       if ((fetchErr as Error).name === 'AbortError') {
         return jsonError('AI service timed out. Core score is still valid.', 503);
@@ -159,10 +176,8 @@ serve(async (req) => {
     }
 
     if (!aiResponse.ok) {
-      // Log provider status and a bounded error body for diagnosis.
-      // Anthropic's error body does not contain the request API key.
       const providerErrorBody = await aiResponse.text().catch(() => '');
-      console.error('[analyze-purchase] AI provider error:', {
+      console.error('[analyze-purchase] Gemini provider error:', {
         status: aiResponse.status,
         body: providerErrorBody.slice(0, 1000),
       });
@@ -170,7 +185,9 @@ serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
-    const rawText: string = aiData?.content?.[0]?.text ?? '';
+    const rawText: string = (aiData?.candidates?.[0]?.content?.parts ?? [])
+      .map((part: { text?: string }) => part?.text ?? '')
+      .join('');
 
     // ── 7. Parse and validate AI response ─────────────────────────────────
     const analysis = parseAIResponse(rawText, needScore, isProVerified);
@@ -180,7 +197,7 @@ serve(async (req) => {
       user_id: user.id,
       purchase_id: null,
       request_type: isProVerified ? 'pro_analysis' : 'free_analysis',
-      tokens_used: (aiData?.usage?.input_tokens ?? 0) + (aiData?.usage?.output_tokens ?? 0),
+      tokens_used: (aiData?.usageMetadata?.promptTokenCount ?? 0) + (aiData?.usageMetadata?.candidatesTokenCount ?? 0),
     }).then(() => {}).catch(console.error);
 
     return new Response(JSON.stringify(analysis), {
