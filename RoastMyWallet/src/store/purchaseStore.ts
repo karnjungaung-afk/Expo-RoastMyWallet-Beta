@@ -77,12 +77,19 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Calculate need score
+      // Normalize reason at the store boundary. Older screens or stale app bundles
+      // may send a label/legacy value that violates purchases_reason_check.
+      const reason = normalizePurchaseReason(input.reason);
+      if (reason !== input.reason) {
+        console.warn('[PurchaseStore] Normalized unsupported purchase reason:', input.reason);
+      }
+
+      // Calculate need score using the canonical database enum.
       let scoring;
       if (input.questionnaire) {
-        scoring = calculateNeedScore(input.reason, input.questionnaire);
+        scoring = calculateNeedScore(reason, input.questionnaire);
       } else {
-        scoring = calculateQuickScore(input.reason);
+        scoring = calculateQuickScore(reason);
       }
 
       const waitingHours = input.waitingHours ||
@@ -96,6 +103,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         id: optimisticId,
         userId: user.id,
         ...input,
+        reason,
         needScore: scoring.score,
         impulseRisk: scoring.risk,
         aiRoast: null,
@@ -124,7 +132,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         image_url: input.imageUrl,
         platform: input.platform,
         category: input.category,
-        reason: input.reason,
+        reason,
         notes: input.notes,
         questionnaire: (input.questionnaire as unknown) as Record<string, unknown> | null,
         need_score: scoring.score,
@@ -290,6 +298,32 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 }));
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+const VALID_PURCHASE_REASONS = new Set([
+  'need', 'want', 'sale', 'influencer', 'fomo', 'bored', 'replacement', 'other',
+]);
+
+function normalizePurchaseReason(value: unknown): Purchase['reason'] {
+  if (typeof value !== 'string') return 'other';
+  const normalized = value.trim().toLowerCase();
+  if (VALID_PURCHASE_REASONS.has(normalized)) return normalized as Purchase['reason'];
+
+  // Map common legacy/UI labels to the stable database values.
+  const aliases: Record<string, Purchase['reason']> = {
+    'genuine need': 'need',
+    'need it': 'need',
+    'i want it': 'want',
+    'on sale': 'sale',
+    'discount': 'sale',
+    'influencer / review': 'influencer',
+    'review': 'influencer',
+    'fear of missing out': 'fomo',
+    'boredom': 'bored',
+    'replacement / broken': 'replacement',
+    'other reason': 'other',
+  };
+  return aliases[normalized] ?? 'other';
+}
 
 async function analyzeInBackground(purchase: Purchase, isPro: boolean) {
   try {
