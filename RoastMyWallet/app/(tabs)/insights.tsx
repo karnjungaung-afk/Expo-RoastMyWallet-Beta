@@ -19,7 +19,7 @@ const CHART_H = 140;
 export default function InsightsScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const { purchases } = usePurchaseStore();
+  const purchases = usePurchaseStore(state => state.purchases);
   const profile = useAuthStore(selectProfile);
   const currency = profile?.currency ?? 'THB';
 
