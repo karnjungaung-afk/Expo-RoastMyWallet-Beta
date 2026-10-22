@@ -13,7 +13,7 @@ interface PurchaseState {
   error: string | null;
 
   // Actions
-  loadPurchases: () => Promise<void>;
+  loadPurchases: (force?: boolean) => Promise<void>;
   addPurchase: (input: CreatePurchaseInput, isPro: boolean) => Promise<Purchase | null>;
   updatePurchaseStatus: (id: string, status: PurchaseStatus) => Promise<void>;
   deletePurchase: (id: string) => Promise<void>;
@@ -32,7 +32,12 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   addingState: 'idle',
   error: null,
 
-  loadPurchases: async () => {
+  loadPurchases: async (force = false) => {
+    // Avoid repeating the same initial fetch whenever the user changes tabs.
+    // Pull-to-refresh passes force=true to explicitly request fresh data.
+    const currentState = get().loadingState;
+    if (!force && (currentState === 'success' || currentState === 'loading')) return;
+
     // Keep purchases created while this network request is in flight. Otherwise,
     // a slower stale fetch can overwrite a newly saved/optimistic item.
     const requestStartedAt = Date.now();
