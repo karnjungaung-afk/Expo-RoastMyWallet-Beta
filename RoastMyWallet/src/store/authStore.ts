@@ -151,15 +151,41 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   updateProfile: async (updates) => {
     const user = get().user;
-    if (!user) return;
+    if (!user) throw new Error('กรุณาเข้าสู่ระบบอีกครั้ง');
+
+    // App profile uses camelCase; Supabase columns use snake_case.
+    const columnMap: Record<string, string> = {
+      userId: 'user_id',
+      displayName: 'display_name',
+      currency: 'currency',
+      language: 'language',
+      timezone: 'timezone',
+      monthlyBudget: 'monthly_budget',
+      weeklyBudget: 'weekly_budget',
+      dailyBudget: 'daily_budget',
+      theme: 'theme',
+      aiEnabled: 'ai_enabled',
+      aiPersonality: 'ai_personality',
+      defaultWaitingHours: 'default_waiting_hours',
+      notificationsEnabled: 'notifications_enabled',
+      squadEnabled: 'squad_enabled',
+    };
+    const dbUpdates = Object.fromEntries(
+      Object.entries(updates).map(([key, value]) => [columnMap[key] ?? key, value])
+    );
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
       .from('profiles')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({ ...dbUpdates, updated_at: new Date().toISOString() })
       .eq('user_id', user.id);
-    if (!error) {
-      set(state => ({ profile: state.profile ? { ...state.profile, ...updates } : null }));
+
+    if (error) {
+      console.error('[AuthStore] Update profile failed:', error);
+      throw new Error(error.message ?? 'บันทึกโปรไฟล์ไม่สำเร็จ');
     }
+
+    set(state => ({ profile: state.profile ? { ...state.profile, ...updates } : null }));
   },
 }));
 
