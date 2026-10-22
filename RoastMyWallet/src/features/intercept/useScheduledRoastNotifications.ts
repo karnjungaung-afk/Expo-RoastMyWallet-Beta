@@ -1,26 +1,16 @@
 /**
- * useScheduledRoastNotifications
+ * Schedules daily roast reminders when notifications are supported.
  *
- * Schedules time-based "roast" push notifications to fire during
- * the user's typical peak shopping hours (evening by default).
- *
- * Unlike share-intent interception, these notifications work even when
- * the user is browsing in a browser or another app.
- *
- * Default schedule:
- *   - 20:00 daily — "กำลังจะช้อปปิ้งอยู่ไหม? 🔥"
- *   - One randomised afternoon nudge (13:00–14:00)
- *
- * The user can customise or disable this from Settings.
- * Scheduling is idempotent: calling multiple times cancels old ones first.
+ * Android Expo Go does not support expo-notifications in this SDK. Avoid
+ * importing the native package in that environment so app startup can proceed.
  */
-
 import { useEffect } from 'react';
-import * as ExpoNotifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 
-const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const isExpoGo =
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const notificationsUnavailable = Platform.OS === 'android' && isExpoGo;
 
 const EVENING_NOTIFICATION_ID_KEY = 'rmw_evening_roast';
 const AFTERNOON_NOTIFICATION_ID_KEY = 'rmw_afternoon_roast';
@@ -42,60 +32,83 @@ function getRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-async function scheduleRoastNotifications() {
-  // Remote notifications aren't supported on Android Expo Go
-  if (Platform.OS === 'android' && isExpoGo) return;
+type NotificationsModule = typeof import('expo-notifications');
+let notificationsModule: NotificationsModule | null | undefined;
 
-  const { status } = await ExpoNotifications.getPermissionsAsync();
-  if (status !== 'granted') return;
+function getNotifications(): NotificationsModule | null {
+  if (notificationsUnavailable) return null;
+  if (notificationsModule !== undefined) return notificationsModule;
 
-  // Cancel existing roast notifications first
-  const scheduled = await ExpoNotifications.getAllScheduledNotificationsAsync();
-  for (const n of scheduled) {
-    const tag = (n.content.data as Record<string, unknown>)?.tag;
-    if (tag === EVENING_NOTIFICATION_ID_KEY || tag === AFTERNOON_NOTIFICATION_ID_KEY) {
-      await ExpoNotifications.cancelScheduledNotificationAsync(n.identifier);
-    }
+  try {
+    notificationsModule = require('expo-notifications') as NotificationsModule;
+  } catch (error) {
+    console.warn('[RoastNotifications] Native notifications unavailable:', error);
+    notificationsModule = null;
   }
 
-  // Evening roast — every day at 20:00
-  await ExpoNotifications.scheduleNotificationAsync({
-    content: {
-      title: '🔥 RoastMyWallet',
-      body: getRandom(EVENING_ROASTS),
-      data: { tag: EVENING_NOTIFICATION_ID_KEY, type: 'roast_reminder' },
-      sound: false,
-    },
-    trigger: {
-      type: ExpoNotifications.SchedulableTriggerInputTypes.CALENDAR,
-      repeats: true,
-      hour: 20,
-      minute: 0,
-    },
-  });
+  return notificationsModule;
+}
 
-  // Afternoon roast — every day at 13:15
-  await ExpoNotifications.scheduleNotificationAsync({
-    content: {
-      title: '⏸ หยุดแค่นาทีเดียว',
-      body: getRandom(AFTERNOON_ROASTS),
-      data: { tag: AFTERNOON_NOTIFICATION_ID_KEY, type: 'roast_reminder' },
-      sound: false,
-    },
-    trigger: {
-      type: ExpoNotifications.SchedulableTriggerInputTypes.CALENDAR,
-      repeats: true,
-      hour: 13,
-      minute: 15,
-    },
-  });
+async function scheduleRoastNotifications() {
+  const notifications = getNotifications();
+  if (!notifications) return;
+
+  try {
+    const { status } = await notifications.getPermissionsAsync();
+    if (status !== 'granted') return;
+
+    // Cancel existing roast notifications first.
+    const scheduled = await notifications.getAllScheduledNotificationsAsync();
+    for (const notification of scheduled) {
+      const tag = (notification.content.data as Record<string, unknown>)?.tag;
+      if (
+        tag === EVENING_NOTIFICATION_ID_KEY ||
+        tag === AFTERNOON_NOTIFICATION_ID_KEY
+      ) {
+        await notifications.cancelScheduledNotificationAsync(notification.identifier);
+      }
+    }
+
+    // Evening roast — every day at 20:00.
+    await notifications.scheduleNotificationAsync({
+      content: {
+        title: '🔥 RoastMyWallet',
+        body: getRandom(EVENING_ROASTS),
+        data: { tag: EVENING_NOTIFICATION_ID_KEY, type: 'roast_reminder' },
+        sound: false,
+      },
+      trigger: {
+        type: notifications.SchedulableTriggerInputTypes.CALENDAR,
+        repeats: true,
+        hour: 20,
+        minute: 0,
+      },
+    });
+
+    // Afternoon roast — every day at 13:15.
+    await notifications.scheduleNotificationAsync({
+      content: {
+        title: '⏸ หยุดแค่นาทีเดียว',
+        body: getRandom(AFTERNOON_ROASTS),
+        data: { tag: AFTERNOON_NOTIFICATION_ID_KEY, type: 'roast_reminder' },
+        sound: false,
+      },
+      trigger: {
+        type: notifications.SchedulableTriggerInputTypes.CALENDAR,
+        repeats: true,
+        hour: 13,
+        minute: 15,
+      },
+    });
+  } catch (error) {
+    console.warn('[RoastNotifications] Scheduling failed (non-fatal):', error);
+  }
 }
 
 export function useScheduledRoastNotifications(enabled: boolean) {
   useEffect(() => {
-    if (!enabled) return;
-    scheduleRoastNotifications().catch(err =>
-      console.warn('[RoastNotifications] Schedule failed (non-fatal):', err),
-    );
+    if (!enabled || notificationsUnavailable) return;
+
+    void scheduleRoastNotifications();
   }, [enabled]);
 }
