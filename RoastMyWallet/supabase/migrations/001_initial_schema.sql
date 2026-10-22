@@ -135,6 +135,19 @@ create index if not exists squads_invite_code_idx  on public.squads(invite_code)
 
 alter table public.squads enable row level security;
 
+-- ── Squad Members ─────────────────────────────────────────────────────────────
+
+create table if not exists public.squad_members (
+  squad_id            uuid not null references public.squads(id) on delete cascade,
+  user_id             uuid not null references auth.users(id) on delete cascade,
+  role                text not null default 'member' check (role in ('owner','member')),
+  can_roast           boolean not null default true,
+  can_view_purchases  boolean not null default false,
+  joined_at           timestamptz not null default now(),
+  primary key (squad_id, user_id)
+);
+
+
 -- Only squad members can see the squad
 create policy "squads: members can select"
   on public.squads for select
@@ -160,17 +173,6 @@ create policy "squads: owner can delete"
   on public.squads for delete
   using (auth.uid() = owner_id);
 
--- ── Squad Members ─────────────────────────────────────────────────────────────
-
-create table if not exists public.squad_members (
-  squad_id            uuid not null references public.squads(id) on delete cascade,
-  user_id             uuid not null references auth.users(id) on delete cascade,
-  role                text not null default 'member' check (role in ('owner','member')),
-  can_roast           boolean not null default true,
-  can_view_purchases  boolean not null default false,
-  joined_at           timestamptz not null default now(),
-  primary key (squad_id, user_id)
-);
 
 create index if not exists squad_members_user_idx on public.squad_members(user_id);
 
