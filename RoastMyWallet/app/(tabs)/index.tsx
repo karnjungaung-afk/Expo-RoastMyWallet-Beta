@@ -51,7 +51,7 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadPurchases();
+    await loadPurchases(true);
     setRefreshing(false);
   }, []);
 
