@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore, selectWaitingPurchases } from '@/store/purchaseStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore, selectProfile } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { PurchaseCard } from '@/features/purchases/PurchaseCard';
@@ -29,7 +30,7 @@ export default function HomeScreen() {
 
   const profile = useAuthStore(selectProfile);
   const { purchases, loadPurchases, loadingState, getThisMonthAvoided, getThisMonthAvoidedCount } = usePurchaseStore();
-  const waitingPurchases = usePurchaseStore(selectWaitingPurchases);
+  const waitingPurchases = usePurchaseStore(useShallow(selectWaitingPurchases));
   const { isPro } = useSubscriptionStore();
 
   useEffect(() => {
