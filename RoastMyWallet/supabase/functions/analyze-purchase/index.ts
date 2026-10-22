@@ -159,7 +159,13 @@ serve(async (req) => {
     }
 
     if (!aiResponse.ok) {
-      console.error('[analyze-purchase] AI provider error:', aiResponse.status);
+      // Log provider status and a bounded error body for diagnosis.
+      // Anthropic's error body does not contain the request API key.
+      const providerErrorBody = await aiResponse.text().catch(() => '');
+      console.error('[analyze-purchase] AI provider error:', {
+        status: aiResponse.status,
+        body: providerErrorBody.slice(0, 1000),
+      });
       return jsonError('AI service temporarily unavailable', 503);
     }
 
