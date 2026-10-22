@@ -33,7 +33,7 @@ export default function WaitingScreen() {
   })));
 
   useEffect(() => { loadPurchases(); }, []);
-  const onRefresh = async () => { setRefreshing(true); await loadPurchases(); setRefreshing(false); };
+  const onRefresh = async () => { setRefreshing(true); await loadPurchases(true); setRefreshing(false); };
 
   const filtered = useMemo(() => {
     switch (filter) {
