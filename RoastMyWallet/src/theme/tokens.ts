@@ -118,8 +118,8 @@ export interface ThemeColors {
 // ─── LIGHT COLORS ─────────────────────────────────────────────────────────────
 
 export const lightColors: ThemeColors = {
-  background: '#F2F0EB',
-  backgroundSubtle: '#EBE9E3',
+  background: '#F7F3ED',
+  backgroundSubtle: '#EFE9DF',
   surface: '#FFFFFF',
   surfaceRaised: '#FAFAF8',
   surfaceOverlay: 'rgba(242,240,235,0.95)',
@@ -159,7 +159,7 @@ export const lightColors: ThemeColors = {
   tabActive: '#1B3557',
   tabInactive: '#A8A59E',
   tabBar: '#FFFFFF',
-  skeleton: '#E8E5DF',
+  skeleton: '#EDE8E0',
   shimmer: '#F0EDE7',
   scrim: 'rgba(24,25,28,0.5)',
   inputBackground: '#F5F3EE',
