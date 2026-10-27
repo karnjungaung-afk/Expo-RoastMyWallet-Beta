@@ -6,11 +6,15 @@
  */
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import Constants from 'expo-constants';
 
+// Compare the documented runtime string directly. This avoids relying on enum
+// exports that can differ between Expo Constants versions.
+const executionEnvironment = String(Constants.executionEnvironment ?? '').toLowerCase();
+const appOwnership = String(Constants.appOwnership ?? '').toLowerCase();
 const isExpoGo =
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
-  Constants.appOwnership === 'expo';
+  executionEnvironment === 'storeclient' ||
+  appOwnership === 'expo';
 const notificationsUnavailable = Platform.OS === 'android' && isExpoGo;
 
 const EVENING_NOTIFICATION_ID_KEY = 'rmw_evening_roast';
