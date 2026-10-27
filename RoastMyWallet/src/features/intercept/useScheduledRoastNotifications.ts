@@ -9,7 +9,8 @@ import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 
 const isExpoGo =
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
+  Constants.appOwnership === 'expo';
 const notificationsUnavailable = Platform.OS === 'android' && isExpoGo;
 
 const EVENING_NOTIFICATION_ID_KEY = 'rmw_evening_roast';

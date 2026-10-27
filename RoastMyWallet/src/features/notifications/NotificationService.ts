@@ -7,7 +7,8 @@ import type { NotificationType, NotificationData, Purchase } from '@/types';
 // Expo Go on Android may not contain the native notification module required by
 // this SDK version. Avoid loading expo-notifications at module startup there.
 const isExpoGo =
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
+  Constants.appOwnership === 'expo';
 const notificationsUnavailable =
   Platform.OS === 'android' && isExpoGo;
 
