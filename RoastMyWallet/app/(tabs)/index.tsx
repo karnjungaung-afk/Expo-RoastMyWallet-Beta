@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import Svg, { Ellipse, Rect, Path, Circle } from 'react-native-svg';
 import { useTheme } from '@/hooks/useTheme';
+import { useShallow } from 'zustand/react/shallow';
 import { usePurchaseStore, selectWaitingPurchases } from '@/store/purchaseStore';
 import { useAuthStore, selectProfile } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
@@ -30,7 +31,7 @@ export default function HomeScreen() {
 
   const profile  = useAuthStore(selectProfile);
   const { purchases, loadPurchases, loadingState, getThisMonthAvoided, getThisMonthAvoidedCount } = usePurchaseStore();
-  const waiting  = usePurchaseStore(selectWaitingPurchases);
+  const waiting  = usePurchaseStore(useShallow(selectWaitingPurchases));
   const { isPro } = useSubscriptionStore();
 
   useEffect(() => { if (interceptUrl) { setPrefillUrl(interceptUrl); setShowAddSheet(true); } }, [interceptUrl]);
