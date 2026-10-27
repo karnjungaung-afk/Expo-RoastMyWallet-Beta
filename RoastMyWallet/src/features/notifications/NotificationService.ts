@@ -1,14 +1,15 @@
 import type * as NotificationsTypes from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import Constants from 'expo-constants';
+import { isRunningInExpoGo } from 'expo';
 import { Platform } from 'react-native';
 import type { NotificationType, NotificationData, Purchase } from '@/types';
 
 // Expo Go on Android may not contain the native notification module required by
 // this SDK version. Avoid loading expo-notifications at module startup there.
-const isExpoGo =
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
-  Constants.appOwnership === 'expo';
+// Use Expo's own runtime detector. The Constants execution environment can also
+// represent development clients and has not reliably identified Expo Go here.
+const isExpoGo = isRunningInExpoGo();
 const notificationsUnavailable =
   Platform.OS === 'android' && isExpoGo;
 
