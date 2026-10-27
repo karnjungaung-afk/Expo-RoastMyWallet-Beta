@@ -6,11 +6,9 @@
  */
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { isRunningInExpoGo } from 'expo';
 
-const isExpoGo =
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
-  Constants.appOwnership === 'expo';
+const isExpoGo = isRunningInExpoGo();
 const notificationsUnavailable = Platform.OS === 'android' && isExpoGo;
 
 const EVENING_NOTIFICATION_ID_KEY = 'rmw_evening_roast';
