@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, Animated,
+  type TextInputProps,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,8 +25,8 @@ export default function RegisterScreen() {
   const [errors, setErrors] = useState<{ displayName?: string; email?: string; password?: string }>({});
   const [focused, setFocused] = useState<string | null>(null);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
-  const emailRef    = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const emailRef    = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const passwordRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const shakeAnim   = useRef(new Animated.Value(0)).current;
 
   const shake = () => Animated.sequence([
@@ -138,8 +139,16 @@ export default function RegisterScreen() {
   );
 }
 
-interface DFIProps { label: string; value: string; error?: string; isFocused: boolean; onFocus: () => void; onBlur: () => void; [k: string]: any; }
-const DarkFloatInput = React.forwardRef<TextInput, DFIProps>(({ label, value, error, isFocused, onFocus, onBlur, ...rest }, ref) => {
+interface DFIProps extends Omit<TextInputProps, 'value' | 'onFocus' | 'onBlur' | 'onChangeText'> {
+  label: string;
+  value: string;
+  error?: string;
+  isFocused: boolean;
+  onFocus: () => void;
+  onBlur: () => void;
+  onChangeText: (text: string) => void;
+}
+const DarkFloatInput = React.forwardRef<React.ComponentRef<typeof TextInput>, DFIProps>(({ label, value, error, isFocused, onFocus, onBlur, ...rest }, ref) => {
   const active = isFocused || value.length > 0;
   const labelY = useRef(new Animated.Value(active ? -22 : 0)).current;
   const labelScale = useRef(new Animated.Value(active ? 0.78 : 1)).current;

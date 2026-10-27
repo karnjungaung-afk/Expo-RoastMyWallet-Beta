@@ -58,7 +58,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
   const profile = useAuthStore(selectProfile);
 
   useEffect(() => {
-    const sub = Dimensions.addEventListener('change', ({ window }) => {
+    const sub = Dimensions.addEventListener('change', ({ window }: { window: { width: number } }) => {
       setWindowWidth(window.width);
     });
     return () => sub.remove();

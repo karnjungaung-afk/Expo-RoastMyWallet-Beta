@@ -12,7 +12,7 @@ const SIDEBAR_BREAKPOINT = 768;
 function useWindowWidth() {
   const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 375);
   useEffect(() => {
-    const sub = Dimensions.addEventListener('change', ({ window }) => setWidth(window.width));
+    const sub = Dimensions.addEventListener('change', ({ window }: { window: { width: number } }) => setWidth(window.width));
     return () => sub.remove();
   }, []);
   return width;

@@ -16,7 +16,7 @@ interface InputProps extends TextInputProps {
   containerStyle?: ViewStyle;
 }
 
-export const Input = forwardRef<TextInput, InputProps>(
+export const Input = forwardRef<React.ComponentRef<typeof TextInput>, InputProps>(
   ({ label, hint, error, required, leftIcon, rightElement, containerStyle, style, ...props }, ref) => {
     const { colors } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
