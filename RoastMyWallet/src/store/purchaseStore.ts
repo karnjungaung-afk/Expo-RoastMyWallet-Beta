@@ -55,7 +55,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
       if (error) throw error;
 
-      const purchases = (data ?? []).map(mapSupabasePurchase);
+      const purchases: Purchase[] = ((data ?? []) as unknown[]).map(mapSupabasePurchase);
       const fetchedIds = new Set(purchases.map(p => p.id));
       const locallyCreatedDuringRequest = get().purchases.filter(p =>
         !fetchedIds.has(p.id) &&
