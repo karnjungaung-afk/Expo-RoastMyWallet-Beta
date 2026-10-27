@@ -1,14 +1,18 @@
 import type * as NotificationsTypes from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import type { NotificationType, NotificationData, Purchase } from '@/types';
 
 // Expo Go on Android may not contain the native notification module required by
 // this SDK version. Avoid loading expo-notifications at module startup there.
+// Compare the documented runtime string directly. This avoids relying on enum
+// exports that can differ between Expo Constants versions.
+const executionEnvironment = String(Constants.executionEnvironment ?? '').toLowerCase();
+const appOwnership = String(Constants.appOwnership ?? '').toLowerCase();
 const isExpoGo =
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
-  Constants.appOwnership === 'expo';
+  executionEnvironment === 'storeclient' ||
+  appOwnership === 'expo';
 const notificationsUnavailable =
   Platform.OS === 'android' && isExpoGo;
 
@@ -19,24 +23,23 @@ function getNotifications(): NotificationsModule | null {
   if (notificationsUnavailable) return null;
   if (notificationsModule !== undefined) return notificationsModule;
   try {
-    // Lazy-load so an unavailable native module cannot crash app startup.
+    // Do not load expo-notifications at all in Expo Go on Android: this SDK's
+    // package entry imports a native topic module that Expo Go may not include.
     notificationsModule = require('expo-notifications') as NotificationsModule;
+    notificationsModule.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: true,
+      }),
+    });
   } catch (error) {
     console.warn('[Notifications] Native notifications unavailable:', error);
     notificationsModule = null;
   }
   return notificationsModule;
 }
-
-const initialNotifications = getNotifications();
-initialNotifications?.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: true,
-  }),
-});
 
 export class NotificationService {
   private static instance: NotificationService;
