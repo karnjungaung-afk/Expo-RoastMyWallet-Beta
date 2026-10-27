@@ -1,0 +1,47 @@
+name: One-time SDK 58 validation
+
+on:
+  push:
+    branches:
+      - ci/validate-sdk58-once
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out validation branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: RoastMyWallet/package-lock.json
+
+      - name: Clean install
+        working-directory: RoastMyWallet
+        run: npm ci --no-audit --no-fund
+
+      - name: Run Expo Doctor
+        id: doctor
+        continue-on-error: true
+        working-directory: RoastMyWallet
+        run: npx expo-doctor
+
+      - name: Remove this temporary validation workflow
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/validate-sdk58-once.yml
+          git commit -m "chore: remove temporary SDK validation workflow"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
