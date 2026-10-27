@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, Animated,
+  type TextInputProps,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +23,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
   const shake = () => {
@@ -157,12 +158,16 @@ export default function LoginScreen() {
 }
 
 // ── Float-label Input ─────────────────────────────────────────────────────────
-interface FloatInputProps {
-  label: string; value: string; error?: string;
-  isFocused: boolean; onFocus: () => void; onBlur: () => void;
-  [key: string]: any;
+interface FloatInputProps extends Omit<TextInputProps, 'value' | 'onFocus' | 'onBlur' | 'onChangeText'> {
+  label: string;
+  value: string;
+  error?: string;
+  isFocused: boolean;
+  onFocus: () => void;
+  onBlur: () => void;
+  onChangeText: (text: string) => void;
 }
-const FloatInput = React.forwardRef<TextInput, FloatInputProps>(
+const FloatInput = React.forwardRef<React.ComponentRef<typeof TextInput>, FloatInputProps>(
   ({ label, value, error, isFocused, onFocus, onBlur, ...rest }, ref) => {
     const hasValue = value.length > 0;
     const active = isFocused || hasValue;
