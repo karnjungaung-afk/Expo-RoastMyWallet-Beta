@@ -62,4 +62,4 @@ This PR adds payment-verification backend scaffolding. It does NOT enable live b
 - Website checkout backend exists, but the website purchase UI still needs to call it and refresh the database entitlement.
 - RevenueCat client SDK integration and provider sandbox/live testing have not been performed.
 - Webhook event ordering, retries, refunds and subscription grace periods require verification before production.
-- This PR has not run app typecheck/build or real provider sandbox tests. Install SDK dependencies with `npx expo install react-native-purchases expo-dev-client`, then run `npm run typecheck` and create an EAS development build before testing. No live payment is claimed or enabled by these changes.
+- This PR has not run app typecheck/build or real provider sandbox tests. Before building, run `npx expo install react-native-purchases expo-dev-client` in the RoastMyWallet directory to align SDK versions with Expo and regenerate `package-lock.json`, then run `npm run typecheck` and create an EAS development build. Do not use `npm ci` until the lockfile is regenerated and committed. No live payment is claimed or enabled by these changes.
