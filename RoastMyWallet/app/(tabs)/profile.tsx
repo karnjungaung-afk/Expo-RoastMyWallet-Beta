@@ -77,7 +77,8 @@ export default function ProfileScreen() {
     { text: 'ยกเลิก', style: 'cancel' },
   ]);
 
-  const showProInfo = () => router.push('/paywall');
+  // The route exists at app/paywall.tsx; cast while Expo Router's generated route types refresh in the workspace.
+  const showProInfo = () => router.push('/paywall' as any);
 
   const handleSignOut = () => Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
     { text: 'ยกเลิก', style: 'cancel' },
