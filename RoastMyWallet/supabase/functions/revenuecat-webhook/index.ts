@@ -21,8 +21,11 @@ Deno.serve(async req => {
   const db = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
   const eventId = String(event.id);
   const { error: insertError } = await db.from('payment_webhook_events').insert({ provider: 'revenuecat', event_id: eventId, event_type: String(event.type) });
-  if (insertError?.code === '23505') return json({ received: true, duplicate: true });
-  if (insertError) return json({ error: 'Could not record event' }, 500);
+  if (insertError?.code === '23505') {
+    const { data: prior } = await db.from('payment_webhook_events').select('processed_at').eq('provider', 'revenuecat').eq('event_id', eventId).maybeSingle();
+    if (prior?.processed_at) return json({ received: true, duplicate: true });
+    // Previous delivery failed mid-processing; retry it rather than acknowledging and losing the event.
+  } else if (insertError) return json({ error: 'Could not record event' }, 500);
 
   try {
     const type = String(event.type);
@@ -33,7 +36,7 @@ Deno.serve(async req => {
     const hasPro = entitlementIds.includes('pro');
     const active = hasPro && !explicitlyInactive && (!expiresAt || new Date(expiresAt).getTime() > Date.now());
     const providerSubscriptionId = event.transaction_id ? String(event.transaction_id) : (event.original_transaction_id ? String(event.original_transaction_id) : null);
-    const status = active ? (type === 'INITIAL_PURCHASE' || type === 'RENEWAL' || type === 'UNCANCELLATION' ? 'active' : 'unknown') : 'expired';
+    const status = active ? (type === 'BILLING_ISSUE' ? 'past_due' : 'active') : 'expired';
     const { error } = await db.from('user_subscriptions').upsert({
       user_id: userId, plan: active ? 'pro' : 'free', status, provider: 'revenuecat',
       provider_customer_id: String(event.original_app_user_id ?? userId),
