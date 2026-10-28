@@ -96,7 +96,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 80, alignItems: 'center' }}>
 
         {/* ── Hero header ─────────────────────────────────── */}
         <LinearGradient
@@ -288,19 +288,19 @@ function Divider({ colors }: { colors: any }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8 },
+  hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900 },
   avatarWrap: { position: 'relative', marginBottom: 4 },
   avatar: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
   proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0D1F35' },
   heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
   heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
-  heroStats: { flexDirection: 'row', marginTop: 12, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   heroStatItem: { flex: 1, alignItems: 'center', paddingVertical: 12 },
   heroStatValue: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
   heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
   heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
-  content: { gap: 12, paddingTop: 16 },
+  content: { gap: 12, paddingTop: 16, paddingHorizontal: 16, width: '100%', maxWidth: 720, alignSelf: 'center' },
   proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, padding: 16, borderWidth: 1 },
   proTitle: { fontSize: 15, fontWeight: '700' },
   proSub: { fontSize: 12, marginTop: 2 },
