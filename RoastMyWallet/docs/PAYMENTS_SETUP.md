@@ -58,7 +58,7 @@ This PR adds payment-verification backend scaffolding. It does NOT enable live b
 
 ## Important limitations before launch
 
-- The current app still instantiates MockSubscriptionService. That mock can return Pro without a real transaction; it must be removed from production wiring before merging/releasing this payment work.
+- The app subscription store has been changed to read server-owned entitlement state and fail closed; purchase intentionally returns an error until the native RevenueCat SDK is configured. No mock Pro grant remains in the active store.
 - Website checkout backend exists, but the website purchase UI still needs to call it and refresh the database entitlement.
 - RevenueCat client SDK integration and provider sandbox/live testing have not been performed.
 - Webhook event ordering, retries, refunds and subscription grace periods require verification before production.
