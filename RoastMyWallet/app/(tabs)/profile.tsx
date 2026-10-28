@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Platform, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -28,6 +28,9 @@ export default function ProfileScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState(profile?.displayName ?? '');
   const [saving, setSaving] = useState(false);
+  const [currencyVisible, setCurrencyVisible] = useState(false);
+  const [signOutVisible, setSignOutVisible] = useState(false);
+  const [notice, setNotice] = useState<{ title: string; message: string } | null>(null);
 
   useEffect(() => {
     setNotifs(profile?.notificationsEnabled ?? true);
@@ -48,51 +51,55 @@ export default function ProfileScreen() {
       await updateProfile({ [key]: value });
     } catch (error) {
       if (key === 'notificationsEnabled') setNotifs(previous); else setAiOn(previous);
-      Alert.alert('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+      setNotice({ title: 'บันทึกไม่สำเร็จ', message: error instanceof Error ? error.message : 'กรุณาลองใหม่' });
     }
   };
 
   const saveDisplayName = async () => {
     const name = editName.trim();
-    if (!name) { Alert.alert('ชื่อไม่ถูกต้อง', 'กรุณากรอกชื่อที่ต้องการใช้'); return; }
+    if (!name) { setNotice({ title: 'ชื่อไม่ถูกต้อง', message: 'กรุณากรอกชื่อที่ต้องการใช้' }); return; }
     setSaving(true);
     try {
       await updateProfile({ displayName: name });
       setEditVisible(false);
-      Alert.alert('บันทึกแล้ว', 'อัปเดตชื่อโปรไฟล์เรียบร้อย');
+      setNotice({ title: 'บันทึกแล้ว', message: 'อัปเดตชื่อโปรไฟล์เรียบร้อย' });
     } catch (error) {
-      Alert.alert('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+      setNotice({ title: 'บันทึกไม่สำเร็จ', message: error instanceof Error ? error.message : 'กรุณาลองใหม่' });
     } finally { setSaving(false); }
   };
 
   const saveCurrency = async (nextCurrency: 'THB' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'SGD' | 'MYR') => {
-    try { await updateProfile({ currency: nextCurrency }); }
-    catch (error) { Alert.alert('บันทึกสกุลเงินไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่'); }
+    try {
+      await updateProfile({ currency: nextCurrency });
+      setCurrencyVisible(false);
+    } catch (error) {
+      setNotice({ title: 'บันทึกสกุลเงินไม่สำเร็จ', message: error instanceof Error ? error.message : 'กรุณาลองใหม่' });
+    }
   };
 
-  const chooseCurrency = () => Alert.alert('เลือกสกุลเงิน', 'สกุลเงินที่ใช้แสดงผลในแอป', [
-    ...(['THB', 'USD', 'EUR', 'GBP', 'JPY', 'SGD', 'MYR'] as const).map(value => ({
-      text: value === currency ? `✓ ${value}` : value, onPress: () => { void saveCurrency(value); },
-    })),
-    { text: 'ยกเลิก', style: 'cancel' },
-  ]);
+  const chooseCurrency = () => setCurrencyVisible(true);
 
-  const showProInfo = () => Alert.alert(
-    'RoastMyWallet Pro',
-    'ระบบชำระเงินจริงยังไม่ได้เชื่อมต่อ จึงยังไม่สามารถซื้อหรือจัดการสมาชิก Pro จากแอปได้',
-    [{ text: 'เข้าใจแล้ว' }],
-  );
+  const showProInfo = () => setNotice({
+    title: 'RoastMyWallet Pro',
+    message: 'ระบบชำระเงินจริงยังไม่ได้เชื่อมต่อ ปุ่มนี้จึงแสดงข้อมูลแผนเท่านั้น และยังไม่สามารถซื้อหรือจัดการสมาชิก Pro ได้',
+  });
 
-  const handleSignOut = () => Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
-    { text: 'ยกเลิก', style: 'cancel' },
-    { text: 'ออกจากระบบ', style: 'destructive', onPress: async () => { await signOut(); router.replace('/(auth)/login'); } },
-  ]);
+  const handleSignOut = () => setSignOutVisible(true);
 
-  const handleDeleteAccount = () => Alert.alert(
-    'ลบบัญชี',
-    'การลบบัญชีต้องใช้บริการฝั่งเซิร์ฟเวอร์ที่ตรวจสอบสิทธิ์อย่างปลอดภัย ซึ่งยังไม่ได้ติดตั้ง จึงยังไม่ลบบัญชีของคุณ',
-    [{ text: 'ตกลง' }],
-  );
+  const confirmSignOut = async () => {
+    setSignOutVisible(false);
+    try {
+      await signOut();
+      router.replace('/(auth)/login');
+    } catch (error) {
+      setNotice({ title: 'ออกจากระบบไม่สำเร็จ', message: error instanceof Error ? error.message : 'กรุณาลองใหม่' });
+    }
+  };
+
+  const handleDeleteAccount = () => setNotice({
+    title: 'ลบบัญชี',
+    message: 'การลบบัญชีต้องมี Edge Function ฝั่งเซิร์ฟเวอร์ที่ตรวจสอบสิทธิ์และลบข้อมูลอย่างปลอดภัย ซึ่งโปรเจกต์ยังไม่มี จึงยังไม่ดำเนินการลบ เพื่อป้องกันข้อมูลสูญหายหรือการลบที่ไม่ปลอดภัย',
+  });
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -197,6 +204,55 @@ export default function ProfileScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      <Modal visible={currencyVisible} transparent animationType="fade" onRequestClose={() => setCurrencyVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>เลือกสกุลเงิน</Text>
+            <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>เลือกสกุลเงินที่ใช้แสดงผลในแอป</Text>
+            {(['THB', 'USD', 'EUR', 'GBP', 'JPY', 'SGD', 'MYR'] as const).map(value => (
+              <TouchableOpacity key={value} style={[styles.currencyOption, { borderColor: colors.border, backgroundColor: value === currency ? colors.primary + '15' : 'transparent' }]} onPress={() => { void saveCurrency(value); }} accessibilityRole="button">
+                <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{value}</Text>
+                <Text style={{ color: value === currency ? colors.primary : colors.textMuted }}>{value === currency ? '✓ เลือกอยู่' : 'เลือก'}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.modalCancel} onPress={() => setCurrencyVisible(false)}>
+              <Text style={{ color: colors.textSecondary }}>ยกเลิก</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={signOutVisible} transparent animationType="fade" onRequestClose={() => setSignOutVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>ออกจากระบบ</Text>
+            <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>ต้องการออกจากระบบบัญชีนี้หรือไม่?</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setSignOutVisible(false)}>
+                <Text style={{ color: colors.textSecondary }}>ยกเลิก</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalSave, { backgroundColor: '#D46060' }]} onPress={() => { void confirmSignOut(); }}>
+                <Text style={styles.modalSaveText}>ออกจากระบบ</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={notice !== null} transparent animationType="fade" onRequestClose={() => setNotice(null)}>
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{notice?.title ?? ''}</Text>
+            <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>{notice?.message ?? ''}</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalSave} onPress={() => setNotice(null)}>
+                <Text style={styles.modalSaveText}>ตกลง</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={editVisible} transparent animationType="fade" onRequestClose={() => setEditVisible(false)}>
         <View style={styles.modalBackdrop}>
@@ -330,6 +386,7 @@ const styles = StyleSheet.create({
   modalLabel: { fontSize: 13 },
   modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
+  currencyOption: { minHeight: 44, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
   modalSave: { backgroundColor: '#2F6293', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
   modalSaveText: { color: '#fff', fontWeight: '700' },
