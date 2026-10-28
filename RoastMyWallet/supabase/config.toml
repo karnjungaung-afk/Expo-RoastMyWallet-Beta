@@ -2,3 +2,14 @@ project_id = "roastmywallet"
 
 [functions.analyze-purchase]
 verify_jwt = true
+
+# Public provider callbacks verify the provider's own signature/authorization.
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.revenuecat-webhook]
+verify_jwt = false
+
+# Checkout creation requires a valid Supabase user JWT.
+[functions.create-web-checkout]
+verify_jwt = true
