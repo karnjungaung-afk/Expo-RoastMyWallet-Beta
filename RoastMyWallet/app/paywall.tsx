@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,9 @@ export default function PaywallScreen() {
   const refresh = useSubscriptionStore(state => state.refresh);
   const [busyPlan, setBusyPlan] = useState<SubscriptionPackage['id'] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  // Refresh on entry, including when Stripe redirects back after Checkout.
+  useEffect(() => { void refresh(); }, [refresh]);
 
   const plans = useMemo(() => {
     if (Platform.OS === 'android') {
