@@ -32,9 +32,9 @@ Deno.serve(async req => {
     const entitlementIds = Array.isArray(event.entitlement_ids) ? event.entitlement_ids : [];
     const expirationMs = event.expiration_at_ms ? Number(event.expiration_at_ms) : null;
     const expiresAt = expirationMs && Number.isFinite(expirationMs) ? new Date(expirationMs).toISOString() : null;
-    const explicitlyInactive = ['EXPIRATION', 'REFUND', 'REFUND_REVERSED', 'SUBSCRIPTION_PAUSED'].includes(type);
+    const explicitlyInactive = ['EXPIRATION', 'REFUND', 'SUBSCRIPTION_PAUSED'].includes(type);
     const hasPro = entitlementIds.includes('pro');
-    const active = hasPro && !explicitlyInactive && (!expiresAt || new Date(expiresAt).getTime() > Date.now());
+    const active = hasPro && !explicitlyInactive && !!expiresAt && new Date(expiresAt).getTime() > Date.now();
     const providerSubscriptionId = event.transaction_id ? String(event.transaction_id) : (event.original_transaction_id ? String(event.original_transaction_id) : null);
     const status = active ? (type === 'BILLING_ISSUE' ? 'past_due' : 'active') : 'expired';
     const { error } = await db.from('user_subscriptions').upsert({
