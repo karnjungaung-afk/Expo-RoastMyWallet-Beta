@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { User, UserProfile } from '@/types';
 import { supabase } from '@/services/supabase';
+import { logOutRevenueCat } from '@/features/subscription/RevenueCatService';
 
 // ─── PRIVATE HELPERS (module-scoped, not part of store state) ─────────────────
 
@@ -135,6 +136,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     set({ isLoading: true });
     try {
+      try { await logOutRevenueCat(); } catch (error) { console.warn('[AuthStore] RevenueCat logout failed:', error); }
       await supabase.auth.signOut();
       set({ user: null, profile: null });
     } finally {

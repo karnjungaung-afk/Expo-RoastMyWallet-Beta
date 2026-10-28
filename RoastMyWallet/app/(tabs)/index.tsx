@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, RefreshControl,
   StyleSheet, Modal, SafeAreaView, Dimensions,
@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import Svg, { Ellipse, Rect, Path, Circle } from 'react-native-svg';
 import { useTheme } from '@/hooks/useTheme';
-import { usePurchaseStore, selectWaitingPurchases } from '@/store/purchaseStore';
+import { usePurchaseStore } from '@/store/purchaseStore';
 import { useAuthStore, selectProfile } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { PurchaseCard } from '@/features/purchases/PurchaseCard';
@@ -30,7 +30,9 @@ export default function HomeScreen() {
 
   const profile  = useAuthStore(selectProfile);
   const { purchases, loadPurchases, loadingState, getThisMonthAvoided, getThisMonthAvoidedCount } = usePurchaseStore();
-  const waiting  = usePurchaseStore(selectWaitingPurchases);
+  // Keep selector output referentially stable: filter() inside a Zustand selector
+  // creates a new array on every snapshot and can trigger an infinite render loop.
+  const waiting = useMemo(() => purchases.filter(p => p.status === 'waiting'), [purchases]);
   const { isPro } = useSubscriptionStore();
 
   useEffect(() => { if (interceptUrl) { setPrefillUrl(interceptUrl); setShowAddSheet(true); } }, [interceptUrl]);
@@ -246,9 +248,9 @@ function SkeletonList({ isDark, colors }: any) {
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   root:{ flex:1 },
-  scroll:{ gap:16 },
-  px:{ paddingHorizontal:16 },
-  hero:{ paddingHorizontal:22, paddingBottom:16, position:'relative', overflow:'hidden' },
+  scroll:{ gap:20, alignItems:'center' },
+  px:{ paddingHorizontal:16, width:'100%', maxWidth:1040, alignSelf:'center' },
+  hero:{ paddingHorizontal:22, paddingBottom:18, position:'relative', overflow:'hidden', width:'100%', maxWidth:1040, alignSelf:'center' },
   blobWrap:{ position:'absolute', right:-10, top:0 },
   topBar:{ flexDirection:'row', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 },
   greetText:{ fontSize:13, fontWeight:'500', marginBottom:2 },
@@ -256,7 +258,7 @@ const styles = StyleSheet.create({
   bellBtn:{ width:42, height:42, borderRadius:14, borderWidth:1, alignItems:'center', justifyContent:'center' },
   bigStats:{ flexDirection:'row', alignItems:'center' },
   bigStatItem:{ flex:1, alignItems:'center' },
-  bigNum:{ fontSize:46, fontWeight:'900', letterSpacing:-2, lineHeight:50 },
+  bigNum:{ fontSize:W < 360 ? 34 : W < 600 ? 40 : 46, fontWeight:'900', letterSpacing:-1.5, lineHeight:50 },
   bigLabel:{ fontSize:11, fontWeight:'600', color:'#9A7A5A', marginTop:2 },
   statDiv:{ width:1, height:42, marginHorizontal:4 },
   savingsCard:{ borderRadius:22, padding:20, flexDirection:'row', alignItems:'center', shadowOffset:{width:0,height:4}, shadowOpacity:0.09, shadowRadius:18, elevation:5 },
@@ -274,7 +276,7 @@ const styles = StyleSheet.create({
   platformLabel:{ fontSize:11, fontWeight:'600', textAlign:'center' },
   addTile:{ width:54, height:54, borderRadius:27, alignItems:'center', justifyContent:'center', borderWidth:1.5, borderStyle:'dashed' },
   statCardScroll:{ gap:10, paddingBottom:4, paddingRight:16 },
-  statCard:{ borderRadius:18, padding:16, width:W*0.42, gap:7, minHeight:110 },
+  statCard:{ borderRadius:18, padding:16, width:Math.min(Math.max(W*0.42, 156), 230), gap:7, minHeight:110 },
   statCardIcon:{ width:34, height:34, borderRadius:10, backgroundColor:'rgba(255,255,255,0.15)', alignItems:'center', justifyContent:'center' },
   statCardVal:{ fontSize:20, fontWeight:'800', color:'#fff', letterSpacing:-0.5 },
   statCardLbl:{ fontSize:12, color:'rgba(255,255,255,0.7)', fontWeight:'600' },
@@ -287,7 +289,7 @@ const styles = StyleSheet.create({
   emptySub:{ fontSize:13, textAlign:'center', lineHeight:20 },
   emptyBtn:{ flexDirection:'row', alignItems:'center', gap:7, paddingHorizontal:20, paddingVertical:11, borderRadius:100, marginTop:4 },
   emptyBtnText:{ color:'#fff', fontSize:14, fontWeight:'700' },
-  fab:{ position:'absolute', alignSelf:'center' },
+  fab:{ position:'absolute', alignSelf:'center', maxWidth:'94%' },
   fabGrad:{ borderRadius:100, shadowColor:'#1B3557', shadowOffset:{width:0,height:8}, shadowOpacity:0.3, shadowRadius:20, elevation:12 },
   fabBtn:{ flexDirection:'row', alignItems:'center', gap:8, paddingHorizontal:28, paddingVertical:15 },
   fabText:{ color:'#fff', fontSize:15, fontWeight:'700' },
