@@ -27,6 +27,7 @@ interface AuthState {
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -142,6 +143,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  updatePassword: async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  },
   resetPassword: async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: 'roastmywallet://reset-password',
