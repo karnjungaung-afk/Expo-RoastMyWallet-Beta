@@ -40,7 +40,7 @@ This PR adds payment-verification backend scaffolding. It does NOT enable live b
 1. In Play Console, create and activate monthly/yearly subscription products and base plans, set pricing, add license testers, and finish merchant profile requirements.
 2. In RevenueCat, create the Android app for package com.roastmywallet.app, connect the Google Play service account, import both products, create entitlement exactly named pro, and configure offering packages pro_monthly and pro_yearly.
 3. Configure RevenueCat webhook to the endpoint above and set the Authorization header to the exact value of REVENUECAT_WEBHOOK_AUTHORIZATION.
-4. RevenueCat App User ID must be the authenticated Supabase user UUID. Client must call logIn(user.id), show actual store packages, use the native purchase flow, restore purchases, then refresh entitlement from the server. The native RevenueCat SDK integration is intentionally not included in this backend scaffold; do not expose a working Android purchase button until it is implemented.
+4. RevenueCat App User ID must be the authenticated Supabase user UUID. Client must call logIn(user.id), show actual store packages, use the native purchase flow, restore purchases, then refresh entitlement from the server. The native RevenueCat SDK is wired into the app store and paywall in this branch. Real purchases still require the correct public Android API key, RevenueCat offering/package IDs, Google Play products, and an EAS development build.
 5. Use an EAS development/preview build and Play internal testing track. Expo Go cannot test native Google Play Billing SDK flows.
 
 ## 4. Required acceptance tests
@@ -58,8 +58,8 @@ This PR adds payment-verification backend scaffolding. It does NOT enable live b
 
 ## Important limitations before launch
 
-- The app subscription store has been changed to read server-owned entitlement state and fail closed; purchase intentionally returns an error until the native RevenueCat SDK is configured. No mock Pro grant remains in the active store.
+- The app subscription store now calls the RevenueCat SDK on Android and reads entitlement state from the server-owned subscription row. It never grants Pro from the client purchase callback. No mock Pro grant remains in the active store.
 - Website checkout backend exists, but the website purchase UI still needs to call it and refresh the database entitlement.
 - RevenueCat client SDK integration and provider sandbox/live testing have not been performed.
 - Webhook event ordering, retries, refunds and subscription grace periods require verification before production.
-- This PR has not run app typecheck/build or real provider sandbox tests. No live payment is claimed or enabled by these changes.
+- This PR has not run app typecheck/build or real provider sandbox tests. Install SDK dependencies with `npx expo install react-native-purchases expo-dev-client`, then run `npm run typecheck` and create an EAS development build before testing. No live payment is claimed or enabled by these changes.
