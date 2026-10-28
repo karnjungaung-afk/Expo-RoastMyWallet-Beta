@@ -9,7 +9,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useAuthStore, selectIsAuthenticated, selectIsInitialized } from '@/store/authStore';
+import { useAuthStore, selectIsAuthenticated, selectIsInitialized, selectUser } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useNotificationStore } from '@/store/notificationStore';
@@ -60,6 +60,7 @@ function useProtectedRoute() {
 export default function RootLayout() {
   const { colors, isDark } = useTheme();
   const { initialize: initAuth, isInitialized } = useAuthStore();
+  const user = useAuthStore(selectUser);
   const { initialize: initSubscription } = useSubscriptionStore();
   const { load: loadSettings } = useSettingsStore();
   const { initialize: initNotifications } = useNotificationStore();
@@ -74,7 +75,6 @@ export default function RootLayout() {
       try {
         await loadSettings();
         await initAuth();
-        await initSubscription();
         initNotifications().catch(err =>
           console.warn('[RootLayout] Notification init failed (non-fatal):', err),
         );
@@ -84,6 +84,15 @@ export default function RootLayout() {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (user?.id) {
+      void initSubscription();
+    } else {
+      void useSubscriptionStore.getState().refresh();
+    }
+  }, [isInitialized, user?.id]);
 
   if (!isInitialized) {
     return <SplashLoader colors={colors} isDark={isDark} />;
@@ -96,6 +105,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="paywall" options={{ headerShown: false, presentation: "modal" }} />
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen
             name="purchase/[id]"
