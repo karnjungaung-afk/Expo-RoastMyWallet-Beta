@@ -41,6 +41,14 @@ export default function ProfileScreen() {
   const avoidedCount = purchases.filter(p => p.status === 'avoided').length;
   const initials  = (profile?.displayName ?? user?.email ?? 'U').charAt(0).toUpperCase();
 
+  const showMessage = (title: string, message: string) => {
+    if (Platform.OS === 'web') {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
   const saveSetting = async (key: 'notificationsEnabled' | 'aiEnabled', value: boolean) => {
     const previous = key === 'notificationsEnabled' ? notifs : aiOn;
     if (key === 'notificationsEnabled') setNotifs(value); else setAiOn(value);
@@ -48,47 +56,74 @@ export default function ProfileScreen() {
       await updateProfile({ [key]: value });
     } catch (error) {
       if (key === 'notificationsEnabled') setNotifs(previous); else setAiOn(previous);
-      Alert.alert('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+      showMessage('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
     }
   };
 
   const saveDisplayName = async () => {
     const name = editName.trim();
-    if (!name) { Alert.alert('ชื่อไม่ถูกต้อง', 'กรุณากรอกชื่อที่ต้องการใช้'); return; }
+    if (!name) { showMessage('ชื่อไม่ถูกต้อง', 'กรุณากรอกชื่อที่ต้องการใช้'); return; }
     setSaving(true);
     try {
       await updateProfile({ displayName: name });
       setEditVisible(false);
-      Alert.alert('บันทึกแล้ว', 'อัปเดตชื่อโปรไฟล์เรียบร้อย');
+      showMessage('บันทึกแล้ว', 'อัปเดตชื่อโปรไฟล์เรียบร้อย');
     } catch (error) {
-      Alert.alert('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+      showMessage('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
     } finally { setSaving(false); }
   };
 
   const saveCurrency = async (nextCurrency: 'THB' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'SGD' | 'MYR') => {
     try { await updateProfile({ currency: nextCurrency }); }
-    catch (error) { Alert.alert('บันทึกสกุลเงินไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่'); }
+    catch (error) { showMessage('บันทึกสกุลเงินไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่'); }
   };
 
-  const chooseCurrency = () => Alert.alert('เลือกสกุลเงิน', 'สกุลเงินที่ใช้แสดงผลในแอป', [
-    ...(['THB', 'USD', 'EUR', 'GBP', 'JPY', 'SGD', 'MYR'] as const).map(value => ({
-      text: value === currency ? `✓ ${value}` : value, onPress: () => { void saveCurrency(value); },
-    })),
-    { text: 'ยกเลิก', style: 'cancel' },
-  ]);
+  const chooseCurrency = () => {
+    const options = ['THB', 'USD', 'EUR', 'GBP', 'JPY', 'SGD', 'MYR'] as const;
+    if (Platform.OS === 'web') {
+      const selected = window.prompt(`เลือกสกุลเงิน (ปัจจุบัน: ${currency})\nตัวเลือก: ${options.join(', ')}`, currency);
+      if (!selected) return;
+      const next = selected.trim().toUpperCase();
+      if ((options as readonly string[]).includes(next)) {
+        void saveCurrency(next as typeof options[number]);
+      } else {
+        showMessage('สกุลเงินไม่ถูกต้อง', `เลือกได้เฉพาะ: ${options.join(', ')}`);
+      }
+      return;
+    }
+    Alert.alert('เลือกสกุลเงิน', 'สกุลเงินที่ใช้แสดงผลในแอป', [
+      ...options.map(value => ({
+        text: value === currency ? `✓ ${value}` : value, onPress: () => { void saveCurrency(value); },
+      })),
+      { text: 'ยกเลิก', style: 'cancel' },
+    ]);
+  };
 
   // The route exists at app/paywall.tsx; cast while Expo Router's generated route types refresh in the workspace.
   const showProInfo = () => router.push('/paywall' as any);
 
-  const handleSignOut = () => Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
-    { text: 'ยกเลิก', style: 'cancel' },
-    { text: 'ออกจากระบบ', style: 'destructive', onPress: async () => { await signOut(); router.replace('/(auth)/login'); } },
-  ]);
+  const handleSignOut = () => {
+    const confirmSignOut = async () => {
+      try {
+        await signOut();
+        router.replace('/(auth)/login');
+      } catch (error) {
+        showMessage('ออกจากระบบไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+      }
+    };
+    if (Platform.OS === 'web') {
+      if (window.confirm('ยืนยันการออกจากระบบ?')) void confirmSignOut();
+      return;
+    }
+    Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
+      { text: 'ยกเลิก', style: 'cancel' },
+      { text: 'ออกจากระบบ', style: 'destructive', onPress: () => { void confirmSignOut(); } },
+    ]);
+  };
 
-  const handleDeleteAccount = () => Alert.alert(
+  const handleDeleteAccount = () => showMessage(
     'ลบบัญชี',
     'การลบบัญชีต้องใช้บริการฝั่งเซิร์ฟเวอร์ที่ตรวจสอบสิทธิ์อย่างปลอดภัย ซึ่งยังไม่ได้ติดตั้ง จึงยังไม่ลบบัญชีของคุณ',
-    [{ text: 'ตกลง' }],
   );
 
   return (
