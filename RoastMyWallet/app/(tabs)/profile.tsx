@@ -77,11 +77,7 @@ export default function ProfileScreen() {
     { text: 'ยกเลิก', style: 'cancel' },
   ]);
 
-  const showProInfo = () => Alert.alert(
-    'RoastMyWallet Pro',
-    'ระบบชำระเงินจริงยังไม่ได้เชื่อมต่อ จึงยังไม่สามารถซื้อหรือจัดการสมาชิก Pro จากแอปได้',
-    [{ text: 'เข้าใจแล้ว' }],
-  );
+  const showProInfo = () => router.push('/paywall');
 
   const handleSignOut = () => Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
     { text: 'ยกเลิก', style: 'cancel' },
