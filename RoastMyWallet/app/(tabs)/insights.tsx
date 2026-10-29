@@ -1,213 +1,304 @@
 import React, { useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Rect, Path, Circle, Text as SvgText, G, Line, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
+import Svg, { Rect, Line, Text as SvgText, G, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { useAuthStore, selectProfile } from '@/store/authStore';
-import { spacing } from '@/theme/tokens';
-import { FlameIcon, ShieldIcon, ChartIcon, WalletIcon } from '@/components/icons/RmwIcons';
+import { FlameIcon, ChartIcon, WalletIcon } from '@/components/icons/RmwIcons';
 import { formatCurrency, formatPercent, formatCategoryName } from '@/utils/formatting';
 import { calculateAvoidedSpending, calculateImpulseRate } from '@/utils/scoring';
 import type { PurchaseCategory } from '@/types';
 
-const { width: W } = Dimensions.get('window');
-const CHART_W = W - 64;
-const CHART_H = 140;
+const MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 
 export default function InsightsScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const purchases = usePurchaseStore(state => state.purchases);
+  const loadingState = usePurchaseStore(state => state.loadingState);
+  const loadPurchases = usePurchaseStore(state => state.loadPurchases);
   const profile = useAuthStore(selectProfile);
   const currency = profile?.currency ?? 'THB';
+  const wide = windowWidth >= 900;
+  const contentWidth = Math.min(windowWidth - (windowWidth >= 768 ? 64 : 32), 1160);
+  const chartWidth = Math.max(260, Math.min(contentWidth - 40, wide ? 700 : 640));
 
   const stats = useMemo(() => {
-    const decided   = purchases.filter(p => p.status === 'bought' || p.status === 'avoided');
-    const avoided   = purchases.filter(p => p.status === 'avoided' || p.status === 'expired');
-    const bought    = purchases.filter(p => p.status === 'bought');
-    const totalAvo  = calculateAvoidedSpending(purchases);
-    const totalSp   = bought.reduce((s, p) => s + p.price, 0);
-    const impulse   = calculateImpulseRate(purchases);
-
-    const catMap = purchases.reduce((acc, p) => {
+    const decided = purchases.filter(p => p.status === 'bought' || p.status === 'avoided' || p.status === 'expired');
+    const avoided = purchases.filter(p => p.status === 'avoided' || p.status === 'expired');
+    const bought = purchases.filter(p => p.status === 'bought');
+    const totalAvoided = calculateAvoidedSpending(purchases);
+    const totalSpent = bought.reduce((sum, p) => sum + (Number.isFinite(p.price) ? p.price : 0), 0);
+    const impulse = calculateImpulseRate(purchases);
+    const categoryMap = purchases.reduce((acc, p) => {
       acc[p.category] = (acc[p.category] ?? 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    const topCats = Object.entries(catMap).sort(([,a],[,b]) => b-a).slice(0, 4);
-
-    // Monthly avoided (last 6 months)
-    const monthly: Record<string, number> = {};
+    const categories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
     const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      monthly[`${d.getMonth()}/${d.getFullYear()}`] = 0;
-    }
+    const monthly = Array.from({ length: 6 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      return { year: date.getFullYear(), month: date.getMonth(), label: MONTHS[date.getMonth()], value: 0 };
+    });
     avoided.forEach(p => {
       if (!p.createdAt) return;
-      const d = new Date(p.createdAt);
-      const k = `${d.getMonth()}/${d.getFullYear()}`;
-      if (k in monthly) monthly[k] = (monthly[k] ?? 0) + p.price;
+      const date = new Date(p.createdAt);
+      const bucket = monthly.find(m => m.year === date.getFullYear() && m.month === date.getMonth());
+      if (bucket) bucket.value += Number.isFinite(p.price) ? p.price : 0;
     });
-    const monthlyData = Object.entries(monthly).map(([k, v]) => {
-      const [m] = k.split('/');
-      const months = ['ม.ค','ก.พ','มี.ค','เม.ย','พ.ค','มิ.ย','ก.ค','ส.ค','ก.ย','ต.ค','พ.ย','ธ.ค'];
-      return { label: months[parseInt(m)], value: v };
-    });
-
-    return { totalAvo, totalSp, impulse, topCats, decided, avoided, bought, monthlyData };
+    return {
+      totalAvoided, totalSpent, impulse, categories, monthly,
+      decidedCount: decided.length,
+      waitingCount: purchases.filter(p => p.status === 'waiting').length,
+      avoidedCount: avoided.length,
+      boughtCount: bought.length,
+    };
   }, [purchases]);
 
-  const maxBar = Math.max(...stats.monthlyData.map(d => d.value), 1);
+  const maxBar = Math.max(...stats.monthly.map(m => m.value), 1);
+  const cardBg = isDark ? '#141B27' : '#FFFFFF';
+  const border = isDark ? '#263448' : '#E5EAF1';
+  const muted = isDark ? '#94A3B8' : '#64748B';
+  const textPrimary = colors.textPrimary;
+  const showEmpty = purchases.length === 0 && loadingState !== 'loading';
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 80 }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 96 }]}
+        refreshControl={undefined}
       >
-        {/* Header */}
         <LinearGradient
-          colors={isDark ? ['#0D1F35', colors.background] : ['#1B3557', colors.background]}
-          style={[styles.header, { paddingTop: insets.top + 20 }]}
+          colors={isDark ? ['#0B1728', '#101827'] : ['#EAF3FF', '#F5F8FD']}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          style={[styles.header, { paddingTop: insets.top + 22 }]}
         >
-          <Text style={styles.headerTitle}>วิเคราะห์การใช้จ่าย</Text>
-          <Text style={styles.headerSub}>ทุกตัวเลขที่คุณบันทึกไว้</Text>
+          <View style={[styles.headerInner, { width: contentWidth }]}>
+            <View style={styles.eyebrow}>
+              <View style={styles.eyebrowDot} />
+              <Text style={[styles.eyebrowText, { color: isDark ? '#91BDF6' : '#2864AE' }]}>YOUR MONEY, MADE CLEAR</Text>
+            </View>
+            <Text style={[styles.headerTitle, { color: isDark ? '#F8FAFC' : '#12233B' }]}>วิเคราะห์การใช้จ่าย</Text>
+            <Text style={[styles.headerSub, { color: isDark ? '#A8B7CA' : '#64748B' }]}>
+              มองเห็นพฤติกรรมการซื้อ และเงินที่คุณเลือกเก็บไว้
+            </Text>
+            <View style={styles.periodPill}>
+              <Text style={styles.periodPillText}>ภาพรวมข้อมูลที่บันทึกไว้</Text>
+            </View>
+          </View>
         </LinearGradient>
 
-        <View style={[styles.content, { paddingHorizontal: 16 }]}>
-          {/* Hero stat */}
-          <LinearGradient colors={['#1B3557', '#2F6293']} style={styles.heroStat} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-            <View style={styles.heroStatInner}>
-              <View>
-                <Text style={styles.heroStatLabel}>ประหยัดได้ทั้งหมด</Text>
-                <Text style={styles.heroStatValue}>{formatCurrency(stats.totalAvo, currency)}</Text>
-                <Text style={styles.heroStatSub}>จาก {stats.avoided.length} รายการที่ไม่ซื้อ</Text>
-              </View>
-              <WalletIcon size={40} color="rgba(255,255,255,0.3)" />
+        <View style={[styles.content, { width: contentWidth }]}>
+          <LinearGradient
+            colors={isDark ? ['#173B64', '#205B91', '#1D4774'] : ['#1457A6', '#2878D4', '#3A8CE7']}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            style={styles.heroCard}
+          >
+            <View style={styles.heroTop}>
+              <View style={styles.heroIcon}><WalletIcon size={21} color="#FFFFFF" /></View>
+              <Text style={styles.heroOverline}>เงินที่คุณเลือกไม่ใช้จ่าย</Text>
             </View>
+            <Text style={styles.heroValue} adjustsFontSizeToFit numberOfLines={1}>{formatCurrency(stats.totalAvoided, currency)}</Text>
+            <Text style={styles.heroCaption}>ยอดรวมรายการที่ไม่ซื้อหรือหมดช่วงรอซื้อ</Text>
+            <View style={styles.heroDivider} />
+            <View style={styles.heroBottom}>
+              <View>
+                <Text style={styles.heroMiniLabel}>รายการที่หลีกเลี่ยง</Text>
+                <Text style={styles.heroMiniValue}>{stats.avoidedCount} รายการ</Text>
+              </View>
+              <View style={styles.heroMiniPill}>
+                <FlameIcon size={14} color="#D8EAFF" />
+                <Text style={styles.heroMiniPillText}>คิดก่อนซื้อ</Text>
+              </View>
+            </View>
+            <View pointerEvents="none" style={styles.heroOrb} />
           </LinearGradient>
 
-          {/* 4-stat grid */}
-          <View style={styles.grid}>
-            {[
-              { label: 'ซื้อไปแล้ว',    value: formatCurrency(stats.totalSp, currency, { compact: true }), icon: <WalletIcon size={16} color="#D46060" />, accent: '#D46060' },
-              { label: 'อัตราหุนหัน',   value: formatPercent(stats.impulse),  icon: <FlameIcon size={16} color="#E8A030" />, accent: '#E8A030' },
-              { label: 'ตัดสินใจแล้ว', value: String(stats.decided.length),   icon: <CheckIcon size={16} color="#52B57D" />, accent: '#52B57D' },
-              { label: 'รอดู',          value: String(purchases.filter(p=>p.status==='waiting').length), icon: <ClockIcon size={16} color="#5A96C3" />, accent: '#5A96C3' },
-            ].map((s, i) => (
-              <View key={i} style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={[styles.statIcon, { backgroundColor: s.accent + '18' }]}>{s.icon}</View>
-                <Text style={[styles.statCardValue, { color: colors.textPrimary }]}>{s.value}</Text>
-                <Text style={[styles.statCardLabel, { color: colors.textMuted }]}>{s.label}</Text>
+          <View style={[styles.statGrid, wide && styles.statGridWide]}>
+            <StatCard label="ซื้อไปแล้ว" value={formatCurrency(stats.totalSpent, currency, { compact: true })} caption={`${stats.boughtCount} รายการ`} accent="#E57B63" icon={<WalletIcon size={17} color="#E57B63" />} bg={cardBg} border={border} muted={muted} text={textPrimary} />
+            <StatCard label="อัตราซื้อหุนหัน" value={formatPercent(stats.impulse)} caption="จากรายการที่ตัดสินใจแล้ว" accent="#E9A23B" icon={<FlameIcon size={17} color="#E9A23B" />} bg={cardBg} border={border} muted={muted} text={textPrimary} />
+            <StatCard label="ตัดสินใจแล้ว" value={String(stats.decidedCount)} caption="ซื้อหรือเลือกไม่ซื้อ" accent="#36A879" icon={<CheckMark color="#36A879" />} bg={cardBg} border={border} muted={muted} text={textPrimary} />
+            <StatCard label="กำลังรอตัดสินใจ" value={String(stats.waitingCount)} caption="รายการใน Waiting List" accent="#4B8FE2" icon={<ClockMark color="#4B8FE2" />} bg={cardBg} border={border} muted={muted} text={textPrimary} />
+          </View>
+
+          <View style={[styles.mainGrid, wide && styles.mainGridWide]}>
+            <View style={[styles.panel, { backgroundColor: cardBg, borderColor: border }, wide && styles.chartPanel]}>
+              <View style={styles.panelHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.panelTitle, { color: textPrimary }]}>เงินที่ประหยัดได้</Text>
+                  <Text style={[styles.panelSubtitle, { color: muted }]}>ย้อนหลัง 6 เดือน · {currency}</Text>
+                </View>
+                <View style={[styles.panelIcon, { backgroundColor: isDark ? '#203650' : '#EAF2FE' }]}>
+                  <ChartIcon size={18} color={isDark ? '#91BDF6' : '#2864AE'} />
+                </View>
               </View>
-            ))}
-          </View>
-
-          {/* Monthly bar chart */}
-          <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>ประหยัดได้รายเดือน</Text>
-            <Svg width={CHART_W} height={CHART_H + 28} style={{ marginTop: 12 }}>
-              <Defs>
-                <SvgGrad id="bar" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor="#5A96C3" stopOpacity="0.9" />
-                  <Stop offset="1" stopColor="#1B3557" stopOpacity="0.4" />
-                </SvgGrad>
-              </Defs>
-              {stats.monthlyData.map((d, i) => {
-                const barH = maxBar > 0 ? (d.value / maxBar) * CHART_H : 4;
-                const x = i * (CHART_W / 6) + 8;
-                const bw = CHART_W / 6 - 16;
-                return (
-                  <G key={i}>
-                    <Rect x={x} y={CHART_H - barH} width={bw} height={Math.max(barH, 4)} rx="5" fill={barH > 4 ? 'url(#bar)' : isDark ? '#252B35' : '#E8E5DF'} />
-                    <SvgText x={x + bw / 2} y={CHART_H + 18} fontSize="9" fill={isDark ? '#50555F' : '#A8A59E'} textAnchor="middle">{d.label}</SvgText>
-                  </G>
-                );
-              })}
-              <Line x1="0" y1={CHART_H} x2={CHART_W} y2={CHART_H} stroke={isDark ? '#252B35' : '#E8E5DF'} strokeWidth="1" />
-            </Svg>
-          </View>
-
-          {/* Top categories */}
-          {stats.topCats.length > 0 && (
-            <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>หมวดหมู่ที่ซื้อบ่อย</Text>
-              <View style={{ gap: 12, marginTop: 12 }}>
-                {stats.topCats.map(([cat, count], i) => {
-                  const pct = count / purchases.length;
+              <Svg width={chartWidth} height={184} style={{ alignSelf: 'center', marginTop: 18 }}>
+                <Defs>
+                  <SvgGrad id="insightBar" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0" stopColor="#4D94E8" stopOpacity="1" />
+                    <Stop offset="1" stopColor="#2864AE" stopOpacity="0.62" />
+                  </SvgGrad>
+                </Defs>
+                {[0, 1, 2, 3].map(i => {
+                  const y = 12 + i * 43;
+                  return <Line key={i} x1="0" y1={y} x2={chartWidth} y2={y} stroke={border} strokeWidth="1" strokeDasharray="4 5" />;
+                })}
+                {stats.monthly.map((item, index) => {
+                  const slot = chartWidth / stats.monthly.length;
+                  const barWidth = Math.min(34, slot * 0.52);
+                  const height = item.value > 0 ? Math.max(5, (item.value / maxBar) * 126) : 3;
+                  const x = index * slot + (slot - barWidth) / 2;
                   return (
-                    <View key={cat} style={{ gap: 5 }}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={[styles.catLabel, { color: colors.textSecondary }]}>
-                          {formatCategoryName(cat as PurchaseCategory)}
-                        </Text>
-                        <Text style={[styles.catCount, { color: colors.textPrimary }]}>{count} รายการ</Text>
-                      </View>
-                      <View style={[styles.barBg, { backgroundColor: colors.skeleton }]}>
-                        <LinearGradient
-                          colors={['#5A96C3', '#1B3557']}
-                          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                          style={[styles.barFill, { width: `${pct * 100}%` }]}
-                        />
-                      </View>
-                    </View>
+                    <G key={`${item.year}-${item.month}`}>
+                      <Rect x={x} y={142 - height} width={barWidth} height={height} rx="6" fill={item.value > 0 ? 'url(#insightBar)' : border} />
+                      <SvgText x={x + barWidth / 2} y={166} fontSize="10" fill={muted} textAnchor="middle">{item.label}</SvgText>
+                    </G>
                   );
                 })}
+                <Line x1="0" y1="143" x2={chartWidth} y2="143" stroke={border} strokeWidth="1" />
+              </Svg>
+              <View style={[styles.chartFooter, { borderTopColor: border }]}>
+                <Text style={[styles.chartFooterLabel, { color: muted }]}>รวม 6 เดือน</Text>
+                <Text style={[styles.chartFooterValue, { color: textPrimary }]}>{formatCurrency(stats.monthly.reduce((sum, m) => sum + m.value, 0), currency)}</Text>
               </View>
             </View>
-          )}
 
-          {/* Empty state */}
-          {purchases.length === 0 && (
-            <View style={[styles.empty, { borderColor: colors.border }]}>
-              <ChartIcon size={40} color={colors.textMuted} />
-              <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>ยังไม่มีข้อมูล</Text>
-              <Text style={[styles.emptySub, { color: colors.textMuted }]}>เพิ่มรายการใน Waiting List เพื่อเริ่มต้นวิเคราะห์</Text>
+            <View style={[styles.panel, { backgroundColor: cardBg, borderColor: border }, wide && styles.categoryPanel]}>
+              <View style={styles.panelHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.panelTitle, { color: textPrimary }]}>หมวดหมู่ที่สนใจ</Text>
+                  <Text style={[styles.panelSubtitle, { color: muted }]}>เรียงตามจำนวนรายการ</Text>
+                </View>
+                <View style={[styles.panelIcon, { backgroundColor: isDark ? '#24382F' : '#E9F8F0' }]}>
+                  <FlameIcon size={18} color="#36A879" />
+                </View>
+              </View>
+              {stats.categories.length > 0 ? (
+                <View style={{ gap: 17, marginTop: 24 }}>
+                  {stats.categories.map(([category, count], index) => {
+                    const percentage = purchases.length ? Math.round((count / purchases.length) * 100) : 0;
+                    const palette = ['#4D94E8', '#36A879', '#E9A23B', '#9473DB', '#E57B63'];
+                    return (
+                      <View key={category} style={{ gap: 8 }}>
+                        <View style={styles.categoryRow}>
+                          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 9 }}>
+                            <View style={[styles.categoryDot, { backgroundColor: palette[index % palette.length] }]} />
+                            <Text style={[styles.categoryName, { color: textPrimary }]} numberOfLines={1}>{formatCategoryName(category as PurchaseCategory)}</Text>
+                          </View>
+                          <Text style={[styles.categoryCount, { color: muted }]}>{count} รายการ</Text>
+                        </View>
+                        <View style={[styles.progressTrack, { backgroundColor: isDark ? '#273244' : '#EEF2F7' }]}>
+                          <View style={[styles.progressFill, { width: `${percentage}%`, backgroundColor: palette[index % palette.length] }]} />
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              ) : (
+                <View style={styles.inlineEmpty}>
+                  <Text style={[styles.inlineEmptyTitle, { color: textPrimary }]}>ยังไม่มีหมวดหมู่</Text>
+                  <Text style={[styles.inlineEmptyText, { color: muted }]}>เมื่อคุณเพิ่มรายการ ระบบจะแสดงหมวดหมู่ที่สนใจตรงนี้</Text>
+                </View>
+              )}
             </View>
-          )}
+          </View>
+
+          {showEmpty ? (
+            <View style={[styles.emptyCard, { backgroundColor: cardBg, borderColor: border }]}>
+              <View style={[styles.emptyIcon, { backgroundColor: isDark ? '#203650' : '#EAF2FE' }]}>
+                <ChartIcon size={26} color={isDark ? '#91BDF6' : '#2864AE'} />
+              </View>
+              <Text style={[styles.emptyTitle, { color: textPrimary }]}>เริ่มเห็นภาพการใช้เงินของคุณ</Text>
+              <Text style={[styles.emptyText, { color: muted }]}>เพิ่มรายการใน Waiting List และบันทึกผลการตัดสินใจ เพื่อให้กราฟและสถิติสะท้อนพฤติกรรมของคุณได้แม่นยำขึ้น</Text>
+            </View>
+          ) : null}
+          {loadingState === 'loading' ? <Text style={[styles.loadingText, { color: muted }]}>กำลังโหลดข้อมูลล่าสุด…</Text> : null}
         </View>
       </ScrollView>
     </View>
   );
 }
 
-// Helper components
-function CheckIcon({ size = 16, color = '#52B57D' }: { size?: number; color?: string }) {
-  return <Svg width={size} height={size} viewBox="0 0 24 24" fill="none"><Path d="M5 12L10 17L19 7" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></Svg>;
+function StatCard({ label, value, caption, accent, icon, bg, border, muted, text }: any) {
+  return (
+    <View style={[styles.statCard, { backgroundColor: bg, borderColor: border }]}>
+      <View style={[styles.statCardIcon, { backgroundColor: accent + '18' }]}>{icon}</View>
+      <Text style={[styles.statValue, { color: text }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+      <Text style={[styles.statLabel, { color: text }]}>{label}</Text>
+      <Text style={[styles.statCaption, { color: muted }]} numberOfLines={2}>{caption}</Text>
+    </View>
+  );
 }
-function ClockIcon({ size = 16, color = '#5A96C3' }: { size?: number; color?: string }) {
-  return <Svg width={size} height={size} viewBox="0 0 24 24" fill="none"><Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.8" /><Path d="M12 7V12L15 14" stroke={color} strokeWidth="1.8" strokeLinecap="round" /></Svg>;
+
+function CheckMark({ color }: { color: string }) {
+  return <Svg width={17} height={17} viewBox="0 0 24 24"><Line x1="4" y1="12" x2="9" y2="17" stroke={color} strokeWidth="2.5" strokeLinecap="round" /><Line x1="9" y1="17" x2="20" y2="6" stroke={color} strokeWidth="2.5" strokeLinecap="round" /></Svg>;
 }
+function ClockMark({ color }: { color: string }) {
+  return <Svg width={17} height={17} viewBox="0 0 24 24" fill="none"><CircleMark /><Line x1="12" y1="7" x2="12" y2="12" stroke={color} strokeWidth="2" strokeLinecap="round" /><Line x1="12" y1="12" x2="16" y2="14" stroke={color} strokeWidth="2" strokeLinecap="round" /></Svg>;
+}
+function CircleMark() { return <Rect x="3" y="3" width="18" height="18" rx="9" stroke="#4B8FE2" strokeWidth="2" fill="none" />; }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  scroll: { gap: 0 },
-  header: { paddingBottom: 20, paddingHorizontal: 20, gap: 4 },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: '#fff', letterSpacing: -0.8 },
-  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.45)' },
-  content: { gap: 12, paddingTop: 16 },
-  heroStat: { borderRadius: 20, padding: 20 },
-  heroStatInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  heroStatLabel: { fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: '600', marginBottom: 4 },
-  heroStatValue: { fontSize: 36, fontWeight: '800', color: '#fff', letterSpacing: -1.5 },
-  heroStatSub: { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  statCard: {
-    width: (W - 46) / 2, borderRadius: 16, padding: 14,
-    borderWidth: 1, gap: 6,
-  },
-  statIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  statCardValue: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
-  statCardLabel: { fontSize: 12 },
-  chartCard: { borderRadius: 20, padding: 16, borderWidth: 1 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
-  catLabel: { fontSize: 13 },
-  catCount: { fontSize: 13, fontWeight: '600' },
-  barBg: { height: 8, borderRadius: 4, overflow: 'hidden' },
-  barFill: { height: 8, borderRadius: 4 },
-  empty: { alignItems: 'center', gap: 10, padding: 40, borderWidth: 1.5, borderRadius: 20, borderStyle: 'dashed' },
-  emptyTitle: { fontSize: 16, fontWeight: '700' },
-  emptySub: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
+  scroll: { alignItems: 'center' },
+  header: { width: '100%', paddingHorizontal: 16, paddingBottom: 30 },
+  headerInner: { alignSelf: 'center', gap: 9 },
+  eyebrow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
+  eyebrowDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#3987E0' },
+  eyebrowText: { fontSize: 10, fontWeight: '800', letterSpacing: 1.4 },
+  headerTitle: { fontSize: 30, fontWeight: '800', letterSpacing: -0.9 },
+  headerSub: { fontSize: 14, lineHeight: 21, maxWidth: 560 },
+  periodPill: { alignSelf: 'flex-start', marginTop: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, backgroundColor: 'rgba(69,137,218,0.14)' },
+  periodPillText: { color: '#4387D8', fontSize: 11, fontWeight: '700' },
+  content: { paddingTop: 22, paddingHorizontal: 0, gap: 16, alignSelf: 'center' },
+  heroCard: { width: '100%', borderRadius: 24, padding: 24, overflow: 'hidden' },
+  heroTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  heroIcon: { width: 40, height: 40, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center' },
+  heroOverline: { color: 'rgba(255,255,255,0.78)', fontSize: 13, fontWeight: '600' },
+  heroValue: { color: '#FFFFFF', fontSize: 36, fontWeight: '800', letterSpacing: -1, marginTop: 14, maxWidth: '100%' },
+  heroCaption: { color: 'rgba(255,255,255,0.68)', fontSize: 12, marginTop: 6 },
+  heroDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.22)', marginVertical: 18 },
+  heroBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  heroMiniLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+  heroMiniValue: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', marginTop: 4 },
+  heroMiniPill: { flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.13)', paddingHorizontal: 12, paddingVertical: 9 },
+  heroMiniPillText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
+  heroOrb: { position: 'absolute', width: 190, height: 190, borderRadius: 95, borderWidth: 30, borderColor: 'rgba(255,255,255,0.045)', right: -68, top: -75 },
+  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  statGridWide: { flexWrap: 'nowrap' },
+  statCard: { flexBasis: '48%', flexGrow: 1, minWidth: 130, borderRadius: 18, padding: 16, borderWidth: 1, gap: 6, minHeight: 146 },
+  statCardIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginBottom: 3 },
+  statValue: { fontSize: 22, fontWeight: '800', letterSpacing: -0.6 },
+  statLabel: { fontSize: 12, fontWeight: '700' },
+  statCaption: { fontSize: 10, lineHeight: 15 },
+  mainGrid: { gap: 16 },
+  mainGridWide: { flexDirection: 'row', alignItems: 'stretch' },
+  panel: { borderRadius: 20, borderWidth: 1, padding: 20, overflow: 'hidden' },
+  chartPanel: { flex: 1.4, minWidth: 0 },
+  categoryPanel: { flex: 1, minWidth: 280 },
+  panelHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  panelTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
+  panelSubtitle: { fontSize: 11, marginTop: 5 },
+  panelIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  chartFooter: { marginTop: 4, paddingTop: 14, borderTopWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
+  chartFooterLabel: { fontSize: 11 },
+  chartFooterValue: { fontSize: 15, fontWeight: '800' },
+  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  categoryDot: { width: 8, height: 8, borderRadius: 4 },
+  categoryName: { fontSize: 12, fontWeight: '600' },
+  categoryCount: { fontSize: 11 },
+  progressTrack: { height: 7, borderRadius: 9, overflow: 'hidden' },
+  progressFill: { height: 7, borderRadius: 9 },
+  inlineEmpty: { paddingVertical: 36, gap: 8 },
+  inlineEmptyTitle: { fontSize: 14, fontWeight: '700' },
+  inlineEmptyText: { fontSize: 12, lineHeight: 19 },
+  emptyCard: { alignItems: 'center', padding: 28, borderRadius: 20, borderWidth: 1, gap: 10 },
+  emptyIcon: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  emptyTitle: { fontSize: 17, fontWeight: '800', textAlign: 'center' },
+  emptyText: { fontSize: 13, lineHeight: 21, textAlign: 'center', maxWidth: 520 },
+  loadingText: { fontSize: 12, textAlign: 'center', paddingVertical: 8 },
 });
