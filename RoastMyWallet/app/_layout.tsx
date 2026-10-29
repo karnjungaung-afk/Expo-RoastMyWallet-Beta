@@ -52,7 +52,7 @@ function useProtectedRoute() {
     } else if (
       isAuthenticated &&
       inAuthGroup &&
-      segments[1] !== 'reset-password'
+      !segments.some(segment => segment === 'reset-password')
     ) {
       // Supabase recovery links create an authenticated session before the
       // user chooses a new password. Keep that route accessible until done.
