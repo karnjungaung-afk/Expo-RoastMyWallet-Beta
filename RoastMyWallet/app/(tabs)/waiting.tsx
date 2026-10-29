@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -24,6 +25,9 @@ const FILTERS: { key: Filter; label: string; icon: React.ReactNode }[] = [
 export default function WaitingScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const params = useLocalSearchParams<{ search?: string }>();
+  const searchTerm = (typeof params.search === 'string' ? params.search : '').trim();
   const [filter, setFilter] = useState<Filter>('all');
   const [refreshing, setRefreshing] = useState(false);
   const { purchases, loadPurchases, loadingState } = usePurchaseStore(useShallow(state => ({
@@ -36,13 +40,31 @@ export default function WaitingScreen() {
   const onRefresh = async () => { setRefreshing(true); await loadPurchases(true); setRefreshing(false); };
 
   const filtered = useMemo(() => {
+    let result: Purchase[];
     switch (filter) {
-      case 'high_risk': return purchases.filter(p => p.impulseRisk === 'high' && p.status === 'waiting');
-      case 'ready':     return purchases.filter(p => p.status === 'waiting' && p.waitingUntil && new Date(p.waitingUntil) <= new Date());
-      case 'decided':   return purchases.filter(p => p.status === 'bought' || p.status === 'avoided' || p.status === 'expired');
-      default:          return purchases;
+      case 'high_risk':
+        result = purchases.filter(p => p.impulseRisk === 'high' && p.status === 'waiting');
+        break;
+      case 'ready':
+        result = purchases.filter(p => p.status === 'waiting' && p.waitingUntil && new Date(p.waitingUntil) <= new Date());
+        break;
+      case 'decided':
+        result = purchases.filter(p => p.status === 'bought' || p.status === 'avoided' || p.status === 'expired');
+        break;
+      default:
+        result = purchases;
     }
-  }, [purchases, filter]);
+
+    if (!searchTerm) return result;
+    const query = searchTerm.toLocaleLowerCase();
+    return result.filter(p => [
+      p.productName,
+      p.platform,
+      p.category,
+      p.reason,
+      p.notes ?? '',
+    ].some(value => String(value).toLocaleLowerCase().includes(query)));
+  }, [purchases, filter, searchTerm]);
 
   const waiting = purchases.filter(p => p.status === 'waiting');
   const ready = purchases.filter(p => p.status === 'waiting' && p.waitingUntil && new Date(p.waitingUntil) <= new Date());
@@ -55,9 +77,9 @@ export default function WaitingScreen() {
         style={[styles.header, { paddingTop: insets.top + 16 }]}
       >
         <View style={styles.headerContent}>
-          <View>
+          <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={styles.headerTitle}>Waiting List</Text>
-            <Text style={styles.headerSub}>รายการที่รอตัดสินใจ</Text>
+            <Text style={styles.headerSub}>{searchTerm ? `ผลการค้นหา “${searchTerm}”` : 'รายการที่รอตัดสินใจ'}</Text>
           </View>
           <View style={styles.headerStats}>
             <StatBubble value={waiting.length} label="รอ" color="#5A96C3" />
@@ -89,6 +111,15 @@ export default function WaitingScreen() {
         </View>
       </LinearGradient>
 
+      {searchTerm ? (
+        <View style={styles.searchNotice}>
+          <Text style={styles.searchNoticeText}>คำค้น: {searchTerm}</Text>
+          <TouchableOpacity onPress={() => router.replace('/(tabs)/waiting' as any)} accessibilityRole="button">
+            <Text style={styles.clearSearchText}>ล้างคำค้น ×</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
       {/* List */}
       <FlatList
         data={filtered}
@@ -100,7 +131,7 @@ export default function WaitingScreen() {
         )}
         contentContainerStyle={[styles.list, filtered.length === 0 && styles.listEmpty, { paddingBottom: insets.bottom + 100 }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-        ListEmptyComponent={<EmptyState filter={filter} colors={colors} />}
+        ListEmptyComponent={<EmptyState filter={filter} colors={colors} searchTerm={searchTerm} />}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={{ height: spacing[3] }} />}
       />
@@ -117,14 +148,16 @@ function StatBubble({ value, label, color }: { value: number; label: string; col
   );
 }
 
-function EmptyState({ filter, colors }: { filter: Filter; colors: any }) {
+function EmptyState({ filter, colors, searchTerm }: { filter: Filter; colors: any; searchTerm: string }) {
   const msgs: Record<Filter, { title: string; sub: string; icon: React.ReactNode }> = {
     all:       { title: 'ยังไม่มีรายการ', sub: 'กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากซื้อ', icon: <ClockIcon size={36} color={colors.primary} /> },
     high_risk: { title: 'ไม่มีรายการความเสี่ยงสูง', sub: 'ดีมาก! คุณไม่มีการซื้อที่เสี่ยงเกินไป', icon: <ShieldIcon size={36} color={colors.success} /> },
     ready:     { title: 'ยังไม่มีรายการที่พร้อมตัดสินใจ', sub: 'รอให้ครบเวลาก่อนนะ', icon: <ClockIcon size={36} color={colors.warning} /> },
     decided:   { title: 'ยังไม่มีประวัติการตัดสินใจ', sub: 'รอให้ Waiting List ครบเวลาก่อน', icon: <CheckIcon size={36} color={colors.success} /> },
   };
-  const m = msgs[filter];
+  const m = searchTerm
+    ? { title: 'ไม่พบรายการที่ตรงกัน', sub: 'ลองใช้คำค้นอื่น หรือล้างคำค้นเพื่อดูรายการทั้งหมด', icon: <ClockIcon size={36} color={colors.primary} /> }
+    : msgs[filter];
   return (
     <View style={[styles.empty, { borderColor: colors.border }]}>
       <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>{m.icon}</View>
@@ -153,7 +186,10 @@ const styles = StyleSheet.create({
   statBubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center', borderWidth: 1 },
   statBubbleValue: { fontSize: 18, fontWeight: '800' },
   statBubbleLabel: { fontSize: 10, fontWeight: '600', marginTop: 1 },
-  filterRow: { flexDirection: 'row', gap: 8 },
+  filterRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  searchNotice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: '#E7F0FC' },
+  searchNoticeText: { color: '#294F7B', fontSize: 12, flex: 1 },
+  clearSearchText: { color: '#1769E0', fontSize: 12, fontWeight: '800' },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
   chipActive: {},
   chipText: { fontSize: 12, fontWeight: '600' },
