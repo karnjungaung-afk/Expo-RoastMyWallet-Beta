@@ -48,7 +48,7 @@ export class RevenueCatSubscriptionService implements ISubscriptionService {
       const customer = await Purchases.getCustomerInfo();
       const entitlement = customer.entitlements.active[ENTITLEMENT_PRO];
       if (entitlement) {
-        return { data: entitlement.willRenew ? 'pro' : 'pro', error: null };
+        return { data: 'pro', error: null };
       }
       return { data: 'free', error: null };
     } catch (error) {
