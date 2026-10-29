@@ -166,6 +166,23 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
         <View style={[styles.sidebarFooter, { borderTopColor: '#254461' }]}>
           {isWide ? (
             <>
+              {!isPro() && (
+                <TouchableOpacity
+                  style={styles.sidebarProCard}
+                  onPress={() => router.push('/paywall' as any)}
+                  accessibilityRole="link"
+                  accessibilityLabel="ดูแผน RoastMyWallet Pro"
+                >
+                  <View style={styles.sidebarProIcon}>
+                    <FlameIcon size={15} color="#FFD27A" />
+                  </View>
+                  <Text style={styles.sidebarProTitle}>RoastMyWallet Pro</Text>
+                  <Text style={styles.sidebarProCopy}>เปิดใช้เครื่องมือวิเคราะห์เพิ่มเติม</Text>
+                  <View style={styles.sidebarProButton}>
+                    <Text style={styles.sidebarProButtonText}>ดูแผนสมาชิก ›</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
               <View style={styles.footerUser}>
                 <View style={[styles.footerAvatar, { backgroundColor: '#1C4D80' }]}>
                   <Text style={[styles.footerAvatarText, { color: '#B9D9FF' }]}>
@@ -345,6 +362,12 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
   },
+  sidebarProCard: { backgroundColor: '#173D62', borderColor: '#2C5276', borderWidth: 1, borderRadius: 14, padding: 12, gap: 7, marginBottom: 12 },
+  sidebarProIcon: { width: 30, height: 30, borderRadius: 9, backgroundColor: 'rgba(255,210,122,0.14)', alignItems: 'center', justifyContent: 'center' },
+  sidebarProTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
+  sidebarProCopy: { color: '#BDD0E3', fontSize: 10, lineHeight: 15 },
+  sidebarProButton: { alignSelf: 'flex-start', backgroundColor: '#2C76D2', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginTop: 2 },
+  sidebarProButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
   sidebarFooter: {
     borderTopWidth: 1,
     padding: spacing[3],
