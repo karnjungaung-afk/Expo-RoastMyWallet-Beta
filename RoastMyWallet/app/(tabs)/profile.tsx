@@ -11,6 +11,8 @@ import { FlameIcon, ShieldIcon, WalletIcon, BellIcon, UserIcon, ArrowRightIcon }
 import { formatCurrency } from '@/utils/formatting';
 import { calculateAvoidedSpending } from '@/utils/scoring';
 import { spacing } from '@/theme/tokens';
+import { useSettingsStore } from '@/store/settingsStore';
+import type { Currency } from '@/types';
 
 export default function ProfileScreen() {
   const { colors, isDark } = useTheme();
@@ -20,6 +22,7 @@ export default function ProfileScreen() {
   const user    = useAuthStore(selectUser);
   const profile = useAuthStore(selectProfile);
   const { signOut, updateProfile } = useAuthStore();
+  const setSettingsCurrency = useSettingsStore(state => state.setCurrency);
   const { isPro } = useSubscriptionStore();
   const purchases = usePurchaseStore(state => state.purchases);
 
@@ -28,12 +31,19 @@ export default function ProfileScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState(profile?.displayName ?? '');
   const [saving, setSaving] = useState(false);
+  const [currencyVisible, setCurrencyVisible] = useState(false);
+  const [savingCurrency, setSavingCurrency] = useState(false);
 
   useEffect(() => {
     setNotifs(profile?.notificationsEnabled ?? true);
     setAiOn(profile?.aiEnabled ?? true);
     setEditName(profile?.displayName ?? '');
   }, [profile?.notificationsEnabled, profile?.aiEnabled, profile?.displayName]);
+
+  const showMessage = (title: string, message: string) => {
+    if (Platform.OS === 'web') window.alert(`${title}\\n\\n${message}`);
+    else Alert.alert(title, message);
+  };
 
   const currency  = profile?.currency ?? 'THB';
   const isProUser = isPro();
@@ -48,50 +58,62 @@ export default function ProfileScreen() {
       await updateProfile({ [key]: value });
     } catch (error) {
       if (key === 'notificationsEnabled') setNotifs(previous); else setAiOn(previous);
-      Alert.alert('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+      showMessage('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
     }
   };
 
   const saveDisplayName = async () => {
     const name = editName.trim();
-    if (!name) { Alert.alert('ชื่อไม่ถูกต้อง', 'กรุณากรอกชื่อที่ต้องการใช้'); return; }
+    if (!name) { showMessage('ชื่อไม่ถูกต้อง', 'กรุณากรอกชื่อที่ต้องการใช้'); return; }
     setSaving(true);
     try {
       await updateProfile({ displayName: name });
       setEditVisible(false);
-      Alert.alert('บันทึกแล้ว', 'อัปเดตชื่อโปรไฟล์เรียบร้อย');
+      showMessage('บันทึกแล้ว', 'อัปเดตชื่อโปรไฟล์เรียบร้อย');
     } catch (error) {
-      Alert.alert('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+      showMessage('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
     } finally { setSaving(false); }
   };
 
-  const saveCurrency = async (nextCurrency: 'THB' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'SGD' | 'MYR') => {
-    try { await updateProfile({ currency: nextCurrency }); }
-    catch (error) { Alert.alert('บันทึกสกุลเงินไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่'); }
+  const saveCurrency = async (nextCurrency: Currency) => {
+    if (savingCurrency) return;
+    setSavingCurrency(true);
+    try {
+      await updateProfile({ currency: nextCurrency });
+      setSettingsCurrency(nextCurrency);
+      setCurrencyVisible(false);
+    } catch (error) {
+      showMessage('บันทึกสกุลเงินไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+    } finally {
+      setSavingCurrency(false);
+    }
   };
 
-  const chooseCurrency = () => Alert.alert('เลือกสกุลเงิน', 'สกุลเงินที่ใช้แสดงผลในแอป', [
-    ...(['THB', 'USD', 'EUR', 'GBP', 'JPY', 'SGD', 'MYR'] as const).map(value => ({
-      text: value === currency ? `✓ ${value}` : value, onPress: () => { void saveCurrency(value); },
-    })),
-    { text: 'ยกเลิก', style: 'cancel' },
-  ]);
+  const chooseCurrency = () => setCurrencyVisible(true);
+  const showProInfo = () => router.push('/paywall' as any);
 
-  const showProInfo = () => Alert.alert(
-    'RoastMyWallet Pro',
-    'ระบบชำระเงินจริงยังไม่ได้เชื่อมต่อ จึงยังไม่สามารถซื้อหรือจัดการสมาชิก Pro จากแอปได้',
-    [{ text: 'เข้าใจแล้ว' }],
-  );
+  const handleSignOut = () => {
+    const runSignOut = async () => {
+      try {
+        await signOut();
+        router.replace('/(auth)/login');
+      } catch (error) {
+        showMessage('ออกจากระบบไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+      }
+    };
+    if (Platform.OS === 'web') {
+      if (window.confirm('ยืนยันการออกจากระบบ?')) void runSignOut();
+      return;
+    }
+    Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
+      { text: 'ยกเลิก', style: 'cancel' },
+      { text: 'ออกจากระบบ', style: 'destructive', onPress: () => { void runSignOut(); } },
+    ]);
+  };
 
-  const handleSignOut = () => Alert.alert('ออกจากระบบ', 'ยืนยันการออกจากระบบ?', [
-    { text: 'ยกเลิก', style: 'cancel' },
-    { text: 'ออกจากระบบ', style: 'destructive', onPress: async () => { await signOut(); router.replace('/(auth)/login'); } },
-  ]);
-
-  const handleDeleteAccount = () => Alert.alert(
+  const handleDeleteAccount = () => showMessage(
     'ลบบัญชี',
     'การลบบัญชีต้องใช้บริการฝั่งเซิร์ฟเวอร์ที่ตรวจสอบสิทธิ์อย่างปลอดภัย ซึ่งยังไม่ได้ติดตั้ง จึงยังไม่ลบบัญชีของคุณ',
-    [{ text: 'ตกลง' }],
   );
 
   return (
@@ -182,11 +204,11 @@ export default function ProfileScreen() {
 
           {/* ── Danger zone ──────────────────────────────────── */}
           <SettingsGroup title="" colors={colors} isDark={isDark}>
-            <TouchableOpacity style={styles.dangerRow} onPress={handleSignOut}>
+            <TouchableOpacity style={styles.dangerRow} onPress={handleSignOut} accessibilityRole="button">
               <Text style={[styles.dangerText, { color: colors.textSecondary }]}>ออกจากระบบ</Text>
             </TouchableOpacity>
             <Divider colors={colors} />
-            <TouchableOpacity style={styles.dangerRow} onPress={handleDeleteAccount}>
+            <TouchableOpacity style={styles.dangerRow} onPress={handleDeleteAccount} accessibilityRole="button">
               <Text style={[styles.dangerText, { color: '#D46060' }]}>ลบบัญชี</Text>
             </TouchableOpacity>
           </SettingsGroup>
@@ -225,6 +247,52 @@ export default function ProfileScreen() {
               </View>
             </View>
           </KeyboardAvoidingView>
+        </View>
+      </Modal>
+
+      <Modal visible={currencyVisible} transparent animationType="fade" onRequestClose={() => setCurrencyVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.currencyModal, { backgroundColor: isDark ? '#141927' : '#FFFFFF', borderColor: colors.border }]}>
+            <View style={styles.currencyHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>สกุลเงิน</Text>
+                <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>เลือกสกุลเงินที่ใช้แสดงยอดเงินในแอป</Text>
+              </View>
+              <TouchableOpacity onPress={() => setCurrencyVisible(false)} disabled={savingCurrency} style={styles.closeButton} accessibilityRole="button" accessibilityLabel="ปิด">
+                <Text style={{ color: colors.textSecondary, fontSize: 20 }}>×</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.currencyList} showsVerticalScrollIndicator={false}>
+              {CURRENCY_OPTIONS.map(item => {
+                const selected = item.code === currency;
+                return (
+                  <TouchableOpacity
+                    key={item.code}
+                    style={[styles.currencyOption, { borderColor: selected ? colors.primary : colors.border, backgroundColor: selected ? colors.primarySubtle : 'transparent' }]}
+                    onPress={() => { void saveCurrency(item.code); }}
+                    disabled={savingCurrency}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected, disabled: savingCurrency }}
+                  >
+                    <View style={[styles.currencyCode, { backgroundColor: isDark ? '#20334A' : '#EAF2FC' }]}>
+                      <Text style={[styles.currencyCodeText, { color: colors.primary }]}>{item.code}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.currencyName, { color: colors.textPrimary }]}>{item.name}</Text>
+                      <Text style={[styles.currencyHint, { color: colors.textMuted }]}>{item.symbol} · {item.code}</Text>
+                    </View>
+                    {selected ? <CheckIcon size={18} color={colors.primary} /> : null}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+            <View style={styles.currencyFooter}>
+              <Text style={[styles.currencyHint, { color: colors.textMuted }]}>ใช้กับการแสดงผลเท่านั้น ไม่แปลงค่าเงินย้อนหลังอัตโนมัติ</Text>
+              <TouchableOpacity style={[styles.modalCancel, { alignSelf: 'flex-end' }]} onPress={() => setCurrencyVisible(false)} disabled={savingCurrency}>
+                <Text style={{ color: colors.textSecondary }}>{savingCurrency ? 'กำลังบันทึก…' : 'ปิด'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
     </View>
@@ -286,6 +354,132 @@ function Divider({ colors }: { colors: any }) {
   return <View style={[styles.divider, { backgroundColor: colors.border }]} />;
 }
 
+const CURRENCY_OPTIONS: { code: Currency; name: string; symbol: string }[] = [
+  { code: 'THB', name: 'บาทไทย', symbol: '฿' },
+  { code: 'USD', name: 'ดอลลาร์สหรัฐ', symbol: '
+  root: { flex: 1 },
+  hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900 },
+  avatarWrap: { position: 'relative', marginBottom: 4 },
+  avatar: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
+  proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0D1F35' },
+  heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
+  heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
+  heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  heroStatItem: { flex: 1, alignItems: 'center', paddingVertical: 12 },
+  heroStatValue: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
+  heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
+  heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
+  content: { gap: 12, paddingTop: 16, paddingHorizontal: 16, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, padding: 16, borderWidth: 1 },
+  proTitle: { fontSize: 15, fontWeight: '700' },
+  proSub: { fontSize: 12, marginTop: 2 },
+  proManage: { fontSize: 13, fontWeight: '600' },
+  upgradeCard: { borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  upgradeTitle: { fontSize: 16, fontWeight: '800', color: '#fff' },
+  upgradeSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 3, lineHeight: 17 },
+  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  upgradeBtnText: { color: '#1B3557', fontSize: 13, fontWeight: '700' },
+  group: { gap: 6 },
+  groupTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
+  groupCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12, minHeight: 52 },
+  rowIcon: {},
+  rowLabel: { fontSize: 15 },
+  rowHint: { fontSize: 11, marginTop: 2 },
+  rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rowValue: { fontSize: 13 },
+  divider: { height: 1, marginLeft: 16 },
+  dangerRow: { paddingHorizontal: 16, paddingVertical: 14, minHeight: 52, justifyContent: 'center' },
+  dangerText: { fontSize: 15 },
+  version: { textAlign: 'center', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', paddingVertical: 8 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(8,22,40,0.62)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalKeyboard: { width: '100%' },
+  modalCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 480 },
+  currencyModal: { borderRadius: 22, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 460, maxHeight: '85%' },
+  currencyHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  closeButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
+  currencyList: { maxHeight: 390 },
+  currencyOption: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 11, marginBottom: 8, minHeight: 58 },
+  currencyCode: { width: 46, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  currencyCodeText: { fontSize: 11, fontWeight: '800' },
+  currencyName: { fontSize: 14, fontWeight: '700' },
+  currencyHint: { fontSize: 11, lineHeight: 16 },
+  currencyFooter: { gap: 4, borderTopWidth: 1, borderTopColor: '#E6EBF2', paddingTop: 10 },
+  modalTitle: { fontSize: 19, fontWeight: '800' },
+  modalLabel: { fontSize: 13 },
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
+  modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
+  modalSave: { backgroundColor: '#2F6293', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
+  modalSaveText: { color: '#fff', fontWeight: '700' },
+});
+ },
+  { code: 'EUR', name: 'ยูโร', symbol: '€' },
+  { code: 'GBP', name: 'ปอนด์สเตอร์ลิง', symbol: '£' },
+  { code: 'JPY', name: 'เยนญี่ปุ่น', symbol: '¥' },
+  { code: 'SGD', name: 'ดอลลาร์สิงคโปร์', symbol: 'S
+  root: { flex: 1 },
+  hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900 },
+  avatarWrap: { position: 'relative', marginBottom: 4 },
+  avatar: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
+  proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0D1F35' },
+  heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
+  heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
+  heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  heroStatItem: { flex: 1, alignItems: 'center', paddingVertical: 12 },
+  heroStatValue: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
+  heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
+  heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
+  content: { gap: 12, paddingTop: 16, paddingHorizontal: 16, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, padding: 16, borderWidth: 1 },
+  proTitle: { fontSize: 15, fontWeight: '700' },
+  proSub: { fontSize: 12, marginTop: 2 },
+  proManage: { fontSize: 13, fontWeight: '600' },
+  upgradeCard: { borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  upgradeTitle: { fontSize: 16, fontWeight: '800', color: '#fff' },
+  upgradeSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 3, lineHeight: 17 },
+  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  upgradeBtnText: { color: '#1B3557', fontSize: 13, fontWeight: '700' },
+  group: { gap: 6 },
+  groupTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
+  groupCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12, minHeight: 52 },
+  rowIcon: {},
+  rowLabel: { fontSize: 15 },
+  rowHint: { fontSize: 11, marginTop: 2 },
+  rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rowValue: { fontSize: 13 },
+  divider: { height: 1, marginLeft: 16 },
+  dangerRow: { paddingHorizontal: 16, paddingVertical: 14, minHeight: 52, justifyContent: 'center' },
+  dangerText: { fontSize: 15 },
+  version: { textAlign: 'center', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', paddingVertical: 8 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(8,22,40,0.62)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalKeyboard: { width: '100%' },
+  modalCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 480 },
+  currencyModal: { borderRadius: 22, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 460, maxHeight: '85%' },
+  currencyHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  closeButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
+  currencyList: { maxHeight: 390 },
+  currencyOption: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 11, marginBottom: 8, minHeight: 58 },
+  currencyCode: { width: 46, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  currencyCodeText: { fontSize: 11, fontWeight: '800' },
+  currencyName: { fontSize: 14, fontWeight: '700' },
+  currencyHint: { fontSize: 11, lineHeight: 16 },
+  currencyFooter: { gap: 4, borderTopWidth: 1, borderTopColor: '#E6EBF2', paddingTop: 10 },
+  modalTitle: { fontSize: 19, fontWeight: '800' },
+  modalLabel: { fontSize: 13 },
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
+  modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
+  modalSave: { backgroundColor: '#2F6293', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
+  modalSaveText: { color: '#fff', fontWeight: '700' },
+});
+ },
+  { code: 'MYR', name: 'ริงกิตมาเลเซีย', symbol: 'RM' },
+];
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
   hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900 },
@@ -323,9 +517,19 @@ const styles = StyleSheet.create({
   dangerRow: { paddingHorizontal: 16, paddingVertical: 14, minHeight: 52, justifyContent: 'center' },
   dangerText: { fontSize: 15 },
   version: { textAlign: 'center', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', paddingVertical: 8 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', padding: 24 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(8,22,40,0.62)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalKeyboard: { width: '100%' },
-  modalCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 12 },
+  modalCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 480 },
+  currencyModal: { borderRadius: 22, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 460, maxHeight: '85%' },
+  currencyHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  closeButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
+  currencyList: { maxHeight: 390 },
+  currencyOption: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 11, marginBottom: 8, minHeight: 58 },
+  currencyCode: { width: 46, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  currencyCodeText: { fontSize: 11, fontWeight: '800' },
+  currencyName: { fontSize: 14, fontWeight: '700' },
+  currencyHint: { fontSize: 11, lineHeight: 16 },
+  currencyFooter: { gap: 4, borderTopWidth: 1, borderTopColor: '#E6EBF2', paddingTop: 10 },
   modalTitle: { fontSize: 19, fontWeight: '800' },
   modalLabel: { fontSize: 13 },
   modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
