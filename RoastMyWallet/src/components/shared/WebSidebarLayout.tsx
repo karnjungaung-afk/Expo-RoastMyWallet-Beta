@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   searchGlyph: { fontSize: 24, lineHeight: 26 },
-  searchInput: { flex: 1, minWidth: 0, paddingVertical: 8, fontSize: 13, outlineStyle: 'none' as any },
+  searchInput: { flex: 1, minWidth: 0, paddingVertical: 8, fontSize: 13 },
   searchAction: { backgroundColor: '#1769E0', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   searchActionText: { color: '#fff', fontSize: 11, fontWeight: '800' },
   topbarUser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingVertical: 5, paddingHorizontal: 7, maxWidth: 200 },
