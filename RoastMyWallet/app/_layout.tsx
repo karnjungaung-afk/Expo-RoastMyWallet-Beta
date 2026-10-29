@@ -49,7 +49,13 @@ function useProtectedRoute() {
 
     if (!isAuthenticated && !inAuthGroup && !inOnboarding) {
       router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuthGroup) {
+    } else if (
+      isAuthenticated &&
+      inAuthGroup &&
+      segments[1] !== 'reset-password'
+    ) {
+      // Supabase recovery links create an authenticated session before the
+      // user chooses a new password. Keep that route accessible until done.
       router.replace('/(tabs)');
     }
   }, [isAuthenticated, isInitialized, segments]);
