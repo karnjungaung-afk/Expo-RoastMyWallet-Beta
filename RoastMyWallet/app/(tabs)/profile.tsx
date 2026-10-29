@@ -281,7 +281,7 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      <Modal visible={passwordVisible} transparent animationType="fade" onRequestClose={() => !savingPassword && setPasswordVisible(false)}>
+      <Modal visible={passwordVisible} transparent animationType="fade" onRequestClose={() => { if (!savingPassword) setPasswordVisible(false); }}>
         <View style={styles.modalBackdrop}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
             <View style={[styles.modalCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
