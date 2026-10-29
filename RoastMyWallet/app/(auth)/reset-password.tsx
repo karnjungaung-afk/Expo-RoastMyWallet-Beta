@@ -22,7 +22,7 @@ export default function ResetPasswordScreen() {
   const [showPass, setShowPass]   = useState(false);
   const [showConf, setShowConf]   = useState(false);
   const [focused, setFocused]     = useState<string | null>(null);
-  const confirmRef = useRef<TextInput>(null);
+  const confirmRef = useRef<React.ElementRef<typeof TextInput>>(null);
   const shakeAnim  = useRef(new Animated.Value(0)).current;
 
   const shake = () => Animated.sequence([
