@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
   StyleSheet, RefreshControl,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -36,7 +36,9 @@ export default function WaitingScreen() {
     loadingState: state.loadingState,
   })));
 
-  useEffect(() => { loadPurchases(); }, []);
+  useFocusEffect(useCallback(() => {
+    void loadPurchases();
+  }, [loadPurchases]));
   const onRefresh = async () => { setRefreshing(true); await loadPurchases(true); setRefreshing(false); };
 
   const filtered = useMemo(() => {
