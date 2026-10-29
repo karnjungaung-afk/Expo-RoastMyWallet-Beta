@@ -9,6 +9,7 @@ interface EnvConfig {
 
   apiBaseUrl: string;
   revenueCatApiKey: string | null;
+  revenueCatWebApiKey: string | null;
   environment: 'development' | 'preview' | 'production';
   aiEnabled: boolean;
 }
@@ -65,6 +66,7 @@ function buildEnvConfig(): EnvConfig {
       ? requireHttpUrl('apiBaseUrl')
       : supabaseUrl,
     revenueCatApiKey: optionalString('revenueCatApiKey'),
+    revenueCatWebApiKey: optionalString('revenueCatWebApiKey'),
     environment:
       (optionalString('appEnvironment') as EnvConfig['environment'] | null) ?? 'development',
     aiEnabled: getExtraConfig().aiEnabled !== false,
