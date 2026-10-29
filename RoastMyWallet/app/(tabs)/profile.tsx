@@ -197,7 +197,7 @@ export default function ProfileScreen() {
           <SettingsGroup title="บัญชีและความปลอดภัย" colors={colors} isDark={isDark}>
             <SettingsRow label="แก้ไขโปรไฟล์" icon={<UserIcon size={18} color={colors.textSecondary} />} onPress={() => { setEditName(profile?.displayName ?? ''); setEditVisible(true); }} colors={colors} />
             <Divider colors={colors} />
-            <SettingsRow label="เปลี่ยนรหัสผ่าน" icon={<ShieldIcon size={18} color={colors.textSecondary} />} onPress={() => router.push('/(auth)/forgot-password')} colors={colors} />
+            <SettingsRow label="ลืม / รีเซ็ตรหัสผ่าน" icon={<ShieldIcon size={18} color={colors.textSecondary} />} onPress={() => router.push('/(auth)/forgot-password')} colors={colors} />
             <Divider colors={colors} />
             <SettingsRow label="สกุลเงิน" value={currency} icon={<WalletIcon size={18} color={colors.textSecondary} />} onPress={chooseCurrency} colors={colors} />
           </SettingsGroup>
@@ -215,7 +215,7 @@ export default function ProfileScreen() {
 
           {/* Version */}
           <Text style={[styles.version, { color: colors.textMuted }]}>
-            RoastMyWallet v1.0.0 · SDK 57
+            RoastMyWallet v1.0.0 · Expo SDK 58
           </Text>
         </View>
       </ScrollView>
