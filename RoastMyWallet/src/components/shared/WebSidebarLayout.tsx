@@ -67,6 +67,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
 
   const showSidebar = windowWidth >= BREAKPOINT_TABLET;
   const isWide = windowWidth >= BREAKPOINT_DESKTOP;
+  const showLabels = windowWidth >= BREAKPOINT_TABLET;
 
   if (!showSidebar) {
     // Let the native tab bar handle it on narrow web
@@ -105,7 +106,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
             </View>
             <View style={[styles.cornerTL, { borderColor: '#75B5FF' }]} />
           </View>
-          {isWide && (
+          {showLabels && (
             <Text style={[styles.logoText, { color: '#FFFFFF' }]}>
               RoastMyWallet
             </Text>
@@ -137,7 +138,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                     color={active ? '#FFFFFF' : '#A9BED5'}
                     strokeWidth={active ? 2.2 : 1.6}
                   />
-                  {isWide && (
+                  {showLabels && (
                     <Text
                       style={[
                         styles.navLabel,
@@ -149,7 +150,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                     </Text>
                   )}
                   {badge > 0 && (
-                    <View style={[styles.navBadge, { backgroundColor: colors.primary }]}>
+                    <View style={[styles.navBadge, { backgroundColor: '#397DD6' }]}>
                       <Text style={styles.navBadgeText}>
                         {badge > 99 ? '99+' : badge}
                       </Text>
@@ -173,15 +174,15 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text
-                    style={[styles.footerName, { color: colors.textPrimary }]}
+                    style={[styles.footerName, { color: '#FFFFFF' }]}
                     numberOfLines={1}
                   >
                     {profile?.displayName ?? 'User'}
                   </Text>
                   {isPro() && (
                     <View style={styles.proLine}>
-                      <FlameIcon size={10} color={colors.primary} />
-                      <Text style={[styles.proBadgeText, { color: colors.primary }]}>Pro</Text>
+                      <FlameIcon size={10} color="#B9D9FF" />
+                      <Text style={[styles.proBadgeText, { color: '#B9D9FF' }]}>Pro</Text>
                     </View>
                   )}
                 </View>
@@ -191,8 +192,8 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
               </Text>
             </>
           ) : (
-            <View style={[styles.footerAvatar, { backgroundColor: colors.primarySubtle, marginHorizontal: 'auto' }]}>
-              <Text style={[styles.footerAvatarText, { color: colors.primary }]}>
+            <View style={[styles.footerAvatar, { backgroundColor: '#1C4D80', marginHorizontal: 'auto' }]}>
+              <Text style={[styles.footerAvatarText, { color: '#B9D9FF' }]}>
                 {(profile?.displayName ?? 'U').charAt(0).toUpperCase()}
               </Text>
             </View>
