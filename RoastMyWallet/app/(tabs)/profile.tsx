@@ -41,7 +41,7 @@ export default function ProfileScreen() {
   }, [profile?.notificationsEnabled, profile?.aiEnabled, profile?.displayName]);
 
   const showMessage = (title: string, message: string) => {
-    if (Platform.OS === 'web') window.alert(`${title}\\n\\n${message}`);
+    if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
     else Alert.alert(title, message);
   };
 
