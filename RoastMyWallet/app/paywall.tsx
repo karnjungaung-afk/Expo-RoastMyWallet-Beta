@@ -24,7 +24,7 @@ export default function PaywallScreen() {
   const { width } = useWindowDimensions();
   const {
     status, offerings, isLoading, isPurchasing, isRestoring, error,
-    initialize, refresh, purchase, restorePurchases,
+    initialize, purchase, restorePurchases,
   } = useSubscriptionStore();
   const [feedback, setFeedback] = useState('');
 
@@ -88,7 +88,7 @@ export default function PaywallScreen() {
             <Text style={[styles.sectionSub, { color: colors.textSecondary }]}>ราคาและแพ็กเกจโหลดจาก RevenueCat ไม่แสดงราคาสมมติ</Text>
           </View>
           <TouchableOpacity
-            onPress={() => { setFeedback(''); void refresh(); void initialize(); }}
+            onPress={() => { setFeedback(''); void initialize(); }}
             style={[styles.refreshButton, { borderColor: colors.border }]}
             accessibilityRole="button"
           >
