@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Modal, Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions,
+  Modal, Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions, type StyleProp, type ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -352,7 +352,7 @@ function Panel({ children, colors, isDark, style }: {
   children: React.ReactNode;
   colors: ReturnType<typeof useTheme>['colors'];
   isDark: boolean;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
 }) {
   return <View style={[styles.panel, { backgroundColor: isDark ? colors.surface : '#FFFFFF', borderColor: isDark ? colors.border : '#E1E9F3' }, style]}>{children}</View>;
 }
