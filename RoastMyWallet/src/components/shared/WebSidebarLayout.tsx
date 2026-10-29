@@ -14,7 +14,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { HomeIcon, ClockIcon, ChartIcon, SquadIcon, UserIcon, FlameIcon } from '@/components/icons/RmwIcons';
 import { useTheme } from '@/hooks/useTheme';
@@ -50,6 +50,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
+  const [searchText, setSearchText] = useState('');
 
   const waitingCount = usePurchaseStore(
     s => s.purchases.filter(p => p.status === 'waiting').length
@@ -89,23 +90,23 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
         style={[
           styles.sidebar,
           {
-            backgroundColor: colors.surface,
-            borderRightColor: colors.border,
+            backgroundColor: '#102B48',
+            borderRightColor: '#254461',
             width: isWide ? 240 : 200,
           },
         ]}
       >
         {/* Logo */}
-        <View style={[styles.sidebarLogo, { borderBottomColor: colors.border }]}>
-          <View style={[styles.logoMark, { borderColor: colors.primary }]}>
+        <View style={[styles.sidebarLogo, { borderBottomColor: '#254461' }]}>
+          <View style={[styles.logoMark, { borderColor: '#75B5FF' }]}>
             <View style={styles.pauseBars}>
-              <View style={[styles.pauseBar, { backgroundColor: colors.primary }]} />
-              <View style={[styles.pauseBar, { backgroundColor: colors.primary }]} />
+              <View style={[styles.pauseBar, { backgroundColor: '#75B5FF' }]} />
+              <View style={[styles.pauseBar, { backgroundColor: '#397DD6' }]} />
             </View>
-            <View style={[styles.cornerTL, { borderColor: colors.mecha }]} />
+            <View style={[styles.cornerTL, { borderColor: '#75B5FF' }]} />
           </View>
           {isWide && (
-            <Text style={[styles.logoText, { color: colors.textPrimary }]}>
+            <Text style={[styles.logoText, { color: '#FFFFFF' }]}>
               RoastMyWallet
             </Text>
           )}
@@ -126,21 +127,21 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                 accessibilityState={{ selected: active }}
                 style={[
                   styles.navItem,
-                  active && [styles.navItemActive, { borderLeftColor: colors.primary }],
+                  active && [styles.navItemActive, { borderLeftColor: '#72B0FF', backgroundColor: '#1C4D80' }],
                   { paddingLeft: isWide ? spacing[5] : spacing[4] },
                 ]}
               >
                 <View style={styles.navItemInner}>
                   <item.Icon
                     size={18}
-                    color={active ? colors.primary : colors.textMuted}
+                    color={active ? '#FFFFFF' : '#A9BED5'}
                     strokeWidth={active ? 2.2 : 1.6}
                   />
                   {isWide && (
                     <Text
                       style={[
                         styles.navLabel,
-                        { color: active ? colors.primary : colors.textSecondary },
+                        { color: active ? '#FFFFFF' : '#D0DCE9' },
                         active && styles.navLabelActive,
                       ]}
                     >
@@ -161,12 +162,12 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
         </View>
 
         {/* Sidebar footer — subscription status + system info */}
-        <View style={[styles.sidebarFooter, { borderTopColor: colors.border }]}>
+        <View style={[styles.sidebarFooter, { borderTopColor: '#254461' }]}>
           {isWide ? (
             <>
               <View style={styles.footerUser}>
-                <View style={[styles.footerAvatar, { backgroundColor: colors.primarySubtle }]}>
-                  <Text style={[styles.footerAvatarText, { color: colors.primary }]}>
+                <View style={[styles.footerAvatar, { backgroundColor: '#1C4D80' }]}>
+                  <Text style={[styles.footerAvatarText, { color: '#B9D9FF' }]}>
                     {(profile?.displayName ?? 'U').charAt(0).toUpperCase()}
                   </Text>
                 </View>
@@ -185,7 +186,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                   )}
                 </View>
               </View>
-              <Text style={[styles.sysStatus, { color: colors.textMuted }]}>
+              <Text style={[styles.sysStatus, { color: '#8FAAC6' }]}>
                 SYS ▸ ACTIVE
               </Text>
             </>
@@ -200,8 +201,54 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
       </View>
 
       {/* Main content area */}
-      <View style={styles.content}>
-        {children}
+      <View style={[styles.content, { backgroundColor: colors.background }]}>
+        <View style={[styles.topbar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <View style={[styles.searchBox, { backgroundColor: colors.background, borderColor: colors.border, maxWidth: isWide ? 520 : 320 }]}>
+            <Text style={[styles.searchGlyph, { color: colors.textMuted }]}>⌕</Text>
+            <TextInput
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholder="ค้นหารายการที่อยากซื้อ…"
+              placeholderTextColor={colors.textMuted}
+              style={[styles.searchInput, { color: colors.textPrimary }]}
+              returnKeyType="search"
+              accessibilityLabel="ค้นหารายการซื้อ"
+              onSubmitEditing={() => {
+                const term = searchText.trim();
+                router.push((term
+                  ? { pathname: '/(tabs)/waiting', params: { search: term } }
+                  : '/(tabs)/waiting') as any);
+              }}
+            />
+            <TouchableOpacity
+              onPress={() => {
+                const term = searchText.trim();
+                router.push((term
+                  ? { pathname: '/(tabs)/waiting', params: { search: term } }
+                  : '/(tabs)/waiting') as any);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="ค้นหา"
+              style={styles.searchAction}
+            >
+              <Text style={styles.searchActionText}>ค้นหา</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            style={[styles.topbarUser, { borderColor: colors.border }]}
+            onPress={() => router.push('/(tabs)/profile' as any)}
+            accessibilityRole="link"
+            accessibilityLabel="เปิดโปรไฟล์"
+          >
+            <View style={styles.topbarAvatar}>
+              <Text style={styles.topbarAvatarText}>{(profile?.displayName ?? 'U').charAt(0).toUpperCase()}</Text>
+            </View>
+            {isWide && <Text numberOfLines={1} style={[styles.topbarUserName, { color: colors.textSecondary }]}>{profile?.displayName ?? 'บัญชีของฉัน'}</Text>}
+          </TouchableOpacity>
+        </View>
+        <View style={styles.screenContent}>
+          {children}
+        </View>
       </View>
     </View>
   );
@@ -340,5 +387,36 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    minWidth: 0,
   },
+  topbar: {
+    minHeight: 66,
+    paddingHorizontal: 22,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 14,
+  },
+  searchBox: {
+    height: 42,
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingLeft: 12,
+    paddingRight: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  searchGlyph: { fontSize: 24, lineHeight: 26 },
+  searchInput: { flex: 1, minWidth: 0, paddingVertical: 8, fontSize: 13, outlineStyle: 'none' as any },
+  searchAction: { backgroundColor: '#1769E0', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  searchActionText: { color: '#fff', fontSize: 11, fontWeight: '800' },
+  topbarUser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingVertical: 5, paddingHorizontal: 7, maxWidth: 200 },
+  topbarAvatar: { width: 30, height: 30, borderRadius: 10, backgroundColor: '#DCEBFF', alignItems: 'center', justifyContent: 'center' },
+  topbarAvatarText: { color: '#1B5DB5', fontWeight: '900', fontSize: 13 },
+  topbarUserName: { fontSize: 12, fontWeight: '700', maxWidth: 145 },
+  screenContent: { flex: 1, minHeight: 0 },
 });
