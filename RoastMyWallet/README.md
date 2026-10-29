@@ -27,13 +27,25 @@ Most of the time, they don't.
 
 ---
 
+## Subscription and password recovery setup
+
+### RevenueCat Pro
+
+Set `EXPO_PUBLIC_REVENUECAT_API_KEY` to your RevenueCat iOS/Android public SDK key and `EXPO_PUBLIC_REVENUECAT_WEB_API_KEY` to the RevenueCat Web Billing public SDK key. Configure a Current Offering containing monthly and yearly packages, attach each product to the `pro` entitlement, and use the same Supabase user UUID as the RevenueCat App User ID. Never bundle a RevenueCat secret API key.
+
+Real native purchases require a development build with the native module; Expo Go is only suitable for previewing UI, not validating purchases. Web purchases require RevenueCat Web Billing to be configured separately.
+
+### Password recovery
+
+The app redirects native recovery links to `roastmywallet://reset-password` and web recovery links to `/reset-password` on the current web origin. In Supabase Dashboard → Authentication → URL Configuration, add `roastmywallet://reset-password`, `http://localhost:8081/reset-password` for local web testing, and your deployed HTTPS origin's `/reset-password` route to Redirect URLs. The deployed site origin must be used exactly; this repository cannot add an arbitrary production hostname to the Supabase allow-list automatically.
+
 ## Architecture Principles
 
 ### 1. AI is an enhancement, never a dependency
 The `calculateNeedScore()` function in `src/utils/scoring.ts` is fully deterministic and works without any network call. The AI adds explanation, personality, and personalization on top. If the Edge Function fails, the app continues working — the core experience is unaffected.
 
 ### 2. Subscription is abstracted
-`ISubscriptionService` in `src/features/subscription/SubscriptionService.ts` is the only interface the app knows about. `MockSubscriptionService` is used in development. `RevenueCatSubscriptionService` (stubbed, see the file) is swapped in for production. UI components never call RevenueCat directly.
+`ISubscriptionService` in `src/features/subscription/SubscriptionService.ts` is the only interface the app knows about. `RevenueCatSubscriptionService` checks the `pro` entitlement and loads prices from the current RevenueCat Offering. Real purchases require valid public SDK keys, configured App Store/Google Play products and RevenueCat entitlement/Offering setup. Do not grant Pro from client profile data or mock results. UI components never call RevenueCat directly.
 
 ### 3. API keys never leave the server
 The mobile app **never** calls any AI API directly. All AI requests go through `supabase/functions/analyze-purchase/index.ts`, which runs on Supabase's server. The AI API key is a Supabase secret (`supabase secrets set AI_API_KEY=...`), never in client code or `.env` files committed to git.
