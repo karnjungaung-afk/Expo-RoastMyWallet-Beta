@@ -60,6 +60,7 @@ function useProtectedRoute() {
 export default function RootLayout() {
   const { colors, isDark } = useTheme();
   const { initialize: initAuth, isInitialized } = useAuthStore();
+  const authUser = useAuthStore(state => state.user);
   const { initialize: initSubscription } = useSubscriptionStore();
   const { load: loadSettings } = useSettingsStore();
   const { initialize: initNotifications } = useNotificationStore();
@@ -74,7 +75,6 @@ export default function RootLayout() {
       try {
         await loadSettings();
         await initAuth();
-        await initSubscription();
         initNotifications().catch(err =>
           console.warn('[RootLayout] Notification init failed (non-fatal):', err),
         );
@@ -84,6 +84,17 @@ export default function RootLayout() {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (authUser?.id) {
+      initSubscription().catch(err => {
+        console.warn('[RootLayout] Subscription init failed:', err);
+      });
+    } else {
+      useSubscriptionStore.getState().clearForSignedOut();
+    }
+  }, [isInitialized, authUser?.id, initSubscription]);
 
   if (!isInitialized) {
     return <SplashLoader colors={colors} isDark={isDark} />;
