@@ -19,7 +19,6 @@ export default function InsightsScreen() {
   const { width: windowWidth } = useWindowDimensions();
   const purchases = usePurchaseStore(state => state.purchases);
   const loadingState = usePurchaseStore(state => state.loadingState);
-  const loadPurchases = usePurchaseStore(state => state.loadPurchases);
   const profile = useAuthStore(selectProfile);
   const currency = profile?.currency ?? 'THB';
   const wide = windowWidth >= 900;
