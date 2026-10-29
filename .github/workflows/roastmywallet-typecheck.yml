@@ -1,0 +1,44 @@
+name: RoastMyWallet TypeScript
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "RoastMyWallet/**"
+      - ".github/workflows/roastmywallet-typecheck.yml"
+  pull_request:
+    paths:
+      - "RoastMyWallet/**"
+      - ".github/workflows/roastmywallet-typecheck.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: roastmywallet-typecheck-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: Install and typecheck Expo app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: RoastMyWallet
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: RoastMyWallet/package-lock.json
+
+      # npm install also reconciles package-lock.json when app dependencies change.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: TypeScript check
+        run: npm run typecheck
