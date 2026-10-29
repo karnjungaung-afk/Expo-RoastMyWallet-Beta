@@ -1,12 +1,10 @@
 import { create } from 'zustand';
 import type { SubscriptionStatus, SubscriptionOffering } from '@/types';
 import type { ISubscriptionService } from '@/features/subscription/SubscriptionService';
-import { MockSubscriptionService } from '@/features/subscription/MockSubscriptionService';
+import { RevenueCatSubscriptionService } from '@/features/subscription/RevenueCatSubscriptionService';
 
-// Instantiate the active service here — swap for RevenueCatSubscriptionService in production
-const subscriptionService: ISubscriptionService = new MockSubscriptionService({
-  initialStatus: 'free', // Change to 'pro' to test Pro features
-});
+// Never grant Pro from a mock purchase. Entitlements come from RevenueCat.
+const subscriptionService: ISubscriptionService = new RevenueCatSubscriptionService();
 
 interface SubscriptionStoreState {
   status: SubscriptionStatus;
@@ -21,6 +19,7 @@ interface SubscriptionStoreState {
   refresh: () => Promise<void>;
   purchase: (packageId: string) => Promise<boolean>;
   restorePurchases: () => Promise<void>;
+  clearForSignedOut: () => void;
 
   // Computed
   isPro: () => boolean;
@@ -47,6 +46,7 @@ export const useSubscriptionStore = create<SubscriptionStoreState>((set, get) =>
         status: statusResult.data ?? 'unknown',
         offerings: offeringsResult.data ?? [],
         isLoading: false,
+        error: statusResult.error ?? offeringsResult.error ?? null,
       });
     } catch (err) {
       set({ status: 'unknown', isLoading: false, error: String(err) });
@@ -55,21 +55,27 @@ export const useSubscriptionStore = create<SubscriptionStoreState>((set, get) =>
 
   refresh: async () => {
     const result = await subscriptionService.refreshStatus();
-    if (result.data) {
-      set({ status: result.data });
+    if (result.data && result.data !== 'unknown') {
+      set({ status: result.data, error: result.error ?? null });
+    } else {
+      set({ error: result.error ?? 'ตรวจสอบสถานะ Pro ไม่สำเร็จ' });
     }
+  },
+
+  clearForSignedOut: () => {
+    set({ status: 'unknown', offerings: [], isLoading: false, isPurchasing: false, isRestoring: false, error: null });
   },
 
   purchase: async (packageId) => {
     set({ isPurchasing: true, error: null });
     try {
       const result = await subscriptionService.purchase(packageId as any);
-      if (result.data) {
-        set({ status: result.data, isPurchasing: false });
-        return result.data === 'pro' || result.data === 'trial';
+      if (result.error || !result.data || result.data === 'unknown') {
+        set({ isPurchasing: false, error: result.error ?? 'ซื้อ Pro ไม่สำเร็จ' });
+        return false;
       }
-      set({ isPurchasing: false, error: result.error ?? 'Purchase failed' });
-      return false;
+      set({ status: result.data, isPurchasing: false, error: null });
+      return result.data === 'pro' || result.data === 'trial';
     } catch (err) {
       set({ isPurchasing: false, error: String(err) });
       return false;
@@ -80,10 +86,10 @@ export const useSubscriptionStore = create<SubscriptionStoreState>((set, get) =>
     set({ isRestoring: true, error: null });
     try {
       const result = await subscriptionService.restorePurchases();
-      if (result.data) {
-        set({ status: result.data, isRestoring: false });
+      if (result.error || !result.data || result.data === 'unknown') {
+        set({ isRestoring: false, error: result.error ?? 'กู้คืนการซื้อไม่สำเร็จ' });
       } else {
-        set({ isRestoring: false, error: result.error ?? 'Restore failed' });
+        set({ status: result.data, isRestoring: false, error: null });
       }
     } catch (err) {
       set({ isRestoring: false, error: String(err) });
