@@ -8,6 +8,7 @@
  *   eas secret:create --name EXPO_PUBLIC_SUPABASE_URL --value "https://..."
  *   eas secret:create --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value "sb_publishable_..."
  *   eas secret:create --name EXPO_PUBLIC_REVENUECAT_API_KEY --value "..."
+ *   eas secret:create --name EXPO_PUBLIC_REVENUECAT_WEB_API_KEY --value "..."
  *
  * Deep link redirect URLs to configure in Supabase Dashboard
  *   → Authentication → URL Configuration:
@@ -48,6 +49,8 @@ module.exports = ({ config }) => {
       // RevenueCat — required for production in-app purchases
       revenueCatApiKey:
         process.env.EXPO_PUBLIC_REVENUECAT_API_KEY?.trim() || null,
+      revenueCatWebApiKey:
+        process.env.EXPO_PUBLIC_REVENUECAT_WEB_API_KEY?.trim() || null,
 
       // Feature flags
       appEnvironment: appEnv,
