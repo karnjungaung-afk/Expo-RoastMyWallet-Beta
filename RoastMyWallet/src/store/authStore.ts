@@ -199,24 +199,59 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       dbUpdates.display_name = newDisplayName;
     }
 
+    // Update the existing profile first and check that a row was actually changed.
+    // PostgREST can return no error for an UPDATE matching zero rows.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any)
+    const { data: updatedRows, error } = await (supabase as any)
       .from('profiles')
       .update({ ...dbUpdates, updated_at: new Date().toISOString() })
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select('user_id');
 
-    if (error) {
-      // Keep Auth metadata and profile display name in sync if the profile write fails.
-      if (newDisplayName !== undefined) {
-        const { error: rollbackError } = await supabase.auth.updateUser({
-          data: { display_name: user.displayName ?? '' },
-        });
-        if (rollbackError) {
-          console.error('[AuthStore] Could not roll back display name metadata:', rollbackError);
+    if (error || !updatedRows?.length) {
+      if (!error && !updatedRows?.length) {
+        const currentProfile = get().profile;
+        const fallbackRow = {
+          user_id: user.id,
+          display_name: newDisplayName ?? currentProfile?.displayName ?? user.displayName ?? 'ผู้ใช้ RoastMyWallet',
+          currency: currentProfile?.currency ?? 'THB',
+          language: currentProfile?.language ?? 'th',
+          timezone: currentProfile?.timezone ?? 'Asia/Bangkok',
+          theme: currentProfile?.theme ?? 'cozy_minimal',
+          ai_enabled: currentProfile?.aiEnabled ?? true,
+          ai_personality: currentProfile?.aiPersonality ?? 'balanced',
+          default_waiting_hours: currentProfile?.defaultWaitingHours ?? 24,
+          notifications_enabled: currentProfile?.notificationsEnabled ?? true,
+          squad_enabled: currentProfile?.squadEnabled ?? false,
+          monthly_budget: currentProfile?.monthlyBudget ?? null,
+          weekly_budget: currentProfile?.weeklyBudget ?? null,
+          daily_budget: currentProfile?.dailyBudget ?? null,
+          ...dbUpdates,
+          updated_at: new Date().toISOString(),
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: upsertError } = await (supabase as any)
+          .from('profiles')
+          .upsert(fallbackRow, { onConflict: 'user_id' });
+        if (!upsertError) {
+          // Continue to sync Zustand state below.
+        } else {
+          console.error('[AuthStore] Profile upsert failed:', upsertError);
+          throw new Error(upsertError.message ?? 'บันทึกโปรไฟล์ไม่สำเร็จ');
         }
+      } else {
+        // Keep Auth metadata and profile display name in sync if the profile write fails.
+        if (newDisplayName !== undefined) {
+          const { error: rollbackError } = await supabase.auth.updateUser({
+            data: { display_name: user.displayName ?? '' },
+          });
+          if (rollbackError) {
+            console.error('[AuthStore] Could not roll back display name metadata:', rollbackError);
+          }
+        }
+        console.error('[AuthStore] Update profile failed:', error);
+        throw new Error(error.message ?? 'บันทึกโปรไฟล์ไม่สำเร็จ');
       }
-      console.error('[AuthStore] Update profile failed:', error);
-      throw new Error(error.message ?? 'บันทึกโปรไฟล์ไม่สำเร็จ');
     }
 
     set(state => ({
