@@ -21,7 +21,7 @@ export default function ProfileScreen() {
 
   const user    = useAuthStore(selectUser);
   const profile = useAuthStore(selectProfile);
-  const { signOut, updateProfile } = useAuthStore();
+  const { signOut, updateProfile, updatePassword } = useAuthStore();
   const setSettingsCurrency = useSettingsStore(state => state.setCurrency);
   const { isPro } = useSubscriptionStore();
   const purchases = usePurchaseStore(state => state.purchases);
@@ -33,6 +33,12 @@ export default function ProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [currencyVisible, setCurrencyVisible] = useState(false);
   const [savingCurrency, setSavingCurrency] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     setNotifs(profile?.notificationsEnabled ?? true);
@@ -73,6 +79,31 @@ export default function ProfileScreen() {
     } catch (error) {
       showMessage('บันทึกไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
     } finally { setSaving(false); }
+  };
+
+  const saveNewPassword = async () => {
+    if (newPassword.length < 8) {
+      showMessage('รหัสผ่านไม่ถูกต้อง', 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showMessage('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกรหัสผ่านใหม่ทั้งสองช่องให้ตรงกัน');
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      await updatePassword(newPassword);
+      setPasswordVisible(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
+      showMessage('เปลี่ยนรหัสผ่านสำเร็จ', 'รหัสผ่านบัญชีของคุณได้รับการอัปเดตแล้ว');
+    } catch (error) {
+      showMessage('เปลี่ยนรหัสผ่านไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
   const saveCurrency = async (nextCurrency: Currency) => {
@@ -197,7 +228,7 @@ export default function ProfileScreen() {
           <SettingsGroup title="บัญชีและความปลอดภัย" colors={colors} isDark={isDark}>
             <SettingsRow label="แก้ไขโปรไฟล์" icon={<UserIcon size={18} color={colors.textSecondary} />} onPress={() => { setEditName(profile?.displayName ?? ''); setEditVisible(true); }} colors={colors} />
             <Divider colors={colors} />
-            <SettingsRow label="ลืม / รีเซ็ตรหัสผ่าน" icon={<ShieldIcon size={18} color={colors.textSecondary} />} onPress={() => router.push('/(auth)/forgot-password')} colors={colors} />
+            <SettingsRow label="เปลี่ยนรหัสผ่าน" hint="ตั้งรหัสผ่านใหม่สำหรับบัญชีนี้" icon={<ShieldIcon size={18} color={colors.textSecondary} />} onPress={() => { setNewPassword(''); setConfirmPassword(''); setPasswordVisible(true); }} colors={colors} />
             <Divider colors={colors} />
             <SettingsRow label="สกุลเงิน" value={currency} icon={<WalletIcon size={18} color={colors.textSecondary} />} onPress={chooseCurrency} colors={colors} />
           </SettingsGroup>
@@ -243,6 +274,55 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalSave} onPress={saveDisplayName} disabled={saving}>
                   <Text style={styles.modalSaveText}>{saving ? 'กำลังบันทึก...' : 'บันทึก'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
+
+      <Modal visible={passwordVisible} transparent animationType="fade" onRequestClose={() => !savingPassword && setPasswordVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
+            <View style={[styles.modalCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+              <View style={styles.passwordModalIcon}><ShieldIcon size={22} color={colors.primary} /></View>
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>เปลี่ยนรหัสผ่าน</Text>
+              <Text style={[styles.passwordHint, { color: colors.textMuted }]}>ตั้งรหัสผ่านใหม่อย่างน้อย 8 ตัวอักษร ระบบจะบันทึกกับบัญชีของคุณ</Text>
+              <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>รหัสผ่านใหม่</Text>
+              <TextInput
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="อย่างน้อย 8 ตัวอักษร"
+                placeholderTextColor={colors.textMuted}
+                secureTextEntry={!showNewPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                textContentType="newPassword"
+                style={[styles.modalInput, { color: colors.textPrimary, borderColor: colors.border }]}
+              />
+              <TouchableOpacity style={styles.passwordVisibility} onPress={() => setShowNewPassword(value => !value)} accessibilityRole="button">
+                <Text style={{ color: colors.primary, fontSize: 12 }}>{showNewPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}</Text>
+              </TouchableOpacity>
+              <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>ยืนยันรหัสผ่านใหม่</Text>
+              <TextInput
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="กรอกรหัสผ่านอีกครั้ง"
+                placeholderTextColor={colors.textMuted}
+                secureTextEntry={!showConfirmPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                textContentType="newPassword"
+                returnKeyType="done"
+                onSubmitEditing={saveNewPassword}
+                style={[styles.modalInput, { color: colors.textPrimary, borderColor: colors.border }]}
+              />
+              <View style={styles.modalActions}>
+                <TouchableOpacity style={styles.modalCancel} onPress={() => setPasswordVisible(false)} disabled={savingPassword}>
+                  <Text style={{ color: colors.textSecondary }}>ยกเลิก</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.modalSave, savingPassword && { opacity: 0.65 }]} onPress={() => { void saveNewPassword(); }} disabled={savingPassword}>
+                  <Text style={styles.modalSaveText}>{savingPassword ? 'กำลังบันทึก…' : 'บันทึกรหัสผ่าน'}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -414,6 +494,9 @@ const styles = StyleSheet.create({
   currencyName: { fontSize: 14, fontWeight: '700' },
   currencyHint: { fontSize: 11, lineHeight: 16 },
   currencyFooter: { gap: 4, borderTopWidth: 1, borderTopColor: '#E6EBF2', paddingTop: 10 },
+  passwordModalIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: 'rgba(69,137,218,0.14)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  passwordHint: { fontSize: 12, lineHeight: 18, marginBottom: 14 },
+  passwordVisibility: { alignSelf: 'flex-end', paddingVertical: 6, paddingHorizontal: 2, marginBottom: 8 },
   modalTitle: { fontSize: 19, fontWeight: '800' },
   modalLabel: { fontSize: 13 },
   modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
