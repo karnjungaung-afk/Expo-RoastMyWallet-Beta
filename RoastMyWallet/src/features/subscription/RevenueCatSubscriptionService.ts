@@ -13,6 +13,8 @@ import type { ISubscriptionService } from './SubscriptionService';
 export class RevenueCatSubscriptionService implements ISubscriptionService {
   private configuredKey: string | null = null;
   private appUserId: string | null = null;
+  private configurePromise: Promise<void> | null = null;
+  private identityPromise: Promise<void> | null = null;
 
   private async ensureReady(): Promise<void> {
     const apiKey = Platform.OS === 'web' ? env.revenueCatWebApiKey : env.revenueCatApiKey;
@@ -21,11 +23,20 @@ export class RevenueCatSubscriptionService implements ISubscriptionService {
       throw new Error(`ยังไม่ได้ตั้งค่า RevenueCat (${target}) จึงยังตรวจสอบหรือซื้อ Pro ไม่ได้`);
     }
 
+    // initialize() loads status and offerings concurrently; serialize SDK setup so
+    // configure/logIn are only applied once when both requests arrive together.
     if (this.configuredKey !== apiKey) {
-      Purchases.setLogLevel(LOG_LEVEL.ERROR);
-      Purchases.configure({ apiKey });
-      this.configuredKey = apiKey;
-      this.appUserId = null;
+      if (!this.configurePromise) {
+        this.configurePromise = Promise.resolve().then(async () => {
+          Purchases.setLogLevel(LOG_LEVEL.ERROR);
+          await Purchases.configure({ apiKey });
+          this.configuredKey = apiKey;
+          this.appUserId = null;
+        }).finally(() => {
+          this.configurePromise = null;
+        });
+      }
+      await this.configurePromise;
     }
 
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -33,12 +44,19 @@ export class RevenueCatSubscriptionService implements ISubscriptionService {
     const nextUserId = user?.id ?? null;
 
     if (nextUserId !== this.appUserId) {
-      if (nextUserId) {
-        await Purchases.logIn(nextUserId);
-      } else if (this.appUserId) {
-        await Purchases.logOut();
+      if (!this.identityPromise) {
+        this.identityPromise = Promise.resolve().then(async () => {
+          if (nextUserId) {
+            await Purchases.logIn(nextUserId);
+          } else if (this.appUserId) {
+            await Purchases.logOut();
+          }
+          this.appUserId = nextUserId;
+        }).finally(() => {
+          this.identityPromise = null;
+        });
       }
-      this.appUserId = nextUserId;
+      await this.identityPromise;
     }
   }
 
