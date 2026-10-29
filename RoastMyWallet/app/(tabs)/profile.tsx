@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuthStore, selectUser, selectProfile } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { usePurchaseStore } from '@/store/purchaseStore';
-import { FlameIcon, ShieldIcon, WalletIcon, BellIcon, UserIcon, ArrowRightIcon } from '@/components/icons/RmwIcons';
+import { FlameIcon, ShieldIcon, WalletIcon, BellIcon, UserIcon, ArrowRightIcon, CheckIcon } from '@/components/icons/RmwIcons';
 import { formatCurrency } from '@/utils/formatting';
 import { calculateAvoidedSpending } from '@/utils/scoring';
 import { spacing } from '@/theme/tokens';
