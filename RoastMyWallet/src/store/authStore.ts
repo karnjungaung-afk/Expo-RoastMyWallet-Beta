@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Platform } from 'react-native';
 import type { User, UserProfile } from '@/types';
 import { supabase } from '@/services/supabase';
 
@@ -148,9 +149,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (error) throw error;
   },
   resetPassword: async (email) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'roastmywallet://reset-password',
-    });
+    // Web builds return to the hosted route. Native builds use the app scheme
+    // handled by DeepLinkHandler. Add deployed web URLs to Supabase Auth's
+    // Redirect URLs allow-list before enabling password recovery in production.
+    const redirectTo =
+      Platform.OS === 'web' && typeof window !== 'undefined'
+        ? `${window.location.origin}/reset-password`
+        : 'roastmywallet://reset-password';
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
     if (error) throw error;
   },
 
@@ -179,6 +186,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       Object.entries(updates).map(([key, value]) => [columnMap[key] ?? key, value])
     );
 
+    const newDisplayName =
+      typeof updates.displayName === 'string' ? updates.displayName.trim() : undefined;
+    if (newDisplayName !== undefined) {
+      if (newDisplayName.length < 1 || newDisplayName.length > 60) {
+        throw new Error('ชื่อที่แสดงต้องมีความยาว 1–60 ตัวอักษร');
+      }
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: { display_name: newDisplayName },
+      });
+      if (metadataError) throw new Error(metadataError.message ?? 'อัปเดตชื่อบัญชีไม่สำเร็จ');
+      dbUpdates.display_name = newDisplayName;
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
       .from('profiles')
@@ -186,11 +206,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       .eq('user_id', user.id);
 
     if (error) {
+      // Keep Auth metadata and profile display name in sync if the profile write fails.
+      if (newDisplayName !== undefined) {
+        const { error: rollbackError } = await supabase.auth.updateUser({
+          data: { display_name: user.displayName ?? '' },
+        });
+        if (rollbackError) {
+          console.error('[AuthStore] Could not roll back display name metadata:', rollbackError);
+        }
+      }
       console.error('[AuthStore] Update profile failed:', error);
       throw new Error(error.message ?? 'บันทึกโปรไฟล์ไม่สำเร็จ');
     }
 
-    set(state => ({ profile: state.profile ? { ...state.profile, ...updates } : null }));
+    set(state => ({
+      profile: state.profile ? { ...state.profile, ...updates, ...(newDisplayName !== undefined ? { displayName: newDisplayName } : {}) } : null,
+      user: state.user && newDisplayName !== undefined
+        ? { ...state.user, displayName: newDisplayName }
+        : state.user,
+    }));
   },
 }));
 
