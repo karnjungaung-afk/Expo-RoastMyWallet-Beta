@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuthStore, selectUser, selectProfile } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { usePurchaseStore } from '@/store/purchaseStore';
-import { FlameIcon, ShieldIcon, WalletIcon, BellIcon, UserIcon, ArrowRightIcon, CheckIcon } from '@/components/icons/RmwIcons';
+import { FlameIcon, ShieldIcon, WalletIcon, BellIcon, UserIcon, ArrowRightIcon, CheckIcon, LogoutIcon } from '@/components/icons/RmwIcons';
 import { formatCurrency } from '@/utils/formatting';
 import { calculateAvoidedSpending } from '@/utils/scoring';
 import { spacing } from '@/theme/tokens';
@@ -25,6 +25,8 @@ export default function ProfileScreen() {
   const setSettingsCurrency = useSettingsStore(state => state.setCurrency);
   const { isPro } = useSubscriptionStore();
   const purchases = usePurchaseStore(state => state.purchases);
+  const loadPurchases = usePurchaseStore(state => state.loadPurchases);
+  useEffect(() => { void loadPurchases(); }, [loadPurchases]);
 
   const [notifs, setNotifs] = useState(profile?.notificationsEnabled ?? true);
   const [aiOn,   setAiOn]   = useState(profile?.aiEnabled ?? true);
@@ -153,12 +155,12 @@ export default function ProfileScreen() {
 
         {/* ── Hero header ─────────────────────────────────── */}
         <LinearGradient
-          colors={isDark ? ['#0D1F35', '#141927'] : ['#1B3557', '#22487A']}
+          colors={isDark ? ['#0F172A', '#1E293B'] : ['#1E3A8A', '#3B82F6']}
           style={[styles.hero, { paddingTop: insets.top + 20 }]}
         >
           {/* Avatar */}
           <View style={styles.avatarWrap}>
-            <LinearGradient colors={['#2F6293', '#1B3557']} style={styles.avatar}>
+            <LinearGradient colors={['#2563EB', '#1E3A8A']} style={styles.avatar}>
               <Text style={styles.avatarText}>{initials}</Text>
             </LinearGradient>
             {isProUser && (
@@ -177,7 +179,7 @@ export default function ProfileScreen() {
             <View style={styles.heroStatDiv} />
             <HeroStat value={String(avoidedCount)} label="ไม่ซื้อแล้ว" accent="#52B57D" />
             <View style={styles.heroStatDiv} />
-            <HeroStat value={String(purchases.filter(p => p.status === 'waiting').length)} label="กำลังรอ" accent="#5A96C3" />
+            <HeroStat value={String(purchases.filter(p => p.status === 'waiting').length)} label="กำลังรอ" accent="#BFDBFE" />
           </View>
         </LinearGradient>
 
@@ -195,14 +197,14 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            <LinearGradient colors={['#1B3557', '#2F6293']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <LinearGradient colors={['#1E3A8A', '#2563EB']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.upgradeTitle}>อัพเกรดเป็น Pro</Text>
                 <Text style={styles.upgradeSub}>ปลดล็อค AI roast, Squad, Insights ขั้นสูง และอีกมาก</Text>
               </View>
               <TouchableOpacity style={styles.upgradeBtn} onPress={showProInfo} accessibilityRole="button">
                 <Text style={styles.upgradeBtnText}>ดูแผน</Text>
-                <ArrowRightIcon size={14} color="#1B3557" />
+                <ArrowRightIcon size={14} color="#1E3A8A" />
               </TouchableOpacity>
             </LinearGradient>
           )}
@@ -233,16 +235,19 @@ export default function ProfileScreen() {
             <SettingsRow label="สกุลเงิน" value={currency} icon={<WalletIcon size={18} color={colors.textSecondary} />} onPress={chooseCurrency} colors={colors} />
           </SettingsGroup>
 
-          {/* ── Danger zone ──────────────────────────────────── */}
-          <SettingsGroup title="" colors={colors} isDark={isDark}>
-            <TouchableOpacity style={styles.dangerRow} onPress={handleSignOut} accessibilityRole="button">
-              <Text style={[styles.dangerText, { color: colors.textSecondary }]}>ออกจากระบบ</Text>
-            </TouchableOpacity>
-            <Divider colors={colors} />
-            <TouchableOpacity style={styles.dangerRow} onPress={handleDeleteAccount} accessibilityRole="button">
-              <Text style={[styles.dangerText, { color: '#D46060' }]}>ลบบัญชี</Text>
-            </TouchableOpacity>
-          </SettingsGroup>
+          {/* ── Sign out / delete ────────────────────────────── */}
+          <TouchableOpacity
+            style={[styles.logoutBtn, { borderColor: colors.danger, backgroundColor: isDark ? colors.surface : '#FFFFFF' }]}
+            onPress={handleSignOut}
+            accessibilityRole="button"
+            accessibilityLabel="ออกจากระบบ"
+          >
+            <LogoutIcon size={19} color={colors.danger} />
+            <Text style={[styles.logoutText, { color: colors.danger }]}>ออกจากระบบ</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteLink} onPress={handleDeleteAccount} accessibilityRole="button">
+            <Text style={[styles.deleteText, { color: colors.textMuted }]}>ลบบัญชีและข้อมูลทั้งหมด</Text>
+          </TouchableOpacity>
 
           {/* Version */}
           <Text style={[styles.version, { color: colors.textMuted }]}>
@@ -254,7 +259,7 @@ export default function ProfileScreen() {
       <Modal visible={editVisible} transparent animationType="fade" onRequestClose={() => setEditVisible(false)}>
         <View style={styles.modalBackdrop}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
-            <View style={[styles.modalCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+            <View style={[styles.modalCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>แก้ไขโปรไฟล์</Text>
               <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>ชื่อที่แสดง</Text>
               <TextInput
@@ -284,7 +289,7 @@ export default function ProfileScreen() {
       <Modal visible={passwordVisible} transparent animationType="fade" onRequestClose={() => { if (!savingPassword) setPasswordVisible(false); }}>
         <View style={styles.modalBackdrop}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
-            <View style={[styles.modalCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+            <View style={[styles.modalCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
               <View style={styles.passwordModalIcon}><ShieldIcon size={22} color={colors.primary} /></View>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>เปลี่ยนรหัสผ่าน</Text>
               <Text style={[styles.passwordHint, { color: colors.textMuted }]}>ตั้งรหัสผ่านใหม่อย่างน้อย 8 ตัวอักษร ระบบจะบันทึกกับบัญชีของคุณ</Text>
@@ -332,7 +337,7 @@ export default function ProfileScreen() {
 
       <Modal visible={currencyVisible} transparent animationType="fade" onRequestClose={() => setCurrencyVisible(false)}>
         <View style={styles.modalBackdrop}>
-          <View style={[styles.currencyModal, { backgroundColor: isDark ? '#141927' : '#FFFFFF', borderColor: colors.border }]}>
+          <View style={[styles.currencyModal, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: colors.border }]}>
             <View style={styles.currencyHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>สกุลเงิน</Text>
@@ -392,7 +397,7 @@ function SettingsGroup({ title, children, colors, isDark }: any) {
   return (
     <View style={styles.group}>
       {title ? <Text style={[styles.groupTitle, { color: colors.textMuted }]}>{title}</Text> : null}
-      <View style={[styles.groupCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+      <View style={[styles.groupCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
         {children}
       </View>
     </View>
@@ -425,7 +430,8 @@ function ToggleRow({ label, hint, icon, value, onChange, colors }: any) {
       </View>
       <Switch value={value} onValueChange={onChange}
         trackColor={{ false: colors.border, true: colors.primary }}
-        thumbColor="#fff" />
+        thumbColor="#fff"
+        {...({ activeThumbColor: '#fff' } as object)} />
     </View>
   );
 }
@@ -450,7 +456,7 @@ const styles = StyleSheet.create({
   avatarWrap: { position: 'relative', marginBottom: 4 },
   avatar: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
-  proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0D1F35' },
+  proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0F172A' },
   heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
   heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
   heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
@@ -467,7 +473,7 @@ const styles = StyleSheet.create({
   upgradeTitle: { fontSize: 16, fontWeight: '800', color: '#fff' },
   upgradeSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 3, lineHeight: 17 },
   upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  upgradeBtnText: { color: '#1B3557', fontSize: 13, fontWeight: '700' },
+  upgradeBtnText: { color: '#1E3A8A', fontSize: 13, fontWeight: '700' },
   group: { gap: 6 },
   groupTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
   groupCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
@@ -478,6 +484,10 @@ const styles = StyleSheet.create({
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rowValue: { fontSize: 13 },
   divider: { height: 1, marginLeft: 16 },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, borderRadius: 14, borderWidth: 1.5 },
+  logoutText: { fontSize: 15, fontWeight: '700' },
+  deleteLink: { alignSelf: 'center', paddingVertical: 8 },
+  deleteText: { fontSize: 13, textDecorationLine: 'underline' },
   dangerRow: { paddingHorizontal: 16, paddingVertical: 14, minHeight: 52, justifyContent: 'center' },
   dangerText: { fontSize: 15 },
   version: { textAlign: 'center', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', paddingVertical: 8 },
@@ -502,6 +512,6 @@ const styles = StyleSheet.create({
   modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
   modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
-  modalSave: { backgroundColor: '#2F6293', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
+  modalSave: { backgroundColor: '#2563EB', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
   modalSaveText: { color: '#fff', fontWeight: '700' },
 });

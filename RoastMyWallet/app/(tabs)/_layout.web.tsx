@@ -26,10 +26,10 @@ export default function TabLayoutWeb() {
   const tabBarStyle = showSidebar
     ? { display: 'none' as const }
     : {
-        backgroundColor: isDark ? '#141927' : '#FFFFFF',
+        backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
         borderTopColor: colors.border,
         borderTopWidth: 1,
-        height: 64,
+        height: 72,
         paddingBottom: 8,
         paddingTop: 8,
       };
@@ -39,7 +39,7 @@ export default function TabLayoutWeb() {
     tabBarStyle,
     tabBarActiveTintColor: colors.primary,
     tabBarInactiveTintColor: colors.tabInactive,
-    tabBarLabelStyle: { fontSize: 10, fontWeight: '600' as const, marginTop: 2 },
+    tabBarLabelStyle: { fontSize: 10, lineHeight: 14, fontWeight: '600' as const, marginTop: 2 },
   };
 
   const tabs = (

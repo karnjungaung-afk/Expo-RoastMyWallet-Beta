@@ -38,7 +38,7 @@ export function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPres
   return (
     <TouchableOpacity onPress={handle} activeOpacity={0.8}>
       <View style={[styles.card, {
-        backgroundColor: isDark ? '#141927' : '#fff',
+        backgroundColor: isDark ? '#1E293B' : '#fff',
         borderColor: isDark ? '#1E2A3A' : '#EDE8DF',
         shadowColor: isDark ? '#000' : '#7A5A30',
       }]}>

@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
-import { Platform, View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ColorValue } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
@@ -7,17 +8,19 @@ import { HomeIcon, ClockIcon, ChartIcon, SquadIcon, UserIcon } from '@/component
 
 export default function TabLayout() {
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const bottom = Math.max(insets.bottom, 8);
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isDark ? '#141927' : '#FFFFFF',
+          backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 80 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+          height: 64 + bottom,
+          paddingBottom: bottom,
           paddingTop: 8,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
@@ -27,7 +30,7 @@ export default function TabLayout() {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.tabInactive,
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginTop: 1, letterSpacing: 0.2 },
+        tabBarLabelStyle: { fontSize: 10, lineHeight: 14, fontWeight: '600', marginTop: 1 },
         tabBarHideOnKeyboard: true,
       }}
     >

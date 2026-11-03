@@ -132,7 +132,7 @@ function SplashLoader({ colors, isDark }: { colors: any; isDark: boolean }) {
   return (
     <View style={[styles.splash, { backgroundColor: colors?.background ?? '#F2F0EB' }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <ActivityIndicator size="small" color={colors?.primary ?? '#1B3557'} />
+      <ActivityIndicator size="small" color={colors?.primary ?? '#1E3A8A'} />
     </View>
   );
 }

@@ -3,7 +3,6 @@ import {
   View, Text, FlatList, TouchableOpacity,
   StyleSheet, RefreshControl,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
@@ -74,17 +73,14 @@ export default function WaitingScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <LinearGradient
-        colors={isDark ? ['#0D1F35', colors.background] : ['#1B3557', colors.background]}
-        style={[styles.header, { paddingTop: insets.top + 16 }]}
-      >
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <View style={styles.headerContent}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={styles.headerTitle}>Waiting List</Text>
-            <Text style={styles.headerSub}>{searchTerm ? `ผลการค้นหา “${searchTerm}”` : 'รายการที่รอตัดสินใจ'}</Text>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>รอซื้อ</Text>
+            <Text style={[styles.headerSub, { color: colors.textMuted }]}>{searchTerm ? `ผลการค้นหา “${searchTerm}”` : 'รายการที่รอตัดสินใจ'}</Text>
           </View>
           <View style={styles.headerStats}>
-            <StatBubble value={waiting.length} label="รอ" color="#5A96C3" />
+            <StatBubble value={waiting.length} label="รอ" color={colors.primary} />
             {ready.length > 0 && <StatBubble value={ready.length} label="พร้อม" color="#E8A030" />}
           </View>
         </View>
@@ -97,9 +93,9 @@ export default function WaitingScreen() {
               <TouchableOpacity
                 key={f.key}
                 onPress={() => setFilter(f.key)}
-                style={[styles.chip, active && styles.chipActive, { backgroundColor: active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.06)', borderColor: active ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)' }]}
+                style={[styles.chip, active && styles.chipActive, { backgroundColor: active ? colors.primary : colors.surface, borderColor: active ? colors.primary : colors.border }]}
               >
-                <Text style={[styles.chipText, { color: active ? '#fff' : 'rgba(255,255,255,0.5)' }]}>
+                <Text style={[styles.chipText, { color: active ? '#fff' : colors.textSecondary }]}>
                   {f.label}
                 </Text>
                 {f.key !== 'all' && filter !== f.key && getChipCount(f.key, purchases) > 0 && (
@@ -111,7 +107,7 @@ export default function WaitingScreen() {
             );
           })}
         </View>
-      </LinearGradient>
+      </View>
 
       {searchTerm ? (
         <View style={styles.searchNotice}>
@@ -182,8 +178,8 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { paddingBottom: 16, paddingHorizontal: 20, gap: 14 },
   headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: '#fff', letterSpacing: -0.8 },
-  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
+  headerTitle: { fontSize: 28, fontWeight: '800', letterSpacing: -0.8 },
+  headerSub: { fontSize: 13, marginTop: 2 },
   headerStats: { flexDirection: 'row', gap: 8 },
   statBubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center', borderWidth: 1 },
   statBubbleValue: { fontSize: 18, fontWeight: '800' },

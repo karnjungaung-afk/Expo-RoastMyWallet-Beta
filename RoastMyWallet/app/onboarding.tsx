@@ -16,8 +16,8 @@ const SLIDES = [
     id: '1',
     title: 'เห็นของอยากได้?\nหยุดก่อนสักแป๊บ',
     sub: 'แค่เพิ่มสินค้าไว้ที่นี่ก่อนกด Order แอพจะช่วยให้คุณตัดสินใจได้ดีขึ้น',
-    grad: ['#0D1F35', '#1B3557'] as [string, string],
-    accent: '#5A96C3',
+    grad: ['#0F172A', '#1E3A8A'] as [string, string],
+    accent: '#3B82F6',
     Visual: Visual1,
   },
   {
@@ -41,7 +41,7 @@ const SLIDES = [
     title: 'เห็นเงินที่ประหยัดได้\nทุกบาท ทุกเดือน',
     sub: 'หน้า Insights บอกชัดเจนว่าคุณหยุดใช้เงินไปเท่าไหร่ ตัวเลขพูดแทนทุกอย่าง',
     grad: ['#1A1A3A', '#2A2060'] as [string, string],
-    accent: '#88B8D9',
+    accent: '#93C5FD',
     Visual: Visual4,
   },
 ] as const;

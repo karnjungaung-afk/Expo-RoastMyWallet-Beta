@@ -1,4 +1,5 @@
 // URL polyfill is applied at app entry (app/_layout.tsx) before this module loads.
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { env } from '@/config/env';
@@ -17,7 +18,8 @@ export const supabase = createClient(
       storage: AsyncStorage,
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: false,
+      // Web OAuth returns tokens in the URL; native handles them in features/auth/oauth.ts.
+      detectSessionInUrl: Platform.OS === 'web',
     },
   },
 );

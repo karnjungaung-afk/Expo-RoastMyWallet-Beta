@@ -12,7 +12,7 @@ import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { PurchaseCard } from '@/features/purchases/PurchaseCard';
 import { AddPurchaseSheet } from '@/features/purchases/AddPurchaseSheet';
 import { PlatformTile, PLATFORM_NAME } from '@/components/icons/PlatformIcons';
-import { ClockIcon, PlusIcon, ShieldIcon, FlameIcon, ArrowRightIcon, CheckIcon } from '@/components/icons/RmwIcons';
+import { ClockIcon, PlusIcon, ShieldIcon, FlameIcon, ArrowRightIcon, CheckIcon, WalletIcon } from '@/components/icons/RmwIcons';
 import { formatCurrency } from '@/utils/formatting';
 import type { Purchase, PurchaseCategory, ShoppingPlatform } from '@/types';
 
@@ -142,7 +142,22 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={[styles.metricsGrid, { gap: 12 }]}>
+        {!isWide && (
+          <LinearGradient colors={['#1E40AF', '#2563EB', '#3B82F6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
+            <View style={styles.heroTop}>
+              <Text style={styles.heroLabel}>ประหยัดได้เดือนนี้</Text>
+              <View style={styles.heroIcon}><WalletIcon size={18} color="#fff" /></View>
+            </View>
+            <Text style={styles.heroAmount} numberOfLines={1} adjustsFontSizeToFit>{formatCurrency(avoided, currency)}</Text>
+            <View style={styles.heroPill}>
+              <ShieldIcon size={12} color="#BBF7D0" />
+              <Text style={styles.heroPillText}>หลีกเลี่ยงแล้ว {avoidedCount} รายการ</Text>
+            </View>
+          </LinearGradient>
+        )}
+
+        <View style={[styles.metricsGrid, { gap: isWide ? 12 : 10 }, !isWide && { flexWrap: 'nowrap' }]}>
+          {isWide && (
           <MetricCard
             title="ประหยัดได้เดือนนี้"
             value={formatCurrency(avoided, currency)}
@@ -153,6 +168,7 @@ export default function HomeScreen() {
             isDark={isDark}
             width={width}
           />
+          )}
           <MetricCard
             title="รอตัดสินใจ"
             value={String(waiting.length)}
@@ -162,6 +178,7 @@ export default function HomeScreen() {
             colors={colors}
             isDark={isDark}
             width={width}
+            compact={!isWide}
           />
           <MetricCard
             title="ซื้อไปแล้ว"
@@ -172,6 +189,7 @@ export default function HomeScreen() {
             colors={colors}
             isDark={isDark}
             width={width}
+            compact={!isWide}
           />
           <MetricCard
             title="ทั้งหมด"
@@ -182,6 +200,7 @@ export default function HomeScreen() {
             colors={colors}
             isDark={isDark}
             width={width}
+            compact={!isWide}
           />
         </View>
 
@@ -337,7 +356,7 @@ export default function HomeScreen() {
         presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
         onRequestClose={() => setShowAddSheet(false)}
       >
-        <View style={[styles.modal, { backgroundColor: isDark ? '#0D1A2B' : '#F3F7FC', paddingTop: insets.top }]}>
+        <View style={[styles.modal, { backgroundColor: isDark ? '#0F172A' : '#F3F7FC', paddingTop: insets.top }]}>
           <AddPurchaseSheet
             onClose={() => { setShowAddSheet(false); setPrefillUrl(undefined); }}
             prefillUrl={prefillUrl}
@@ -357,11 +376,20 @@ function Panel({ children, colors, isDark, style }: {
   return <View style={[styles.panel, { backgroundColor: isDark ? colors.surface : '#FFFFFF', borderColor: isDark ? colors.border : '#E1E9F3' }, style]}>{children}</View>;
 }
 
-function MetricCard({ title, value, note, icon, accent, colors, isDark, width }: {
+function MetricCard({ title, value, note, icon, accent, colors, isDark, width, compact }: {
   title: string; value: string; note: string; icon: React.ReactNode; accent: string;
-  colors: ReturnType<typeof useTheme>['colors']; isDark: boolean; width: number;
+  colors: ReturnType<typeof useTheme>['colors']; isDark: boolean; width: number; compact?: boolean;
 }) {
   const cardWidth = width >= 1280 ? '24%' : width >= 720 ? '48%' : '100%';
+  if (compact) {
+    return (
+      <View style={[styles.miniCard, { backgroundColor: isDark ? colors.surface : '#FFFFFF', borderColor: isDark ? colors.border : '#E1E9F3' }]}>
+        <View style={[styles.miniIcon, { backgroundColor: accent + '18' }]}>{icon}</View>
+        <Text style={[styles.miniTitle, { color: colors.textSecondary }]} numberOfLines={1}>{title}</Text>
+        <Text style={[styles.miniValue, { color: colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+      </View>
+    );
+  }
   return (
     <View style={[styles.metricCard, { width: cardWidth, backgroundColor: isDark ? colors.surface : '#FFFFFF', borderColor: isDark ? colors.border : '#E1E9F3' }]}>
       <View style={[styles.metricIcon, { backgroundColor: accent + '18' }]}>{icon}</View>
@@ -448,6 +476,17 @@ function compactNumber(value: number, currency: string): string {
 }
 
 const styles = StyleSheet.create({
+  heroCard: { borderRadius: 20, padding: 18, gap: 8, shadowColor: '#2563EB', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 18, elevation: 6 },
+  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
+  heroIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  heroAmount: { fontSize: 36, fontWeight: '900', color: '#fff', letterSpacing: -1.2 },
+  heroPill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.18)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
+  heroPillText: { fontSize: 12, fontWeight: '600', color: '#fff' },
+  miniCard: { flex: 1, minWidth: 0, borderRadius: 16, borderWidth: 1, padding: 12, gap: 4 },
+  miniIcon: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
+  miniTitle: { fontSize: 11, fontWeight: '500' },
+  miniValue: { fontSize: 20, fontWeight: '800', letterSpacing: -0.4 },
   root: { flex: 1 },
   page: { width: '100%', alignSelf: 'center', paddingHorizontal: 20, gap: 18 },
   pageHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' },

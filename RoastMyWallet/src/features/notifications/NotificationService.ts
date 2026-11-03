@@ -213,7 +213,7 @@ export class NotificationService {
         importance: notifications.AndroidImportance.DEFAULT,
         sound: null,
         vibrationPattern: [0, 250],
-        lightColor: '#1B3557',
+        lightColor: '#1E3A8A',
       });
       await notifications.setNotificationChannelAsync('limits', {
         name: 'Spending Limits',

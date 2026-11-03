@@ -83,7 +83,7 @@ export default function PurchaseDetailScreen() {
     ? ['#3A1010', '#1A0808']
     : risk === 'low'
     ? ['#0D2D1A', '#071610']
-    : ['#0D1F35', '#070D1A'];
+    : ['#0F172A', '#070D1A'];
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -124,14 +124,14 @@ export default function PurchaseDetailScreen() {
 
           {/* AI Roast */}
           {purchase.aiRoast && (
-            <View style={[styles.roastCard, { backgroundColor: isDark ? '#141927' : '#F4F6F9', borderColor: isDark ? '#1E2A3A' : '#E0E8F0' }]}>
+            <View style={[styles.roastCard, { backgroundColor: isDark ? '#1E293B' : '#F4F6F9', borderColor: isDark ? '#1E2A3A' : '#E0E8F0' }]}>
               <FlameIcon size={16} color="#E8A030" />
               <Text style={[styles.roastText, { color: colors.textPrimary }]}>{purchase.aiRoast}</Text>
             </View>
           )}
 
           {/* Details */}
-          <View style={[styles.detailCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}>
+          <View style={[styles.detailCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
             <DetailRow icon={<WalletIcon size={16} color={colors.textSecondary} />} label="หมวดหมู่" value={formatCategoryName(purchase.category)} colors={colors} />
             {purchase.platform && purchase.platform !== 'unknown' && (
               <><Divider colors={colors} /><DetailRow icon={<ShieldIcon size={16} color={colors.textSecondary} />} label="แพลตฟอร์ม" value={formatPlatformName(purchase.platform)} colors={colors} /></>
@@ -150,7 +150,7 @@ export default function PurchaseDetailScreen() {
 
           {/* Notes */}
           {purchase.notes && (
-            <View style={[styles.notesCard, { backgroundColor: isDark ? '#141927' : '#FAFAFA', borderColor: colors.border }]}>
+            <View style={[styles.notesCard, { backgroundColor: isDark ? '#1E293B' : '#FAFAFA', borderColor: colors.border }]}>
               <Text style={[styles.notesLabel, { color: colors.textMuted }]}>บันทึกเพิ่มเติม</Text>
               <Text style={[styles.notesText, { color: colors.textPrimary }]}>{purchase.notes}</Text>
             </View>
@@ -159,7 +159,7 @@ export default function PurchaseDetailScreen() {
           {/* URL */}
           {purchase.url && (
             <TouchableOpacity
-              style={[styles.urlCard, { backgroundColor: isDark ? '#141927' : '#fff', borderColor: colors.border }]}
+              style={[styles.urlCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}
               onPress={() => Linking.openURL(purchase.url!)}
             >
               <Text style={[styles.urlText, { color: colors.primary }]} numberOfLines={1}>{purchase.url}</Text>
@@ -171,7 +171,7 @@ export default function PurchaseDetailScreen() {
 
       {/* Action buttons */}
       {isWaiting && (
-        <View style={[styles.actions, { paddingBottom: insets.bottom + 16, backgroundColor: isDark ? '#0D1A2B' : '#fff', borderTopColor: colors.border }]}>
+        <View style={[styles.actions, { paddingBottom: insets.bottom + 16, backgroundColor: isDark ? '#0F172A' : '#fff', borderTopColor: colors.border }]}>
           {isReady ? (
             <>
               <TouchableOpacity
