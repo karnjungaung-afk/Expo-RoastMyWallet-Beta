@@ -13,8 +13,13 @@ const appOwnership = String(Constants.appOwnership ?? '').toLowerCase();
 const isExpoGo =
   executionEnvironment === 'storeclient' ||
   appOwnership === 'expo';
+// Fail closed on Android runtimes that are not a standalone native app.
+// Expo Go (and some development-client runtimes) may not include the native
+// ExpoTopicSubscriptionModule imported by expo-notifications. This prevents
+// the package entry point from being required during app startup.
 const notificationsUnavailable =
-  Platform.OS === 'android' && isExpoGo;
+  Platform.OS === 'android' &&
+  (isExpoGo || executionEnvironment !== 'standalone');
 
 type NotificationsModule = typeof import('expo-notifications');
 let notificationsModule: NotificationsModule | null | undefined;
