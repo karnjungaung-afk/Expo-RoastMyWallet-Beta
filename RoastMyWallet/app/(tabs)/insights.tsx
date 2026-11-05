@@ -166,7 +166,7 @@ export default function InsightsScreen() {
               <View style={[...card, styles.cell]}>
                 <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>เลี่ยงได้ เทียบกับ ซื้อจริง</Text>
                 <Text style={[styles.note, { color: colors.textMuted }]}>มูลค่ารายเดือนของรายการที่ตัดสินใจแล้ว</Text>
-                <PairBars series={d.series} colors={colors} currency={currency} />
+                <PairBars series={d.series} colors={colors} />
                 <View style={styles.legend}>
                   <Legend color={colors.primary} label="เลี่ยงได้" text={colors.textSecondary} />
                   <Legend color={colors.warning} label="ซื้อจริง" text={colors.textSecondary} />
