@@ -3,6 +3,7 @@ import {
   Modal, Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions, type StyleProp, type ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
@@ -424,26 +425,52 @@ function WeeklyBarChart({ values, currency, colors, isDark }: {
   values: { label: string; key: string; value: number }[];
   currency: string; colors: ReturnType<typeof useTheme>['colors']; isDark: boolean;
 }) {
-  const max = Math.max(...values.map(v => v.value), 1);
+  const { width: windowWidth } = useWindowDimensions();
+  const chartWidth = Math.max(220, Math.min(windowWidth >= 1024 ? windowWidth - 540 : windowWidth - 420, 620));
+  const max = Math.max(...values.map(item => item.value), 1);
+  const points = values.map((item, index) => ({
+    ...item,
+    x: 12 + (index * (chartWidth - 24)) / Math.max(values.length - 1, 1),
+    y: 112 - (item.value / max) * 82,
+  }));
+  const linePath = points.map((point, index) =>
+    `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`
+  ).join(' ');
+  const areaPath = points.length
+    ? `${linePath} L ${points[points.length - 1].x.toFixed(1)} 120 L ${points[0].x.toFixed(1)} 120 Z`
+    : '';
+
   return (
     <View style={styles.chart}>
-      <View style={styles.chartBars}>
-        {values.map(item => {
-          const height = item.value > 0 ? Math.max(8, Math.round(item.value / max * 100)) : 3;
-          return (
-            <View key={item.key} style={styles.chartDay}>
-              <Text style={[styles.chartAmount, { color: colors.textMuted }]} numberOfLines={1}>
-                {item.value > 0 ? compactNumber(item.value, currency) : '—'}
-              </Text>
-              <View style={[styles.chartTrack, { backgroundColor: isDark ? '#243247' : '#EDF2F8' }]}>
-                <LinearGradient colors={item.value > 0 ? ['#2C7CE2', '#67AEFF'] : ['#CDD8E7', '#CDD8E7']} style={[styles.chartBar, { height }]} />
-              </View>
-              <Text style={[styles.chartLabel, { color: colors.textMuted }]}>{item.label}</Text>
-            </View>
-          );
-        })}
+      <View style={styles.chartLine}>
+        <Svg width={chartWidth} height={132} viewBox={`0 0 ${chartWidth} 132`}>
+          {[30, 72, 114].map(y => (
+            <Line key={y} x1="8" x2={chartWidth - 8} y1={y} y2={y}
+              stroke={isDark ? '#334155' : '#E8EEF6'} strokeWidth="1" strokeDasharray="3 5" />
+          ))}
+          {points.length > 1 && (
+            <>
+              <Path d={areaPath} fill={isDark ? '#2563EB' : '#DCEBFF'} opacity={isDark ? 0.2 : 0.8} />
+              <Path d={linePath} fill="none" stroke="#2878E2" strokeWidth="3"
+                strokeLinecap="round" strokeLinejoin="round" />
+            </>
+          )}
+          {points.map(point => (
+            <Circle key={point.key} cx={point.x} cy={point.y} r="4"
+              fill={isDark ? '#172B49' : '#FFFFFF'} stroke="#2878E2" strokeWidth="2.5" />
+          ))}
+        </Svg>
       </View>
-      <Text style={[styles.chartCaption, { color: colors.textMuted }]}>แสดงเฉพาะรายการที่มีสถานะ “ไม่ซื้อแล้ว” และวันที่ตัดสินใจ</Text>
+      <View style={styles.chartLabels}>
+        {points.map(point => (
+          <View key={point.key} style={styles.chartLabelCell}>
+            <Text style={[styles.chartLabel, { color: colors.textMuted }]}>{point.label}</Text>
+          </View>
+        ))}
+      </View>
+      <Text style={[styles.chartCaption, { color: colors.textMuted }]}>
+        เงินที่ประหยัดได้จากรายการที่เลือก “ไม่ซื้อแล้ว” · {currency}
+      </Text>
     </View>
   );
 }
@@ -495,7 +522,7 @@ function compactNumber(value: number, currency: string): string {
 }
 
 const styles = StyleSheet.create({
-  heroCard: { borderRadius: 20, padding: 18, gap: 8, shadowColor: '#2563EB', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 18, elevation: 6 },
+  heroCard: { borderRadius: 22, padding: 20, gap: 9, shadowColor: '#1769E0', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 18, elevation: 6 },
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
   heroIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
@@ -507,7 +534,7 @@ const styles = StyleSheet.create({
   miniTitle: { fontSize: 11, fontWeight: '500' },
   miniValue: { fontSize: 20, fontWeight: '800', letterSpacing: -0.4 },
   root: { flex: 1 },
-  page: { width: '100%', alignSelf: 'center', paddingHorizontal: 20, gap: 18 },
+  page: { width: '100%', alignSelf: 'center', paddingHorizontal: 22, gap: 20 },
   pageHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' },
   eyebrow: { fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
   pageTitle: { fontSize: 30, lineHeight: 36, fontWeight: '900', letterSpacing: -0.8, marginTop: 2 },
@@ -519,7 +546,7 @@ const styles = StyleSheet.create({
   primaryButton: { backgroundColor: '#1769E0', flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
   primaryButtonText: { color: '#fff', fontSize: 13, fontWeight: '800' },
   metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  metricCard: { borderWidth: 1, borderRadius: 18, padding: 16, minHeight: 142, gap: 7, overflow: 'hidden', shadowColor: '#173B63', shadowOpacity: 0.04, shadowOffset: { width: 0, height: 4 }, shadowRadius: 14, elevation: 1 },
+  metricCard: { borderWidth: 1, borderRadius: 16, padding: 17, minHeight: 142, gap: 7, overflow: 'hidden', shadowColor: '#173B63', shadowOpacity: 0.04, shadowOffset: { width: 0, height: 4 }, shadowRadius: 14, elevation: 1 },
   metricIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
   metricTitle: { fontSize: 12, fontWeight: '600' },
   metricValue: { fontSize: 23, lineHeight: 28, fontWeight: '900', letterSpacing: -0.4 },
@@ -527,19 +554,23 @@ const styles = StyleSheet.create({
   metricAccent: { height: 3, width: 34, borderRadius: 3, marginTop: 'auto' },
   analyticsRow: { gap: 14, alignItems: 'stretch' },
   contentRow: { gap: 14, alignItems: 'flex-start' },
-  panel: { borderWidth: 1, borderRadius: 20, padding: 18, gap: 14, shadowColor: '#173B63', shadowOpacity: 0.035, shadowOffset: { width: 0, height: 4 }, shadowRadius: 12, elevation: 1 },
+  panel: { borderWidth: 1, borderRadius: 17, padding: 19, gap: 15, shadowColor: '#173B63', shadowOpacity: 0.035, shadowOffset: { width: 0, height: 4 }, shadowRadius: 12, elevation: 1 },
   panelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   panelTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
   panelSubtitle: { fontSize: 11, lineHeight: 16, marginTop: 3 },
   panelUnit: { fontSize: 10, fontWeight: '800', backgroundColor: '#E9F1FC', overflow: 'hidden', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 },
-  chart: { minHeight: 184, gap: 8, justifyContent: 'flex-end' },
-  chartBars: { flexDirection: 'row', gap: 8, alignItems: 'flex-end', height: 142, justifyContent: 'space-between' },
-  chartDay: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'flex-end', height: '100%', gap: 5 },
-  chartAmount: { fontSize: 9, minHeight: 12 },
-  chartTrack: { width: '70%', height: 108, borderRadius: 8, alignItems: 'center', justifyContent: 'flex-end', overflow: 'hidden' },
-  chartBar: { width: '100%', borderRadius: 7 },
-  chartLabel: { fontSize: 10 },
-  chartCaption: { fontSize: 10, lineHeight: 15, marginTop: 4 },
+
+
+
+
+
+
+
+  chartLine: { minHeight: 136, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  chartLabels: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
+  chartLabelCell: { flex: 1, alignItems: 'center' },
+  chartLabel: { fontSize: 10, fontWeight: '600' },
+  chartCaption: { fontSize: 10, lineHeight: 15, marginTop: 2 },
   chartEmpty: { minHeight: 150, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 12 },
   chartEmptyIcon: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   chartEmptyText: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
