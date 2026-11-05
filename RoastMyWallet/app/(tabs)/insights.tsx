@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   page: { width: '100%', maxWidth: 1160, paddingHorizontal: 20, gap: 20 },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' },
-  title: { fontSize: 30, fontWeight: '850', letterSpacing: -0.8 },
+  title: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
   subtitle: { fontSize: 13, lineHeight: 19, marginTop: 4 },
   seg: { flexDirection: 'row', borderRadius: 13, padding: 4 },
   segBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
