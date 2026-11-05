@@ -68,11 +68,22 @@ export default function HomeScreen() {
   const categoryStats = useMemo(() => {
     const totals = new Map<PurchaseCategory, number>();
     purchases.forEach(p => totals.set(p.category, (totals.get(p.category) ?? 0) + p.price));
-    return [...totals.entries()]
-      .map(([category, amount]) => ({ category, amount }))
+
+    // Keep a small, stable set of categories visible, including 0% categories.
+    const categoryOrder: PurchaseCategory[] = [
+      'fashion', 'electronics', 'beauty', 'food', 'home', 'gaming',
+      'sports', 'books', 'travel', 'entertainment', 'health', 'tools', 'other',
+    ];
+
+    return categoryOrder
+      .map(category => ({ category, amount: totals.get(category) ?? 0 }))
       .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
+      .slice(0, 4);
   }, [purchases]);
+  const categoryTotal = useMemo(
+    () => purchases.reduce((sum, purchase) => sum + purchase.price, 0),
+    [purchases],
+  );
 
   const weeklySavings = useMemo(() => {
     const now = new Date();
@@ -230,8 +241,9 @@ export default function HomeScreen() {
             ) : (
               <View style={styles.categoryList}>
                 {categoryStats.map((item, index) => {
-                  const total = categoryStats.reduce((sum, current) => sum + current.amount, 0) || 1;
-                  const percentage = Math.round((item.amount / total) * 100);
+                  const percentage = categoryTotal > 0
+                    ? Math.round((item.amount / categoryTotal) * 100)
+                    : 0;
                   const accent = ['#3579D4', '#37A878', '#E3A43B', '#8866D5', '#D56A6A'][index % 5];
                   return (
                     <View key={item.category} style={styles.categoryItem}>
