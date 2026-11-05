@@ -91,18 +91,18 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
         style={[
           styles.sidebar,
           {
-            backgroundColor: '#102B48',
-            borderRightColor: '#254461',
-            width: isWide ? 240 : 200,
+            backgroundColor: '#102D4A',
+            borderRightColor: '#1E4267',
+            width: isWide ? 232 : 188,
           },
         ]}
       >
         {/* Logo */}
-        <View style={[styles.sidebarLogo, { borderBottomColor: '#254461' }]}>
+        <View style={[styles.sidebarLogo, { borderBottomColor: '#1E4267' }]}>
           <View style={[styles.logoMark, { borderColor: '#75B5FF' }]}>
             <View style={styles.pauseBars}>
               <View style={[styles.pauseBar, { backgroundColor: '#75B5FF' }]} />
-              <View style={[styles.pauseBar, { backgroundColor: '#397DD6' }]} />
+              <View style={[styles.pauseBar, { backgroundColor: '#347FE0' }]} />
             </View>
             <View style={[styles.cornerTL, { borderColor: '#75B5FF' }]} />
           </View>
@@ -128,7 +128,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                 accessibilityState={{ selected: active }}
                 style={[
                   styles.navItem,
-                  active && [styles.navItemActive, { borderLeftColor: '#72B0FF', backgroundColor: '#1C4D80' }],
+                  active && [styles.navItemActive, { borderLeftColor: '#8FC1FF', backgroundColor: '#1D5FAF' }],
                   { paddingLeft: isWide ? spacing[5] : spacing[4] },
                 ]}
               >
@@ -163,7 +163,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
         </View>
 
         {/* Sidebar footer — subscription status + system info */}
-        <View style={[styles.sidebarFooter, { borderTopColor: '#254461' }]}>
+        <View style={[styles.sidebarFooter, { borderTopColor: '#1E4267' }]}>
           {isWide ? (
             <>
               {!isPro() && (
@@ -221,7 +221,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
       {/* Main content area */}
       <View style={[styles.content, { backgroundColor: colors.background }]}>
         <View style={[styles.topbar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-          <View style={[styles.searchBox, { backgroundColor: colors.background, borderColor: colors.border, maxWidth: isWide ? 520 : 320 }]}>
+          <View style={[styles.searchBox, { backgroundColor: colors.backgroundSubtle, borderColor: colors.border, maxWidth: isWide ? 520 : 320 }]}>
             <Text style={[styles.searchGlyph, { color: colors.textMuted }]}>⌕</Text>
             <TextInput
               value={searchText}
@@ -362,11 +362,11 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
   },
-  sidebarProCard: { backgroundColor: '#173D62', borderColor: '#2C5276', borderWidth: 1, borderRadius: 14, padding: 12, gap: 7, marginBottom: 12 },
+  sidebarProCard: { backgroundColor: '#173D63', borderColor: '#315D87', borderWidth: 1, borderRadius: 14, padding: 12, gap: 7, marginBottom: 12 },
   sidebarProIcon: { width: 30, height: 30, borderRadius: 9, backgroundColor: 'rgba(255,210,122,0.14)', alignItems: 'center', justifyContent: 'center' },
   sidebarProTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
   sidebarProCopy: { color: '#BDD0E3', fontSize: 10, lineHeight: 15 },
-  sidebarProButton: { alignSelf: 'flex-start', backgroundColor: '#2C76D2', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginTop: 2 },
+  sidebarProButton: { alignSelf: 'flex-start', backgroundColor: '#2877DC', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginTop: 2 },
   sidebarProButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
   sidebarFooter: {
     borderTopWidth: 1,
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   topbar: {
-    minHeight: 66,
+    minHeight: 68,
     paddingHorizontal: 22,
     paddingVertical: 10,
     borderBottomWidth: 1,
