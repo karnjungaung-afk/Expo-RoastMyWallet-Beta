@@ -426,7 +426,8 @@ function WeeklyBarChart({ values, currency, colors, isDark }: {
   currency: string; colors: ReturnType<typeof useTheme>['colors']; isDark: boolean;
 }) {
   const { width: windowWidth } = useWindowDimensions();
-  const chartWidth = Math.max(220, Math.min(windowWidth >= 1024 ? windowWidth - 540 : windowWidth - 420, 620));
+  const availableWidth = windowWidth >= 1024 ? windowWidth - 650 : windowWidth >= 768 ? windowWidth - 420 : windowWidth - 48;
+  const chartWidth = Math.max(220, Math.min(availableWidth, 620));
   const max = Math.max(...values.map(item => item.value), 1);
   const points = values.map((item, index) => ({
     ...item,
