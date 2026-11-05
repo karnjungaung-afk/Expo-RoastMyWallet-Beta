@@ -166,7 +166,7 @@ export default function InsightsScreen() {
               <View style={[...card, styles.cell]}>
                 <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>เลี่ยงได้ เทียบกับ ซื้อจริง</Text>
                 <Text style={[styles.note, { color: colors.textMuted }]}>มูลค่ารายเดือนของรายการที่ตัดสินใจแล้ว</Text>
-                <PairBars series={d.series} colors={colors} currency={currency} />
+                <PairBars series={d.series} colors={colors} />
                 <View style={styles.legend}>
                   <Legend color={colors.primary} label="เลี่ยงได้" text={colors.textSecondary} />
                   <Legend color={colors.warning} label="ซื้อจริง" text={colors.textSecondary} />
@@ -278,7 +278,7 @@ function Gauge({ value, color, track, text }: { value: number | null; color: str
   );
 }
 
-function PairBars({ series, colors, currency }: { series: { label: string; avoided: number; bought: number }[]; colors: any; currency: string }) {
+function PairBars({ series, colors }: { series: { label: string; avoided: number; bought: number }[]; colors: any }) {
   const [w, onLayout] = useWidth();
   const H = 170, padB = 22, padT = 18;
   const max = Math.max(...series.flatMap(s => [s.avoided, s.bought]), 1);
@@ -328,16 +328,16 @@ function Legend({ color, label, text }: { color: string; label: string; text: st
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  page: { width: '100%', maxWidth: 1100, paddingHorizontal: 16, gap: 16 },
+  page: { width: '100%', maxWidth: 1160, paddingHorizontal: 20, gap: 20 },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' },
-  title: { fontSize: 28, fontWeight: '800', letterSpacing: -0.7 },
+  title: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
   subtitle: { fontSize: 13, lineHeight: 19, marginTop: 4 },
-  seg: { flexDirection: 'row', borderRadius: 12, padding: 3 },
+  seg: { flexDirection: 'row', borderRadius: 13, padding: 4 },
   segBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
   segText: { fontSize: 13, fontWeight: '700' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignItems: 'stretch' },
-  cell: { flexGrow: 1, flexShrink: 1, flexBasis: 360, minWidth: 0, maxWidth: '100%' },
-  card: { borderRadius: 20, borderWidth: 1, padding: 18, gap: 8 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' },
+  cell: { flexGrow: 1, flexShrink: 1, flexBasis: 370, minWidth: 0, maxWidth: '100%' },
+  card: { borderRadius: 17, borderWidth: 1, padding: 20, gap: 10 },
   cardTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
   note: { fontSize: 12, lineHeight: 17 },
   scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 },
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   rankText: { fontSize: 12, fontWeight: '800' },
   winName: { flex: 1, fontSize: 14, fontWeight: '600' },
   winPrice: { fontSize: 14, fontWeight: '800' },
-  tip: { borderRadius: 20, padding: 20, gap: 10, justifyContent: 'center' },
+  tip: { borderRadius: 18, padding: 22, gap: 11, justifyContent: 'center' },
   tipTitle: { color: '#fff', fontSize: 16, fontWeight: '800' },
   tipText: { color: 'rgba(255,255,255,0.88)', fontSize: 14, lineHeight: 21 },
   tipPill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.16)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, marginTop: 4 },

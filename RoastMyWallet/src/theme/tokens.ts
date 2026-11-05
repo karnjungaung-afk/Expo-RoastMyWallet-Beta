@@ -118,29 +118,29 @@ export interface ThemeColors {
 // ─── LIGHT COLORS ─────────────────────────────────────────────────────────────
 
 export const lightColors: ThemeColors = {
-  background: '#EEF2FF',
-  backgroundSubtle: '#E4EAFB',
+  background: '#F3F6FC',
+  backgroundSubtle: '#EAF0F8',
   surface: '#FFFFFF',
   surfaceRaised: '#FFFFFF',
-  surfaceOverlay: 'rgba(238,242,255,0.95)',
+  surfaceOverlay: 'rgba(243,246,252,0.96)',
   textPrimary: '#111827',
   textSecondary: '#4B5563',
   textMuted: '#9CA3AF',
   textDisabled: '#D1D5DB',
   textInverse: '#FFFFFF',
   textLink: '#2563EB',
-  border: '#E5E7EB',
-  borderSubtle: '#F3F4F6',
+  border: '#E3EAF3',
+  borderSubtle: '#F1F5FA',
   borderStrong: '#D1D5DB',
-  divider: '#EEF0F4',
-  primary: '#2563EB',
-  primaryHover: '#1D4ED8',
-  primaryActive: '#1E40AF',
-  primarySubtle: '#DBEAFE',
+  divider: '#EAF0F6',
+  primary: '#1769E0',
+  primaryHover: '#1558C0',
+  primaryActive: '#124A9F',
+  primarySubtle: '#E3EFFF',
   primaryText: '#FFFFFF',
-  mecha: '#3B82F6',
-  mechaSubtle: '#DBEAFE',
-  mechaLine: '#BFDBFE',
+  mecha: '#4389E8',
+  mechaSubtle: '#E3EFFF',
+  mechaLine: '#C9DDF8',
   success: '#16A34A',
   successSubtle: '#DCFCE7',
   successText: '#15803D',
@@ -156,13 +156,13 @@ export const lightColors: ThemeColors = {
   riskMediumSubtle: '#FEF3C7',
   riskLow: '#16A34A',
   riskLowSubtle: '#DCFCE7',
-  tabActive: '#2563EB',
+  tabActive: '#1769E0',
   tabInactive: '#9CA3AF',
   tabBar: '#FFFFFF',
-  skeleton: '#E5E7EB',
-  shimmer: '#F3F4F6',
+  skeleton: '#E7EDF5',
+  shimmer: '#F5F8FC',
   scrim: 'rgba(15,31,74,0.5)',
-  inputBackground: '#F8FAFF',
+  inputBackground: '#F7F9FD',
 };
 
 // ─── DARK COLORS ──────────────────────────────────────────────────────────────
@@ -257,10 +257,10 @@ export const shadows = {
 export const zIndex = { base: 0, raised: 1, dropdown: 10, sticky: 20, overlay: 30, modal: 40, toast: 50 } as const;
 
 export const layout = {
-  contentMaxWidth: 420, sidebarWidth: 260,
+  contentMaxWidth: 420, sidebarWidth: 232,
   tabBarHeight: 64, headerHeight: 56, touchTargetMin: 44,
-  screenPaddingH: spacing[4], screenPaddingV: spacing[5],
-  cardPadding: spacing[4], cardGap: spacing[3],
+  screenPaddingH: spacing[5], screenPaddingV: spacing[5],
+  cardPadding: spacing[5], cardGap: spacing[4],
 } as const;
 
 export const animation = {
