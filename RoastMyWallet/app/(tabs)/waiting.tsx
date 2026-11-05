@@ -1,7 +1,7 @@
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity,
-  StyleSheet, RefreshControl,
+  View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl,
+  Platform, useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
@@ -14,17 +14,19 @@ import { FlameIcon, ClockIcon, ShieldIcon, CheckIcon } from '@/components/icons/
 import type { Purchase } from '@/types';
 
 type Filter = 'all' | 'high_risk' | 'ready' | 'decided';
-const FILTERS: { key: Filter; label: string; icon: React.ReactNode }[] = [
-  { key: 'all',       label: 'ทั้งหมด',    icon: <ClockIcon size={13} color="currentColor" /> },
-  { key: 'high_risk', label: 'ความเสี่ยงสูง', icon: <FlameIcon size={13} color="currentColor" /> },
-  { key: 'ready',     label: 'พร้อมตัดสินใจ', icon: <ShieldIcon size={13} color="currentColor" /> },
-  { key: 'decided',   label: 'ตัดสินใจแล้ว',  icon: <CheckIcon size={13} color="currentColor" /> },
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: 'all', label: 'ทั้งหมด' },
+  { key: 'high_risk', label: 'ความเสี่ยงสูง' },
+  { key: 'ready', label: 'พร้อมตัดสินใจ' },
+  { key: 'decided', label: 'ประวัติการตัดสินใจ' },
 ];
 
 export default function WaitingScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width >= 900;
   const params = useLocalSearchParams<{ search?: string }>();
   const searchTerm = (typeof params.search === 'string' ? params.search : '').trim();
   const [filter, setFilter] = useState<Filter>('all');
@@ -37,7 +39,11 @@ export default function WaitingScreen() {
   useFocusEffect(useCallback(() => {
     void loadPurchases();
   }, [loadPurchases]));
-  const onRefresh = async () => { setRefreshing(true); await loadPurchases(true); setRefreshing(false); };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try { await loadPurchases(true); } finally { setRefreshing(false); }
+  };
 
   const filtered = useMemo(() => {
     let result: Purchase[];
@@ -49,154 +55,198 @@ export default function WaitingScreen() {
         result = purchases.filter(p => p.status === 'waiting' && p.waitingUntil && new Date(p.waitingUntil) <= new Date());
         break;
       case 'decided':
-        result = purchases.filter(p => p.status === 'bought' || p.status === 'avoided' || p.status === 'expired');
+        result = purchases.filter(p => ['bought', 'avoided', 'expired'].includes(p.status));
         break;
       default:
-        result = purchases;
+        result = purchases.filter(p => p.status === 'waiting');
     }
-
     if (!searchTerm) return result;
     const query = searchTerm.toLocaleLowerCase();
     return result.filter(p => [
-      p.productName,
-      p.platform,
-      p.category,
-      p.reason,
-      p.notes ?? '',
+      p.productName, p.platform, p.category, p.reason, p.notes ?? '',
     ].some(value => String(value).toLocaleLowerCase().includes(query)));
   }, [purchases, filter, searchTerm]);
 
   const waiting = purchases.filter(p => p.status === 'waiting');
-  const ready = purchases.filter(p => p.status === 'waiting' && p.waitingUntil && new Date(p.waitingUntil) <= new Date());
+  const ready = waiting.filter(p => p.waitingUntil && new Date(p.waitingUntil) <= new Date());
+  const decided = purchases.filter(p => ['bought', 'avoided', 'expired'].includes(p.status));
+  const totalValue = waiting.reduce((sum, item) => sum + item.price, 0);
+  const pageBg = Platform.OS === 'web' && !isDark ? '#F3F6FB' : colors.background;
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <View style={styles.headerContent}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>รอซื้อ</Text>
-            <Text style={[styles.headerSub, { color: colors.textMuted }]}>{searchTerm ? `ผลการค้นหา “${searchTerm}”` : 'รายการที่รอตัดสินใจ'}</Text>
-          </View>
-          <View style={styles.headerStats}>
-            <StatBubble value={waiting.length} label="รอ" color={colors.primary} />
-            {ready.length > 0 && <StatBubble value={ready.length} label="พร้อม" color="#E8A030" />}
-          </View>
-        </View>
-
-        {/* Filter chips */}
-        <View style={styles.filterRow}>
-          {FILTERS.map(f => {
-            const active = filter === f.key;
-            return (
-              <TouchableOpacity
-                key={f.key}
-                onPress={() => setFilter(f.key)}
-                style={[styles.chip, active && styles.chipActive, { backgroundColor: active ? colors.primary : colors.surface, borderColor: active ? colors.primary : colors.border }]}
-              >
-                <Text style={[styles.chipText, { color: active ? '#fff' : colors.textSecondary }]}>
-                  {f.label}
-                </Text>
-                {f.key !== 'all' && filter !== f.key && getChipCount(f.key, purchases) > 0 && (
-                  <View style={styles.chipBadge}>
-                    <Text style={styles.chipBadgeText}>{getChipCount(f.key, purchases)}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
-      {searchTerm ? (
-        <View style={styles.searchNotice}>
-          <Text style={styles.searchNoticeText}>คำค้น: {searchTerm}</Text>
-          <TouchableOpacity onPress={() => router.replace('/(tabs)/waiting' as any)} accessibilityRole="button">
-            <Text style={styles.clearSearchText}>ล้างคำค้น ×</Text>
-          </TouchableOpacity>
-        </View>
-      ) : null}
-
-      {/* List */}
+    <View style={[styles.root, { backgroundColor: pageBg }]}>
       <FlatList
         data={filtered}
-        keyExtractor={p => p.id}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <View style={styles.cardWrap}>
+          <View style={[styles.purchaseRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <PurchaseCard purchase={item} />
           </View>
         )}
-        contentContainerStyle={[styles.list, filtered.length === 0 && styles.listEmpty, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[
+          styles.list,
+          { paddingTop: isDesktop ? 30 : insets.top + 14, paddingBottom: insets.bottom + 100 },
+          filtered.length === 0 && styles.listEmpty,
+          isDesktop && styles.desktopList,
+        ]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        ListHeaderComponent={
+          <View style={styles.pageContent}>
+            <View style={styles.topLine}>
+              <View style={styles.headingBlock}>
+                <Text style={[styles.eyebrow, { color: colors.primary }]}>YOUR PURCHASES</Text>
+                <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>รอซื้อ</Text>
+                <Text style={[styles.headerSub, { color: colors.textMuted }]}>
+                  จัดการสิ่งที่อยากซื้อ คิดก่อนจ่าย และตัดสินใจอย่างมั่นใจ
+                </Text>
+              </View>
+              <View style={[styles.waitingTotal, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={[styles.totalIcon, { backgroundColor: colors.primarySubtle }]}>
+                  <ClockIcon size={18} color={colors.primary} />
+                </View>
+                <View>
+                  <Text style={[styles.totalLabel, { color: colors.textMuted }]}>มูลค่ารายการที่รอ</Text>
+                  <Text style={[styles.totalValue, { color: colors.textPrimary }]}>{formatMoney(totalValue)}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.statsGrid}>
+              <SummaryCard label="กำลังรอตัดสินใจ" value={waiting.length} hint="รายการทั้งหมด" icon={<ClockIcon size={18} color={colors.primary} />} accent={colors.primary} colors={colors} />
+              <SummaryCard label="พร้อมตัดสินใจ" value={ready.length} hint="ครบเวลาพักการซื้อแล้ว" icon={<ShieldIcon size={18} color="#159B72" />} accent="#159B72" colors={colors} />
+              <SummaryCard label="ความเสี่ยงสูง" value={waiting.filter(p => p.impulseRisk === 'high').length} hint="ควรทบทวนอีกครั้ง" icon={<FlameIcon size={18} color="#E58A35" />} accent="#E58A35" colors={colors} />
+              <SummaryCard label="ตัดสินใจแล้ว" value={decided.length} hint="ประวัติการซื้อและงดซื้อ" icon={<CheckIcon size={18} color="#7B70D6" />} accent="#7B70D6" colors={colors} />
+            </View>
+
+            <View style={[styles.listPanel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.listHeading}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>รายการของคุณ</Text>
+                  <Text style={[styles.sectionSub, { color: colors.textMuted }]}>
+                    {searchTerm ? `ผลการค้นหา “${searchTerm}”` : 'ติดตามสถานะและทบทวนก่อนตัดสินใจซื้อ'}
+                  </Text>
+                </View>
+                <Text style={[styles.resultCount, { color: colors.textMuted }]}>{filtered.length} รายการ</Text>
+              </View>
+              <View style={[styles.filterRow, { borderBottomColor: colors.border }]}>
+                {FILTERS.map(item => {
+                  const active = filter === item.key;
+                  const count = getChipCount(item.key, purchases);
+                  return (
+                    <TouchableOpacity
+                      key={item.key}
+                      onPress={() => setFilter(item.key)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      style={[styles.filterTab, active && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+                    >
+                      <Text style={[styles.filterText, { color: active ? colors.primary : colors.textSecondary, fontWeight: active ? '800' : '600' }]}>{item.label}</Text>
+                      {count > 0 && <View style={[styles.filterCount, { backgroundColor: active ? colors.primarySubtle : colors.background }]}><Text style={[styles.filterCountText, { color: active ? colors.primary : colors.textMuted }]}>{count}</Text></View>}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              {searchTerm ? (
+                <View style={styles.searchNotice}>
+                  <Text style={[styles.searchNoticeText, { color: colors.textSecondary }]}>คำค้น: {searchTerm}</Text>
+                  <TouchableOpacity onPress={() => router.replace('/(tabs)/waiting' as any)} accessibilityRole="button">
+                    <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>ล้างคำค้น ×</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        }
         ListEmptyComponent={<EmptyState filter={filter} colors={colors} searchTerm={searchTerm} />}
         showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={{ height: spacing[3] }} />}
+        ItemSeparatorComponent={() => <View style={{ height: isDesktop ? 12 : spacing[3] }} />}
       />
     </View>
   );
 }
 
-function StatBubble({ value, label, color }: { value: number; label: string; color: string }) {
+function SummaryCard({ label, value, hint, icon, accent, colors }: {
+  label: string; value: number; hint: string; icon: React.ReactNode; accent: string; colors: any;
+}) {
   return (
-    <View style={[styles.statBubble, { backgroundColor: color + '25', borderColor: color + '40' }]}>
-      <Text style={[styles.statBubbleValue, { color }]}>{value}</Text>
-      <Text style={[styles.statBubbleLabel, { color: color + 'CC' }]}>{label}</Text>
+    <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.summaryIcon, { backgroundColor: accent + '16' }]}>{icon}</View>
+      <Text style={[styles.summaryValue, { color: colors.textPrimary }]}>{value}</Text>
+      <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{label}</Text>
+      <Text style={[styles.summaryHint, { color: colors.textMuted }]}>{hint}</Text>
     </View>
   );
 }
 
 function EmptyState({ filter, colors, searchTerm }: { filter: Filter; colors: any; searchTerm: string }) {
-  const msgs: Record<Filter, { title: string; sub: string; icon: React.ReactNode }> = {
-    all:       { title: 'ยังไม่มีรายการ', sub: 'กดปุ่ม + เพื่อเพิ่มสิ่งที่อยากซื้อ', icon: <ClockIcon size={36} color={colors.primary} /> },
-    high_risk: { title: 'ไม่มีรายการความเสี่ยงสูง', sub: 'ดีมาก! คุณไม่มีการซื้อที่เสี่ยงเกินไป', icon: <ShieldIcon size={36} color={colors.success} /> },
-    ready:     { title: 'ยังไม่มีรายการที่พร้อมตัดสินใจ', sub: 'รอให้ครบเวลาก่อนนะ', icon: <ClockIcon size={36} color={colors.warning} /> },
-    decided:   { title: 'ยังไม่มีประวัติการตัดสินใจ', sub: 'รอให้ Waiting List ครบเวลาก่อน', icon: <CheckIcon size={36} color={colors.success} /> },
+  const messages: Record<Filter, { title: string; sub: string; icon: React.ReactNode }> = {
+    all: { title: 'ยังไม่มีรายการที่รอซื้อ', sub: 'เพิ่มสิ่งที่อยากซื้อจากปุ่ม + แล้วเราจะช่วยให้คุณมีเวลาคิดก่อนจ่าย', icon: <ClockIcon size={30} color={colors.primary} /> },
+    high_risk: { title: 'ไม่พบรายการความเสี่ยงสูง', sub: 'เยี่ยมเลย! ตอนนี้ไม่มีรายการที่ต้องเฝ้าระวังเป็นพิเศษ', icon: <ShieldIcon size={30} color={colors.success} /> },
+    ready: { title: 'ยังไม่มีรายการที่พร้อมตัดสินใจ', sub: 'เมื่อครบเวลาพักการซื้อ รายการจะแสดงในส่วนนี้', icon: <ClockIcon size={30} color={colors.warning} /> },
+    decided: { title: 'ยังไม่มีประวัติการตัดสินใจ', sub: 'รายการที่ซื้อแล้วหรือเลือกไม่ซื้อจะแสดงที่นี่', icon: <CheckIcon size={30} color={colors.success} /> },
   };
-  const m = searchTerm
-    ? { title: 'ไม่พบรายการที่ตรงกัน', sub: 'ลองใช้คำค้นอื่น หรือล้างคำค้นเพื่อดูรายการทั้งหมด', icon: <ClockIcon size={36} color={colors.primary} /> }
-    : msgs[filter];
+  const message = searchTerm
+    ? { title: 'ไม่พบรายการที่ตรงกัน', sub: 'ลองเปลี่ยนคำค้นหรือกดล้างคำค้นเพื่อดูรายการทั้งหมด', icon: <ClockIcon size={30} color={colors.primary} /> }
+    : messages[filter];
   return (
-    <View style={[styles.empty, { borderColor: colors.border }]}>
-      <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>{m.icon}</View>
-      <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>{m.title}</Text>
-      <Text style={[styles.emptySub, { color: colors.textSecondary }]}>{m.sub}</Text>
+    <View style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>{message.icon}</View>
+      <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>{message.title}</Text>
+      <Text style={[styles.emptySub, { color: colors.textSecondary }]}>{message.sub}</Text>
     </View>
   );
 }
 
 function getChipCount(key: Filter, purchases: Purchase[]): number {
   switch (key) {
+    case 'all': return purchases.filter(p => p.status === 'waiting').length;
     case 'high_risk': return purchases.filter(p => p.impulseRisk === 'high' && p.status === 'waiting').length;
     case 'ready': return purchases.filter(p => p.status === 'waiting' && p.waitingUntil && new Date(p.waitingUntil) <= new Date()).length;
-    case 'decided': return purchases.filter(p => ['bought','avoided','expired'].includes(p.status)).length;
+    case 'decided': return purchases.filter(p => ['bought', 'avoided', 'expired'].includes(p.status)).length;
     default: return 0;
   }
 }
 
+function formatMoney(value: number): string {
+  return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(value);
+}
+
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { paddingBottom: 18, paddingHorizontal: 22, gap: 15 },
-  headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  list: { paddingHorizontal: 18, paddingTop: 18, flexGrow: 1 },
+  desktopList: { paddingHorizontal: 32, paddingTop: 30 },
+  listEmpty: { flexGrow: 1 },
+  pageContent: { width: '100%', maxWidth: 1180, alignSelf: 'center', gap: 20, marginBottom: 18 },
+  topLine: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' },
+  headingBlock: { flex: 1, minWidth: 220 },
+  eyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 7 },
   headerTitle: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
-  headerSub: { fontSize: 13, marginTop: 2 },
-  headerStats: { flexDirection: 'row', gap: 8 },
-  statBubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center', borderWidth: 1 },
-  statBubbleValue: { fontSize: 18, fontWeight: '800' },
-  statBubbleLabel: { fontSize: 10, fontWeight: '600', marginTop: 1 },
-  filterRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  searchNotice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: '#E7F0FC' },
-  searchNoticeText: { color: '#294F7B', fontSize: 12, flex: 1 },
-  clearSearchText: { color: '#1769E0', fontSize: 12, fontWeight: '800' },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
-  chipActive: {},
-  chipText: { fontSize: 12, fontWeight: '600' },
-  chipBadge: { backgroundColor: '#E8A030', borderRadius: 8, minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  chipBadgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
-  list: { paddingHorizontal: 20, paddingTop: 18 },
-  listEmpty: { flex: 1, justifyContent: 'center' },
-  cardWrap: {},
-  empty: { alignItems: 'center', gap: 12, padding: 40, borderWidth: 1.5, borderRadius: 18, borderStyle: 'dashed', margin: 20 },
-  emptyIcon: { width: 72, height: 72, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { fontSize: 16, fontWeight: '700', textAlign: 'center' },
-  emptySub: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  headerSub: { fontSize: 13, lineHeight: 19, marginTop: 5 },
+  waitingTotal: { minWidth: 190, flexDirection: 'row', alignItems: 'center', gap: 11, padding: 13, borderWidth: 1, borderRadius: 14 },
+  totalIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  totalLabel: { fontSize: 11, marginBottom: 3 },
+  totalValue: { fontSize: 18, fontWeight: '800' },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  summaryCard: { flexGrow: 1, flexBasis: 180, minWidth: 145, borderWidth: 1, borderRadius: 15, padding: 15, gap: 4 },
+  summaryIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
+  summaryValue: { fontSize: 25, fontWeight: '800', letterSpacing: -0.5 },
+  summaryLabel: { fontSize: 12, fontWeight: '700' },
+  summaryHint: { fontSize: 10, marginTop: 2 },
+  listPanel: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
+  listHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 17, paddingBottom: 13, gap: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: '800' },
+  sectionSub: { fontSize: 11, marginTop: 4 },
+  resultCount: { fontSize: 11, fontWeight: '600' },
+  filterRow: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, borderBottomWidth: 1 },
+  filterTab: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  filterText: { fontSize: 11 },
+  filterCount: { minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  filterCountText: { fontSize: 9, fontWeight: '800' },
+  searchNotice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 10 },
+  searchNoticeText: { fontSize: 11 },
+  purchaseRow: { width: '100%', maxWidth: 1180, alignSelf: 'center', borderWidth: Platform.OS === 'web' ? 1 : 0, borderRadius: 14, overflow: 'hidden' },
+  empty: { width: '100%', maxWidth: 1180, alignSelf: 'center', alignItems: 'center', gap: 10, padding: 34, borderWidth: 1, borderRadius: 16, marginTop: 10 },
+  emptyIcon: { width: 60, height: 60, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  emptyTitle: { fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  emptySub: { fontSize: 12, lineHeight: 18, textAlign: 'center', maxWidth: 360 },
 });
