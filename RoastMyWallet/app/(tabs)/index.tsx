@@ -15,7 +15,7 @@ import { AddPurchaseSheet } from '@/features/purchases/AddPurchaseSheet';
 import { PlatformTile, PLATFORM_NAME } from '@/components/icons/PlatformIcons';
 import { ClockIcon, PlusIcon, ShieldIcon, FlameIcon, ArrowRightIcon, CheckIcon, WalletIcon } from '@/components/icons/RmwIcons';
 import { formatCurrency } from '@/utils/formatting';
-import type { Purchase, PurchaseCategory, ShoppingPlatform } from '@/types';
+import type { Currency, Purchase, PurchaseCategory, ShoppingPlatform } from '@/types';
 
 const CATEGORY_LABELS: Record<PurchaseCategory, string> = {
   electronics: 'อิเล็กทรอนิกส์',
@@ -466,7 +466,7 @@ function WeeklyBarChart({ values, currency, colors, isDark }: {
 function CategoryDonut({ categories, total, currency, colors, isDark }: {
   categories: { category: PurchaseCategory; amount: number }[];
   total: number;
-  currency: string;
+  currency: Currency;
   colors: ReturnType<typeof useTheme>['colors'];
   isDark: boolean;
 }) {
