@@ -567,6 +567,7 @@ const styles = StyleSheet.create({
 
 
 
+  chart: { minHeight: 184, gap: 8, justifyContent: 'flex-end' },
   chartLine: { minHeight: 136, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   chartLabels: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
   chartLabelCell: { flex: 1, alignItems: 'center' },
