@@ -263,7 +263,14 @@ export default function HomeScreen() {
           </Panel>
         </View>
 
-        <View style={[styles.contentRow, { flexDirection: isWide ? 'row' : 'column' }]}>
+        <View style={[
+          styles.contentRow,
+          {
+            flexDirection: isWide ? 'row' : 'column',
+            // In the mobile column layout, stretch panels to the same full width.
+            alignItems: isWide ? 'flex-start' : 'stretch',
+          },
+        ]}>
           <Panel colors={colors} isDark={isDark} style={{ flex: 1, minWidth: 0 }}>
             <View style={styles.panelHeader}>
               <View style={{ flex: 1 }}>
