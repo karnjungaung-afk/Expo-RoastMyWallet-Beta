@@ -560,12 +560,6 @@ function statusLabel(purchase: Purchase): string {
   }
 }
 
-function compactNumber(value: number, currency: string): string {
-  if (value >= 10000) return `${currency} ${Math.round(value / 1000)}k`;
-  if (value >= 1000) return `${currency} ${(value / 1000).toFixed(1)}k`;
-  return `${currency} ${Math.round(value)}`;
-}
-
 const styles = StyleSheet.create({
   heroCard: { borderRadius: 22, padding: 20, gap: 9, shadowColor: '#1769E0', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 18, elevation: 6 },
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
