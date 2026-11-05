@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import { differenceInMinutes, differenceInHours, parseISO } from 'date-fns';
+import { differenceInMinutes, parseISO } from 'date-fns';
 
 interface CountdownState {
   hoursLeft: number;

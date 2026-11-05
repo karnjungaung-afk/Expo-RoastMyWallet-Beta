@@ -1,4 +1,3 @@
-import { useColorScheme } from 'react-native';
 import { lightColors, darkColors, typography, spacing, radius, shadows, zIndex, layout, animation } from './tokens';
 
 export type ColorScheme = 'light' | 'dark';

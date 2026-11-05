@@ -4,7 +4,7 @@
  * No emoji, pure vector art
  */
 import React from 'react';
-import Svg, { Path, Circle, Rect, G, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Rect, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 
 interface RoastMascotProps {
   size?: number;

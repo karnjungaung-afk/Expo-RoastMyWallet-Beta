@@ -86,7 +86,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
 async function persist(state: SettingsState) {
   try {
-    const { isLoaded, load, setTheme, setCurrency, setLanguage, setDefaultWaitingHours, setSpendingLimits, ...persisted } = state;
+    const persisted = {
+      theme: state.theme,
+      currency: state.currency,
+      language: state.language,
+      defaultWaitingHours: state.defaultWaitingHours,
+      spendingLimits: state.spendingLimits,
+    };
+
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
   } catch (err) {
     console.error('[SettingsStore] Persist failed:', err);

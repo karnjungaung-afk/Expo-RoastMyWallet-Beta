@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Path, Rect, Circle, Ellipse } from 'react-native-svg';
+import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import type { ShoppingPlatform } from '@/types';
 
 interface TileProps { size?: number; }

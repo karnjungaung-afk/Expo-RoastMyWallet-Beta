@@ -8,7 +8,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { RoastMascot } from '@/components/icons/RoastMascot';
 import { ShieldIcon, ArrowRightIcon, PlusIcon } from '@/components/icons/RmwIcons';
 import type { ShoppingPlatform } from '@/types';
-import { spacing, typography } from '@/theme/tokens';
+
 
 export function InterceptRoastModal() {
   const { colors, isDark } = useTheme();

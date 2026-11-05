@@ -69,7 +69,7 @@ export const createPurchaseSchema = z.object({
     .max(200, 'Name too long')
     .trim(),
   price: z
-    .number({ invalid_type_error: 'Price must be a number' })
+    .number({ error: 'Price must be a number' })
     .positive('Price must be greater than 0')
     .max(10_000_000, 'Price too large'),
   currency: z.enum(['THB', 'USD', 'EUR', 'GBP', 'JPY', 'SGD', 'MYR']).default('THB'),
