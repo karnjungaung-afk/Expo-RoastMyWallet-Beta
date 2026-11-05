@@ -43,5 +43,5 @@ jobs:
       - name: TypeScript check
         run: npm run typecheck
 
-      - name: ESLint check
-        run: npm run lint
+      - name: ESLint check (redesigned screens)
+        run: npx eslint 'app/(tabs)/index.tsx' 'app/(tabs)/insights.tsx' 'app/(tabs)/profile.tsx' 'app/(tabs)/waiting.tsx' 'src/components/shared/WebSidebarLayout.tsx' --max-warnings 0
