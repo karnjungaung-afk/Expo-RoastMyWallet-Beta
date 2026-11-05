@@ -240,26 +240,13 @@ export default function HomeScreen() {
             {categoryStats.length === 0 ? (
               <ChartEmpty colors={colors} message="หมวดหมู่จะปรากฏหลังเพิ่มรายการ" />
             ) : (
-              <View style={styles.categoryList}>
-                {categoryStats.map((item, index) => {
-                  const percentage = categoryTotal > 0
-                    ? Math.round((item.amount / categoryTotal) * 100)
-                    : 0;
-                  const accent = ['#3579D4', '#37A878', '#E3A43B', '#8866D5', '#D56A6A'][index % 5];
-                  return (
-                    <View key={item.category} style={styles.categoryItem}>
-                      <View style={styles.categoryLine}>
-                        <View style={[styles.categoryDot, { backgroundColor: accent }]} />
-                        <Text style={[styles.categoryLabel, { color: colors.textSecondary }]} numberOfLines={1}>{CATEGORY_LABELS[item.category]}</Text>
-                        <Text style={[styles.categoryPercent, { color: colors.textPrimary }]}>{percentage}%</Text>
-                      </View>
-                      <View style={[styles.progressTrack, { backgroundColor: isDark ? '#233044' : '#E9EFF7' }]}>
-                        <View style={[styles.progressFill, { width: `${percentage}%`, backgroundColor: accent }]} />
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
+              <CategoryDonut
+                categories={categoryStats}
+                total={categoryTotal}
+                currency={currency}
+                colors={colors}
+                isDark={isDark}
+              />
             )}
           </Panel>
         </View>
@@ -476,6 +463,63 @@ function WeeklyBarChart({ values, currency, colors, isDark }: {
   );
 }
 
+function CategoryDonut({ categories, total, currency, colors, isDark }: {
+  categories: { category: PurchaseCategory; amount: number }[];
+  total: number;
+  currency: string;
+  colors: ReturnType<typeof useTheme>['colors'];
+  isDark: boolean;
+}) {
+  const palette = ['#3579D4', '#37A878', '#E3A43B', '#8866D5'];
+  const radius = 48;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+
+  return (
+    <View style={styles.donutLayout}>
+      <View style={styles.donutWrap}>
+        <Svg width={132} height={132} viewBox="0 0 132 132">
+          <Circle cx="66" cy="66" r={radius} fill="none"
+            stroke={isDark ? '#26364C' : '#EAF0F7'} strokeWidth="15" />
+          {total > 0 && categories.map((item, index) => {
+            const fraction = item.amount / total;
+            const segment = fraction * circumference;
+            const dashOffset = -offset;
+            offset += segment;
+            return (
+              <Circle key={item.category} cx="66" cy="66" r={radius} fill="none"
+                stroke={palette[index % palette.length]} strokeWidth="15"
+                strokeDasharray={`${segment} ${circumference - segment}`}
+                strokeDashoffset={dashOffset}
+                transform="rotate(-90 66 66)" />
+            );
+          })}
+        </Svg>
+        <View style={styles.donutCenter}>
+          <Text style={[styles.donutCaption, { color: colors.textMuted }]}>มูลค่ารวม</Text>
+          <Text style={[styles.donutTotal, { color: colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit>
+            {formatCurrency(total, currency, { compact: true })}
+          </Text>
+        </View>
+      </View>
+      <View style={styles.donutLegend}>
+        {categories.map((item, index) => {
+          const percentage = total > 0 ? Math.round((item.amount / total) * 100) : 0;
+          return (
+            <View key={item.category} style={styles.donutLegendRow}>
+              <View style={[styles.categoryDot, { backgroundColor: palette[index % palette.length] }]} />
+              <Text style={[styles.categoryLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                {CATEGORY_LABELS[item.category]}
+              </Text>
+              <Text style={[styles.categoryPercent, { color: colors.textPrimary }]}>{percentage}%</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 function ChartEmpty({ colors, message }: { colors: ReturnType<typeof useTheme>['colors']; message: string }) {
   return (
     <View style={styles.chartEmpty}>
@@ -577,6 +621,13 @@ const styles = StyleSheet.create({
   chartEmptyIcon: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   chartEmptyText: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
   categoryPanel: { gap: 18 },
+  donutLayout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap' },
+  donutWrap: { width: 132, height: 132, alignItems: 'center', justifyContent: 'center' },
+  donutCenter: { position: 'absolute', alignItems: 'center', justifyContent: 'center', width: 90 },
+  donutCaption: { fontSize: 9, fontWeight: '600' },
+  donutTotal: { fontSize: 14, fontWeight: '900', maxWidth: 90 },
+  donutLegend: { flex: 1, minWidth: 125, gap: 13 },
+  donutLegendRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   categoryList: { gap: 15 },
   categoryItem: { gap: 6 },
   categoryLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
