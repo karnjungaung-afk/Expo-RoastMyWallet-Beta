@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { paddingBottom: 18, paddingHorizontal: 22, gap: 15 },
   headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  headerTitle: { fontSize: 30, fontWeight: '850', letterSpacing: -0.8 },
+  headerTitle: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
   headerSub: { fontSize: 13, marginTop: 2 },
   headerStats: { flexDirection: 'row', gap: 8 },
   statBubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center', borderWidth: 1 },
