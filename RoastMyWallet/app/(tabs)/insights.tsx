@@ -278,7 +278,7 @@ function Gauge({ value, color, track, text }: { value: number | null; color: str
   );
 }
 
-function PairBars({ series, colors, currency }: { series: { label: string; avoided: number; bought: number }[]; colors: any; currency: string }) {
+function PairBars({ series, colors }: { series: { label: string; avoided: number; bought: number }[]; colors: any }) {
   const [w, onLayout] = useWidth();
   const H = 170, padB = 22, padT = 18;
   const max = Math.max(...series.flatMap(s => [s.avoided, s.bought]), 1);
