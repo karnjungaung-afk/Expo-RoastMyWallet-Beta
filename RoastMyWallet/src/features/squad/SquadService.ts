@@ -14,7 +14,7 @@ export class SquadService {
   static async createSquad(name: string, userId: string): Promise<ServiceResult<Squad>> {
     try {
       const inviteCode = generateInviteCode();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data: squadData, error } = await (supabase as any)
         .from('squads')
         .insert({
@@ -54,7 +54,7 @@ export class SquadService {
       if (findError || !squadData) return { data: null, error: 'Squad not found. Check the invite code.' };
 
       const squad = squadData as AnyRow;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data: existing } = await (supabase as any)
         .from('squad_members')
         .select('user_id')
@@ -188,7 +188,7 @@ export class SquadService {
       const trimmed = content.trim();
       if (!trimmed || trimmed.length > 500) return { data: null, error: 'Message must be 1–500 characters.' };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data, error } = await (supabase as any)
         .from('squad_messages')
         .insert({ squad_id: squadId, user_id: userId, content: trimmed, type, purchase_id: purchaseId ?? null })

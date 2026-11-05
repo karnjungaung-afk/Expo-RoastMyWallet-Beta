@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput,
+  View, Text, TouchableOpacity, TextInput,
   StyleSheet, FlatList, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
@@ -10,7 +10,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { useAuthStore } from '@/store/authStore';
 import { SquadService } from '@/features/squad/SquadService';
-import { spacing } from '@/theme/tokens';
 import { SquadIcon, FlameIcon, ShieldIcon, PlusIcon, ArrowRightIcon } from '@/components/icons/RmwIcons';
 import type { Squad, SquadMessage } from '@/types';
 

@@ -22,17 +22,16 @@ const FILTERS: { key: Filter; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function WaitingScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams<{ search?: string }>();
   const searchTerm = (typeof params.search === 'string' ? params.search : '').trim();
   const [filter, setFilter] = useState<Filter>('all');
   const [refreshing, setRefreshing] = useState(false);
-  const { purchases, loadPurchases, loadingState } = usePurchaseStore(useShallow(state => ({
+  const { purchases, loadPurchases } = usePurchaseStore(useShallow(state => ({
     purchases: state.purchases,
     loadPurchases: state.loadPurchases,
-    loadingState: state.loadingState,
   })));
 
   useFocusEffect(useCallback(() => {

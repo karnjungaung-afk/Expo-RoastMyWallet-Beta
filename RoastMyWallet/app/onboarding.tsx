@@ -1,13 +1,12 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Dimensions, Animated, Platform,
+  Dimensions, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, Rect, G, Line, Text as SvgText } from 'react-native-svg';
-import { spacing } from '@/theme/tokens';
 
 const { width: W } = Dimensions.get('window');
 

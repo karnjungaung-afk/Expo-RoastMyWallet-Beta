@@ -141,7 +141,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         waiting_until: waitingUntil,
         waiting_hours: waitingHours,
       };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data: savedData, error: saveError } = await (supabase as any)
         .from('purchases')
         .insert(insertRow)

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Alert, ActivityIndicator, Linking, Platform,
+  Alert, ActivityIndicator, Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -9,7 +9,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { NeedScoreRing } from '@/components/ui/NeedScoreRing';
-import { spacing } from '@/theme/tokens';
 import { FlameIcon, ShieldIcon, ClockIcon, CheckIcon, WalletIcon, ArrowRightIcon } from '@/components/icons/RmwIcons';
 import { PLATFORM_META } from '@/features/intercept/InterceptService';
 import { formatCurrency, formatCountdown, formatCategoryName, formatPlatformName } from '@/utils/formatting';

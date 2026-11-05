@@ -10,7 +10,7 @@ import { usePurchaseStore } from '@/store/purchaseStore';
 import { FlameIcon, ShieldIcon, WalletIcon, BellIcon, UserIcon, ArrowRightIcon, CheckIcon, LogoutIcon } from '@/components/icons/RmwIcons';
 import { formatCurrency } from '@/utils/formatting';
 import { calculateAvoidedSpending } from '@/utils/scoring';
-import { spacing } from '@/theme/tokens';
+
 import { useSettingsStore } from '@/store/settingsStore';
 import type { Currency } from '@/types';
 

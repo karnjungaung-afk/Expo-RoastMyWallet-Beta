@@ -25,7 +25,7 @@ export async function registerPushToken(): Promise<void> {
       : Platform.OS === 'android' ? 'android'
       : 'web';
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     await (supabase as any).from('push_tokens').upsert({
       user_id: user.id,
       token,

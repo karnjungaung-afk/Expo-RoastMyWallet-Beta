@@ -6,7 +6,7 @@ import { supabase } from '@/services/supabase';
 // ─── PRIVATE HELPERS (module-scoped, not part of store state) ─────────────────
 
 async function loadProfileForUser(userId: string): Promise<UserProfile | null> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { data } = await (supabase as any)
     .from('profiles')
     .select('*')
@@ -98,7 +98,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // This will silently fail if the user isn't confirmed yet — that's fine,
         // the trigger on auth.users can also create it.
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           await (supabase as any).from('profiles').upsert({
             user_id: data.user.id, display_name: displayName, currency: 'THB',
             language: 'th', timezone: 'Asia/Bangkok', theme: 'cozy_minimal',
@@ -118,7 +118,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // CASE 2: Auto-confirm enabled (development / disabled confirmation)
       if (data.user && data.session) {
         const user = mapSupabaseUser(data.user);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         await (supabase as any).from('profiles').upsert({
           user_id: user.id, display_name: displayName, currency: 'THB',
           language: 'th', timezone: 'Asia/Bangkok', theme: 'cozy_minimal',
@@ -201,7 +201,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // Update the existing profile first and check that a row was actually changed.
     // PostgREST can return no error for an UPDATE matching zero rows.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const { data: updatedRows, error } = await (supabase as any)
       .from('profiles')
       .update({ ...dbUpdates, updated_at: new Date().toISOString() })
@@ -229,7 +229,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           ...dbUpdates,
           updated_at: new Date().toISOString(),
         };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const { error: upsertError } = await (supabase as any)
           .from('profiles')
           .upsert(fallbackRow, { onConflict: 'user_id' });
