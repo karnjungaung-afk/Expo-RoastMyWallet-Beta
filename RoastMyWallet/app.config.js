@@ -12,9 +12,11 @@
  *
  * Deep link redirect URLs to configure in Supabase Dashboard
  *   → Authentication → URL Configuration:
- *   Site URL:      roastmywallet://
- *   Redirect URLs: roastmywallet://confirm
+ *   Site URL:      use the deployed web origin (or roastmywallet:// for native-only)
+ *   Redirect URLs: roastmywallet://auth-callback
+ *                  roastmywallet://confirm
  *                  roastmywallet://reset-password
+ *                  https://<deployed-web-domain> (and localhost for local web development)
  */
 
 // Development fallbacks — override via EAS Secrets in production

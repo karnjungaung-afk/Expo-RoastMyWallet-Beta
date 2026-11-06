@@ -36,6 +36,7 @@ export default function ProfileScreen() {
   const [currencyVisible, setCurrencyVisible] = useState(false);
   const [savingCurrency, setSavingCurrency] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
@@ -94,8 +95,9 @@ export default function ProfileScreen() {
     }
     setSavingPassword(true);
     try {
-      await updatePassword(newPassword);
+      await updatePassword(newPassword, currentPassword || undefined);
       setPasswordVisible(false);
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setShowNewPassword(false);
@@ -230,7 +232,7 @@ export default function ProfileScreen() {
           <SettingsGroup title="บัญชีและความปลอดภัย" colors={colors} isDark={isDark}>
             <SettingsRow label="แก้ไขโปรไฟล์" icon={<UserIcon size={18} color={colors.textSecondary} />} onPress={() => { setEditName(profile?.displayName ?? ''); setEditVisible(true); }} colors={colors} />
             <Divider colors={colors} />
-            <SettingsRow label="เปลี่ยนรหัสผ่าน" hint="ตั้งรหัสผ่านใหม่สำหรับบัญชีนี้" icon={<ShieldIcon size={18} color={colors.textSecondary} />} onPress={() => { setNewPassword(''); setConfirmPassword(''); setPasswordVisible(true); }} colors={colors} />
+            <SettingsRow label="เปลี่ยนรหัสผ่าน" hint="ตั้งรหัสผ่านใหม่สำหรับบัญชีนี้" icon={<ShieldIcon size={18} color={colors.textSecondary} />} onPress={() => { setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setPasswordVisible(true); }} colors={colors} />
             <Divider colors={colors} />
             <SettingsRow label="สกุลเงิน" value={currency} icon={<WalletIcon size={18} color={colors.textSecondary} />} onPress={chooseCurrency} colors={colors} />
           </SettingsGroup>
@@ -292,7 +294,19 @@ export default function ProfileScreen() {
             <View style={[styles.modalCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
               <View style={styles.passwordModalIcon}><ShieldIcon size={22} color={colors.primary} /></View>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>เปลี่ยนรหัสผ่าน</Text>
-              <Text style={[styles.passwordHint, { color: colors.textMuted }]}>ตั้งรหัสผ่านใหม่อย่างน้อย 8 ตัวอักษร ระบบจะบันทึกกับบัญชีของคุณ</Text>
+              <Text style={[styles.passwordHint, { color: colors.textMuted }]}>หากบัญชีนี้ใช้รหัสผ่านอีเมล ให้กรอกรหัสผ่านปัจจุบันด้วย ส่วนบัญชี Google หรือ Apple ที่ยังไม่มีรหัสผ่านสามารถเว้นช่องนี้ได้</Text>
+              <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>รหัสผ่านปัจจุบัน (ถ้ามี)</Text>
+              <TextInput
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                placeholder="กรอกรหัสผ่านเดิม"
+                placeholderTextColor={colors.textMuted}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                textContentType="password"
+                style={[styles.modalInput, { color: colors.textPrimary, borderColor: colors.border }]}
+              />
               <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>รหัสผ่านใหม่</Text>
               <TextInput
                 value={newPassword}

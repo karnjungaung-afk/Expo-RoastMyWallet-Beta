@@ -28,7 +28,7 @@ interface AuthState {
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
-  updatePassword: (newPassword: string) => Promise<void>;
+  updatePassword: (newPassword: string, currentPassword?: string) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -144,8 +144,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  updatePassword: async (newPassword) => {
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+  updatePassword: async (newPassword, currentPassword) => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง');
+
+    // Supabase projects can require the current password for password changes.
+    // OAuth-only users may not have an email/password credential, so only send
+    // current_password when the user actually supplied one.
+    const updatePayload = currentPassword?.trim()
+      ? { password: newPassword, current_password: currentPassword }
+      : { password: newPassword };
+    const { error } = await (supabase.auth as any).updateUser(updatePayload);
     if (error) throw error;
   },
   resetPassword: async (email) => {

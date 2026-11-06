@@ -16,6 +16,7 @@ export const supabase = createClient(
   {
     auth: {
       storage: AsyncStorage,
+      flowType: 'pkce',
       autoRefreshToken: true,
       persistSession: true,
       // Web OAuth returns tokens in the URL; native handles them in features/auth/oauth.ts.
