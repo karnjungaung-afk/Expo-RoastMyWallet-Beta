@@ -304,7 +304,7 @@ export default function ProfileScreen() {
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
-                textContentType="currentPassword"
+                textContentType="password"
                 style={[styles.modalInput, { color: colors.textPrimary, borderColor: colors.border }]}
               />
               <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>รหัสผ่านใหม่</Text>
