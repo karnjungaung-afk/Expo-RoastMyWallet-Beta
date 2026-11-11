@@ -1,17 +1,15 @@
 /**
- * DeepLinkHandler — handles roastmywallet:// deep links
+ * DeepLinkHandler — handles email-action deep links.
  *
- * Supabase sends two types of deep link after email actions:
- *   roastmywallet://confirm?token_hash=...&type=signup
- *   roastmywallet://reset-password?token_hash=...&type=recovery
+ * OAuth callback URLs are intentionally handled by oauth.ts:
+ *   - Web: Supabase's detectSessionInUrl
+ *   - Native: openAuthSessionAsync + exchangeCodeForSession
  *
- * Set these in Supabase Dashboard → Authentication → URL Configuration:
- *   Redirect URLs:
- *     roastmywallet://confirm
- *     roastmywallet://reset-password
+ * This listener only handles email confirmation and password recovery links.
  */
 
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase';
@@ -26,12 +24,19 @@ export function useDeepLinkHandler() {
       }
     });
 
-    // Handle link that opened the app from a closed state
+    // Web OAuth callbacks are consumed by Supabase's detectSessionInUrl.
+    // Listening to the same URL here can exchange the PKCE code a second time
+    // and produce flow_state_already_used.
+    if (Platform.OS === 'web') {
+      return () => subscription.unsubscribe();
+    }
+
+    // Handle email-action links that opened the app from a closed state.
     Linking.getInitialURL().then(url => {
       if (url) handleUrl(url, router);
     });
 
-    // Handle link while app is already running
+    // Handle email-action links while the native app is already running.
     const sub = Linking.addEventListener('url', ({ url }) => {
       handleUrl(url, router);
     });
@@ -40,7 +45,7 @@ export function useDeepLinkHandler() {
       sub.remove();
       subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 }
 
 async function handleUrl(url: string, router: ReturnType<typeof useRouter>) {
@@ -50,6 +55,11 @@ async function handleUrl(url: string, router: ReturnType<typeof useRouter>) {
   try {
     parsed = new URL(url);
   } catch {
+    return;
+  }
+
+  // oauth.ts owns this callback and exchanges its PKCE code. Do not race it.
+  if (parsed.host === 'auth-callback' || parsed.pathname.includes('auth-callback')) {
     return;
   }
 
@@ -65,7 +75,7 @@ async function handleUrl(url: string, router: ReturnType<typeof useRouter>) {
           return;
         }
       }
-      if (parsed.pathname.includes('reset-password')) {
+      if (parsed.pathname.includes('reset-password') || parsed.host === 'reset-password') {
         router.replace('/(auth)/reset-password' as any);
       } else {
         router.replace('/(tabs)');
