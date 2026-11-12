@@ -247,7 +247,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
               }}
               accessibilityRole="button"
               accessibilityLabel="ค้นหา"
-              style={styles.searchAction}
+              style={[styles.searchAction, { backgroundColor: colors.primary }]}
             >
               <Text style={styles.searchActionText}>ค้นหา</Text>
             </TouchableOpacity>
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
   },
   searchGlyph: { fontSize: 24, lineHeight: 26 },
   searchInput: { flex: 1, minWidth: 0, paddingVertical: 8, fontSize: 13 },
-  searchAction: { backgroundColor: colors.primary, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  searchAction: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   searchActionText: { color: '#fff', fontSize: 11, fontWeight: '800' },
   topbarUser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingVertical: 5, paddingHorizontal: 7, maxWidth: 200 },
   topbarAvatar: { width: 30, height: 30, borderRadius: 10, backgroundColor: '#FFE3DE', alignItems: 'center', justifyContent: 'center' },
