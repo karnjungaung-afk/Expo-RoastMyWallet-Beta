@@ -519,8 +519,6 @@ const CURRENCY_OPTIONS: { code: Currency; name: string; symbol: string }[] = [
 const styles = StyleSheet.create({
   root: { flex: 1 },
   hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900 },
-  avatarWrap: { position: 'relative', marginBottom: 4 },
-  avatar: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
   avatarWrap: { position: 'relative', marginBottom: 4 },
   avatar: { width: 88, height: 88, borderRadius: 28, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F15B50', borderWidth: 3, borderColor: 'rgba(255,255,255,0.9)' },
