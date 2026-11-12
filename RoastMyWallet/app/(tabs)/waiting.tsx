@@ -113,9 +113,9 @@ export default function WaitingScreen() {
 
             <View style={styles.statsGrid}>
               <SummaryCard label="กำลังรอตัดสินใจ" value={waiting.length} hint="รายการทั้งหมด" icon={<ClockIcon size={18} color={colors.primary} />} accent={colors.primary} colors={colors} />
-              <SummaryCard label="พร้อมตัดสินใจ" value={ready.length} hint="ครบเวลาพักการซื้อแล้ว" icon={<ShieldIcon size={18} color="#159B72" />} accent="#159B72" colors={colors} />
-              <SummaryCard label="ความเสี่ยงสูง" value={waiting.filter(p => p.impulseRisk === 'high').length} hint="ควรทบทวนอีกครั้ง" icon={<FlameIcon size={18} color="#E58A35" />} accent="#E58A35" colors={colors} />
-              <SummaryCard label="ตัดสินใจแล้ว" value={decided.length} hint="ประวัติการซื้อและงดซื้อ" icon={<CheckIcon size={18} color="#7B70D6" />} accent="#7B70D6" colors={colors} />
+              <SummaryCard label="พร้อมตัดสินใจ" value={ready.length} hint="ครบเวลาพักการซื้อแล้ว" icon={<ShieldIcon size={18} color="#218B62" />} accent="#218B62" colors={colors} />
+              <SummaryCard label="ความเสี่ยงสูง" value={waiting.filter(p => p.impulseRisk === 'high').length} hint="ควรทบทวนอีกครั้ง" icon={<FlameIcon size={18} color="#D68A13" />} accent="#D68A13" colors={colors} />
+              <SummaryCard label="ตัดสินใจแล้ว" value={decided.length} hint="ประวัติการซื้อและงดซื้อ" icon={<CheckIcon size={18} color="#7139D5" />} accent="#7139D5" colors={colors} />
             </View>
 
             <View style={[styles.listPanel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -216,18 +216,18 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 18, paddingTop: 18, flexGrow: 1 },
   desktopList: { paddingHorizontal: 32, paddingTop: 30 },
   listEmpty: { flexGrow: 1 },
-  pageContent: { width: '100%', maxWidth: 1180, alignSelf: 'center', gap: 20, marginBottom: 18 },
+  pageContent: { width: '100%', maxWidth: 1280, alignSelf: 'center', gap: 20, marginBottom: 18 },
   topLine: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' },
   headingBlock: { flex: 1, minWidth: 220 },
   eyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 7 },
   headerTitle: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
   headerSub: { fontSize: 13, lineHeight: 19, marginTop: 5 },
-  waitingTotal: { minWidth: 190, flexDirection: 'row', alignItems: 'center', gap: 11, padding: 13, borderWidth: 1, borderRadius: 14 },
+  waitingTotal: { minWidth: 190, flexDirection: 'row', alignItems: 'center', gap: 11, padding: 13, borderWidth: 1, borderRadius: 18 },
   totalIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   totalLabel: { fontSize: 11, marginBottom: 3 },
   totalValue: { fontSize: 18, fontWeight: '800' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  summaryCard: { flexGrow: 1, flexBasis: 180, minWidth: 145, borderWidth: 1, borderRadius: 15, padding: 15, gap: 4 },
+  summaryCard: { flexGrow: 1, flexBasis: 180, minWidth: 145, borderWidth: 1, borderRadius: 21, padding: 17, gap: 4 },
   summaryIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
   summaryValue: { fontSize: 25, fontWeight: '800', letterSpacing: -0.5 },
   summaryLabel: { fontSize: 12, fontWeight: '700' },
