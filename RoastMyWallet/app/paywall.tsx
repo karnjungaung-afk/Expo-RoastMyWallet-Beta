@@ -61,7 +61,7 @@ export default function PaywallScreen() {
   };
 
   return (
-    <LinearGradient colors={['#0A1233', '#12266B', '#1E3A8A']} style={styles.root}>
+    <LinearGradient colors={['#F15B50', '#7139D5', '#31B9CE']} style={styles.root}>
       <ScrollView
         contentContainerStyle={[styles.page, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 }]}
         showsVerticalScrollIndicator={false}
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   planPrice: { color: '#fff', fontSize: 32, fontWeight: '900', letterSpacing: -1 },
   planUnit: { color: 'rgba(255,255,255,0.55)', fontSize: 13, marginBottom: 6 },
   planPeriod: { color: 'rgba(255,255,255,0.55)', fontSize: 12, marginBottom: 8 },
-  planButton: { backgroundColor: '#2563EB', borderRadius: 12, padding: 14, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  planButton: { backgroundColor: '#F15B50', borderRadius: 16, padding: 15, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   planButtonText: { color: '#fff', fontWeight: '800', fontSize: 14 },
   disabledButton: { opacity: 0.75 },
   stateCard: { ...glass, borderRadius: 24, padding: 24, alignItems: 'center', gap: 8 },
