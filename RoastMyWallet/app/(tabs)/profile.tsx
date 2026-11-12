@@ -69,8 +69,13 @@ export default function ProfileScreen() {
       });
       if (result.canceled || !result.assets?.[0]) return;
       const asset = result.assets[0];
-      const mimeType = asset.mimeType ?? 'image/jpeg';
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {
+      // Native ImagePicker base64 is JPEG-encoded by Expo, regardless of
+      // the original photo format (for example HEIC). Web uploads keep the
+      // original File and therefore validate its actual MIME type.
+      const mimeType = Platform.OS === 'web'
+        ? (asset.mimeType ?? 'image/jpeg')
+        : 'image/jpeg';
+      if (Platform.OS === 'web' && !['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {
         showMessage('ไฟล์ไม่รองรับ', 'กรุณาเลือกรูป JPG, PNG หรือ WebP');
         return;
       }
