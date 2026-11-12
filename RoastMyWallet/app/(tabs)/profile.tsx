@@ -199,7 +199,7 @@ export default function ProfileScreen() {
 
         {/* ── Hero header ─────────────────────────────────── */}
         <LinearGradient
-          colors={isDark ? ['#342A38', '#211C24'] : ['#F15B50', '#7139D5']}
+          colors={isDark ? ['#342A38', '#211C24'] : ['#FF6B4A', '#7139D5']}
           style={[styles.hero, { paddingTop: insets.top + 20 }]}
         >
           {/* Avatar */}
@@ -215,7 +215,7 @@ export default function ProfileScreen() {
               {user?.avatarUrl ? (
                 <Image key={user.avatarUrl} source={{ uri: user.avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
               ) : (
-                <LinearGradient colors={['#F7CE43', '#F15B50']} style={styles.avatarFallback}>
+                <LinearGradient colors={['#F7CE43', '#FF6B4A']} style={styles.avatarFallback}>
                   <Text style={styles.avatarText}>{initials}</Text>
                 </LinearGradient>
               )}
@@ -267,7 +267,7 @@ export default function ProfileScreen() {
               </View>
               <TouchableOpacity style={styles.upgradeBtn} onPress={showProInfo} accessibilityRole="button">
                 <Text style={styles.upgradeBtnText}>ดูแผน</Text>
-                <ArrowRightIcon size={14} color="#1E3A8A" />
+                <ArrowRightIcon size={14} color="#8B5CF6" />
               </TouchableOpacity>
             </LinearGradient>
           )}
@@ -322,7 +322,7 @@ export default function ProfileScreen() {
       <Modal visible={editVisible} transparent animationType="fade" onRequestClose={() => setEditVisible(false)}>
         <View style={styles.modalBackdrop}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
-            <View style={[styles.modalCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
+            <View style={[styles.modalCard, { backgroundColor: isDark ? '#14110F' : '#fff', borderColor: colors.border }]}>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>แก้ไขโปรไฟล์</Text>
               <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>ชื่อที่แสดง</Text>
               <TextInput
@@ -352,7 +352,7 @@ export default function ProfileScreen() {
       <Modal visible={passwordVisible} transparent animationType="fade" onRequestClose={() => { if (!savingPassword) setPasswordVisible(false); }}>
         <View style={styles.modalBackdrop}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
-            <View style={[styles.modalCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
+            <View style={[styles.modalCard, { backgroundColor: isDark ? '#14110F' : '#fff', borderColor: colors.border }]}>
               <View style={styles.passwordModalIcon}><ShieldIcon size={22} color={colors.primary} /></View>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>เปลี่ยนรหัสผ่าน</Text>
               <Text style={[styles.passwordHint, { color: colors.textMuted }]}>หากบัญชีนี้ใช้รหัสผ่านอีเมล ให้กรอกรหัสผ่านปัจจุบันด้วย ส่วนบัญชี Google หรือ Apple ที่ยังไม่มีรหัสผ่านสามารถเว้นช่องนี้ได้</Text>
@@ -412,7 +412,7 @@ export default function ProfileScreen() {
 
       <Modal visible={currencyVisible} transparent animationType="fade" onRequestClose={() => setCurrencyVisible(false)}>
         <View style={styles.modalBackdrop}>
-          <View style={[styles.currencyModal, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: colors.border }]}>
+          <View style={[styles.currencyModal, { backgroundColor: isDark ? '#14110F' : '#FFFFFF', borderColor: colors.border }]}>
             <View style={styles.currencyHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>สกุลเงิน</Text>
@@ -472,7 +472,7 @@ function SettingsGroup({ title, children, colors, isDark }: any) {
   return (
     <View style={styles.group}>
       {title ? <Text style={[styles.groupTitle, { color: colors.textMuted }]}>{title}</Text> : null}
-      <View style={[styles.groupCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
+      <View style={[styles.groupCard, { backgroundColor: isDark ? '#14110F' : '#fff', borderColor: colors.border }]}>
         {children}
       </View>
     </View>
@@ -528,35 +528,35 @@ const CURRENCY_OPTIONS: { code: Currency; name: string; symbol: string }[] = [
 const styles = StyleSheet.create({
   root: { flex: 1 },
   hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900 },
-  avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
+  avatarText: { fontSize: 28, fontFamily: 'Prompt_800ExtraBold', color: '#fff' },
   avatarWrap: { position: 'relative', marginBottom: 4 },
-  avatar: { width: 88, height: 88, borderRadius: 28, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F15B50', borderWidth: 3, borderColor: 'rgba(255,255,255,0.9)' },
+  avatar: { width: 88, height: 88, borderRadius: 28, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF6B4A', borderWidth: 3, borderColor: 'rgba(255,255,255,0.9)' },
   avatarFallback: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
   avatarImage: { width: '100%', height: '100%' },
   avatarEditBadge: { position: 'absolute', right: 2, bottom: 2, width: 25, height: 25, borderRadius: 13, backgroundColor: '#7139D5', borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-  avatarEditIcon: { color: '#fff', fontSize: 13, fontWeight: '800', lineHeight: 16 },
+  avatarEditIcon: { color: '#fff', fontSize: 13, fontFamily: 'Prompt_800ExtraBold', lineHeight: 16 },
   avatarAction: { paddingHorizontal: 12, paddingVertical: 5, marginBottom: 2 },
-  avatarActionText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
-  proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0F172A' },
-  heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
+  avatarActionText: { color: '#FFFFFF', fontSize: 12, fontFamily: 'Prompt_700Bold' },
+  proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#14110F' },
+  heroName: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', color: '#fff', letterSpacing: -0.4 },
   heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
   heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   heroStatItem: { flex: 1, alignItems: 'center', paddingVertical: 12 },
-  heroStatValue: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
+  heroStatValue: { fontSize: 18, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.5 },
   heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
   heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
   content: { gap: 14, paddingTop: 18, paddingHorizontal: 18, width: '100%', maxWidth: 760, alignSelf: 'center' },
   proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 22, padding: 20, borderWidth: 1 },
-  proTitle: { fontSize: 15, fontWeight: '700' },
+  proTitle: { fontSize: 15, fontFamily: 'Prompt_700Bold' },
   proSub: { fontSize: 12, marginTop: 2 },
-  proManage: { fontSize: 13, fontWeight: '600' },
+  proManage: { fontSize: 13, fontFamily: 'Prompt_600SemiBold' },
   upgradeCard: { borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  upgradeTitle: { fontSize: 16, fontWeight: '800', color: '#fff' },
+  upgradeTitle: { fontSize: 16, fontFamily: 'Prompt_800ExtraBold', color: '#fff' },
   upgradeSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 3, lineHeight: 17 },
   upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  upgradeBtnText: { color: '#1E3A8A', fontSize: 13, fontWeight: '700' },
+  upgradeBtnText: { color: '#8B5CF6', fontSize: 13, fontFamily: 'Prompt_700Bold' },
   group: { gap: 6 },
-  groupTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
+  groupTitle: { fontSize: 12, fontFamily: 'Prompt_600SemiBold', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
   groupCard: { borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12, minHeight: 52 },
   rowIcon: {},
@@ -566,12 +566,12 @@ const styles = StyleSheet.create({
   rowValue: { fontSize: 13 },
   divider: { height: 1, marginLeft: 16 },
   logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, borderRadius: 14, borderWidth: 1.5 },
-  logoutText: { fontSize: 15, fontWeight: '700' },
+  logoutText: { fontSize: 15, fontFamily: 'Prompt_700Bold' },
   deleteLink: { alignSelf: 'center', paddingVertical: 8 },
   deleteText: { fontSize: 13, textDecorationLine: 'underline' },
   dangerRow: { paddingHorizontal: 16, paddingVertical: 14, minHeight: 52, justifyContent: 'center' },
   dangerText: { fontSize: 15 },
-  version: { textAlign: 'center', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', paddingVertical: 8 },
+  version: { textAlign: 'center', fontSize: 11, paddingVertical: 8 },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(8,22,40,0.62)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalKeyboard: { width: '100%' },
   modalCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 480 },
@@ -581,18 +581,18 @@ const styles = StyleSheet.create({
   currencyList: { maxHeight: 390 },
   currencyOption: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 11, marginBottom: 8, minHeight: 58 },
   currencyCode: { width: 46, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  currencyCodeText: { fontSize: 11, fontWeight: '800' },
-  currencyName: { fontSize: 14, fontWeight: '700' },
+  currencyCodeText: { fontSize: 11, fontFamily: 'Prompt_800ExtraBold' },
+  currencyName: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
   currencyHint: { fontSize: 11, lineHeight: 16 },
   currencyFooter: { gap: 4, borderTopWidth: 1, borderTopColor: '#E6EBF2', paddingTop: 10 },
   passwordModalIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: 'rgba(69,137,218,0.14)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   passwordHint: { fontSize: 12, lineHeight: 18, marginBottom: 14 },
   passwordVisibility: { alignSelf: 'flex-end', paddingVertical: 6, paddingHorizontal: 2, marginBottom: 8 },
-  modalTitle: { fontSize: 19, fontWeight: '800' },
+  modalTitle: { fontSize: 19, fontFamily: 'Prompt_800ExtraBold' },
   modalLabel: { fontSize: 13 },
   modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
   modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
-  modalSave: { backgroundColor: '#F15B50', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
-  modalSaveText: { color: '#fff', fontWeight: '700' },
+  modalSave: { backgroundColor: '#FF6B4A', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
+  modalSaveText: { color: '#fff', fontFamily: 'Prompt_700Bold' },
 });

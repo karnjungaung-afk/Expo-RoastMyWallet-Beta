@@ -13,6 +13,11 @@ import { useAuthStore, selectIsAuthenticated, selectIsInitialized } from '@/stor
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useNotificationStore } from '@/store/notificationStore';
+import { useFonts } from 'expo-font';
+import {
+  Prompt_400Regular, Prompt_500Medium, Prompt_600SemiBold,
+  Prompt_700Bold, Prompt_800ExtraBold,
+} from '@expo-google-fonts/prompt';
 import { useTheme } from '@/hooks/useTheme';
 import { useDeepLinkHandler } from '@/features/auth/DeepLinkHandler';
 import { useInterceptListener } from '@/features/intercept/useInterceptListener';
@@ -65,6 +70,10 @@ function useProtectedRoute() {
 
 export default function RootLayout() {
   const { colors, isDark } = useTheme();
+  const [fontsLoaded] = useFonts({
+    Prompt_400Regular, Prompt_500Medium, Prompt_600SemiBold,
+    Prompt_700Bold, Prompt_800ExtraBold,
+  });
   const { initialize: initAuth, isInitialized } = useAuthStore();
   const authUser = useAuthStore(state => state.user);
   const { initialize: initSubscription } = useSubscriptionStore();
@@ -102,7 +111,7 @@ export default function RootLayout() {
     }
   }, [isInitialized, authUser?.id, initSubscription]);
 
-  if (!isInitialized) {
+  if (!isInitialized || !fontsLoaded) {
     return <SplashLoader colors={colors} isDark={isDark} />;
   }
 
@@ -130,9 +139,9 @@ export default function RootLayout() {
 
 function SplashLoader({ colors, isDark }: { colors: any; isDark: boolean }) {
   return (
-    <View style={[styles.splash, { backgroundColor: colors?.background ?? '#F2F0EB' }]}>
+    <View style={[styles.splash, { backgroundColor: colors?.background ?? '#FFF4DC' }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <ActivityIndicator size="small" color={colors?.primary ?? '#1E3A8A'} />
+      <ActivityIndicator size="small" color={'#14110F'} />
     </View>
   );
 }

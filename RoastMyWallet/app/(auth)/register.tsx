@@ -73,10 +73,10 @@ export default function RegisterScreen() {
           <Text style={[styles.confirmTitle, { color: colors.textPrimary }]}>ยืนยันอีเมลของคุณ</Text>
           <Text style={[styles.confirmSub, { color: colors.textSecondary }]}>
             เราส่งลิงก์ยืนยันไปที่{'\n'}
-            <Text style={{ color: colors.primary, fontWeight: '700' }}>{email}</Text>
+            <Text style={{ color: colors.primary, fontFamily: 'Prompt_700Bold' }}>{email}</Text>
             {'\n'}กดลิงก์ในอีเมลเพื่อเปิดใช้งานบัญชี
           </Text>
-          <TouchableOpacity style={[styles.cta, { backgroundColor: colors.primary, alignSelf: 'stretch' }]} onPress={goLogin} accessibilityRole="button">
+          <TouchableOpacity style={[styles.cta, { backgroundColor: '#D6F73C', alignSelf: 'stretch' }]} onPress={goLogin} accessibilityRole="button">
             <Text style={styles.ctaText}>กลับไปเข้าสู่ระบบ</Text>
           </TouchableOpacity>
         </View>
@@ -155,7 +155,7 @@ export default function RegisterScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.cta, { backgroundColor: colors.primary }, isLoading && { opacity: 0.7 }]}
+          style={[styles.cta, { backgroundColor: '#D6F73C' }, isLoading && { opacity: 0.7 }]}
           onPress={handleRegister}
           disabled={isLoading}
           activeOpacity={0.85}
@@ -171,14 +171,14 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  cardTitle: { fontSize: 20, fontWeight: '800', letterSpacing: -0.4 },
+  cardTitle: { fontSize: 20, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.4 },
   cardSub: { fontSize: 13 },
-  cta: { minHeight: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  footerText: { color: 'rgba(255,255,255,0.72)', fontSize: 14 },
-  footerLink: { color: '#93C5FD', fontWeight: '700' },
+  cta: { minHeight: 52, borderRadius: 14, borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F', alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  ctaText: { color: '#14110F', fontSize: 16, fontFamily: 'Prompt_700Bold' },
+  footerText: { color: '#14110F', fontSize: 14 },
+  footerLink: { color: '#14110F', fontFamily: 'Prompt_800ExtraBold', textDecorationLine: 'underline' },
   confirmWrap: { alignItems: 'center', gap: 14, paddingVertical: 12 },
   confirmIcon: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  confirmTitle: { fontSize: 22, fontWeight: '800', textAlign: 'center' },
+  confirmTitle: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', textAlign: 'center' },
   confirmSub: { fontSize: 14, lineHeight: 22, textAlign: 'center' },
 });

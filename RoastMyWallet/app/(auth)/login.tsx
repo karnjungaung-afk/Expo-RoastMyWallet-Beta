@@ -91,7 +91,7 @@ export default function LoginScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.cta, { backgroundColor: colors.primary }, isLoading && { opacity: 0.7 }]}
+          style={[styles.cta, { backgroundColor: '#D6F73C' }, isLoading && { opacity: 0.7 }]}
           onPress={handleLogin}
           disabled={isLoading}
           activeOpacity={0.85}
@@ -111,10 +111,10 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  cta: { minHeight: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  cta: { minHeight: 52, borderRadius: 14, borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F', alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  ctaText: { color: '#14110F', fontSize: 16, fontFamily: 'Prompt_700Bold' },
   forgot: { alignSelf: 'center', paddingVertical: 2 },
-  forgotText: { fontSize: 13, fontWeight: '600' },
-  footerText: { color: 'rgba(255,255,255,0.72)', fontSize: 14 },
-  footerLink: { color: '#93C5FD', fontWeight: '700' },
+  forgotText: { fontSize: 13, fontFamily: 'Prompt_600SemiBold' },
+  footerText: { color: '#14110F', fontSize: 14 },
+  footerLink: { color: '#14110F', fontFamily: 'Prompt_800ExtraBold', textDecorationLine: 'underline' },
 });

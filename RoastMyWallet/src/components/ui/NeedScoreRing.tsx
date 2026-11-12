@@ -144,19 +144,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row', gap: 1,
   },
   scoreNumber: {
-    fontSize: typography.size['2xl'], fontWeight: typography.weight.bold,
-    fontFamily: 'Courier New', includeFontPadding: false, letterSpacing: -1,
+    fontSize: typography.size['2xl'], fontFamily: 'Prompt_700Bold',
+    includeFontPadding: false, letterSpacing: -1,
   },
-  scoreMax: { fontSize: typography.size.sm, fontWeight: typography.weight.regular, marginTop: 6 },
+  scoreMax: { fontSize: typography.size.sm, fontFamily: 'Prompt_400Regular', marginTop: 6 },
   labelContainer: { flexDirection: 'row', alignItems: 'center', gap: spacing[1], marginTop: spacing[1.5] },
   riskDot: { width: 5, height: 5, borderRadius: 2.5 },
   riskLabel: {
-    fontSize: typography.size.xs, fontWeight: typography.weight.bold,
-    letterSpacing: typography.tracking.wider, fontFamily: 'Courier New',
+    fontSize: typography.size.xs, fontFamily: 'Prompt_700Bold',
+    letterSpacing: typography.tracking.wider,
   },
   pill: { paddingHorizontal: spacing[2], paddingVertical: spacing[0.5], borderRadius: 4 },
   pillText: {
-    fontSize: typography.size.xs, fontWeight: typography.weight.bold,
-    fontFamily: 'Courier New', letterSpacing: 0.5,
+    fontSize: typography.size.xs, fontFamily: 'Prompt_700Bold',
+    letterSpacing: 0.5,
   },
 });

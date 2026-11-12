@@ -9,7 +9,7 @@ import {
   type TextStyle,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing, radius, typography } from '@/theme/tokens';
+import { spacing, radius, typography, neo, neoShadow, candy } from '@/theme/tokens';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
 type Size = 'sm' | 'md' | 'lg';
@@ -45,53 +45,29 @@ export function Button({
 
   // ── Variant styles ────────────────────────────────────────────────────────
 
+  const ink = theme.isDark ? candy.cream : candy.ink;
+  const hard = { borderWidth: neo.borderWidth, borderColor: ink, ...neoShadow(ink, neo.shadowOffsetSm) };
+
   const variantStyles: Record<Variant, { container: ViewStyle; label: TextStyle }> = {
     primary: {
-      container: {
-        backgroundColor: colors.primary, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 3,
-        borderWidth: 0,
-      },
-      label: {
-        color: colors.primaryText,
-      },
+      container: { backgroundColor: candy.lime, ...hard },
+      label: { color: candy.ink },
     },
     secondary: {
-      container: {
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-      },
-      label: {
-        color: colors.textPrimary,
-      },
+      container: { backgroundColor: colors.surface, ...hard },
+      label: { color: colors.textPrimary },
     },
     outline: {
-      container: {
-        backgroundColor: 'transparent',
-        borderWidth: 1.5,
-        borderColor: colors.primary,
-      },
-      label: {
-        color: colors.primary,
-      },
+      container: { backgroundColor: candy.yellow, ...hard },
+      label: { color: candy.ink },
     },
     ghost: {
-      container: {
-        backgroundColor: 'transparent',
-        borderWidth: 0,
-      },
-      label: {
-        color: colors.primary,
-      },
+      container: { backgroundColor: 'transparent', borderWidth: 0 },
+      label: { color: colors.textPrimary, textDecorationLine: 'underline' },
     },
     danger: {
-      container: {
-        backgroundColor: colors.danger,
-        borderWidth: 0,
-      },
-      label: {
-        color: '#FFFFFF',
-      },
+      container: { backgroundColor: candy.coral, ...hard },
+      label: { color: candy.ink },
     },
   };
 
@@ -102,12 +78,12 @@ export function Button({
       container: {
         paddingHorizontal: spacing[3],
         paddingVertical: spacing[1.5],
-        borderRadius: 15,
+        borderRadius: radius.md,
         minHeight: 36,
       },
       label: {
         fontSize: typography.size.sm,
-        fontWeight: typography.weight.medium,
+        fontFamily: typography.fontFamily.sansBold,
         letterSpacing: typography.tracking.wide,
       },
     },
@@ -120,7 +96,7 @@ export function Button({
       },
       label: {
         fontSize: typography.size.base,
-        fontWeight: typography.weight.semibold,
+        fontFamily: typography.fontFamily.sansBold,
         letterSpacing: typography.tracking.normal,
       },
     },
@@ -128,12 +104,12 @@ export function Button({
       container: {
         paddingHorizontal: spacing[6],
         paddingVertical: spacing[4],
-        borderRadius: 18,
+        borderRadius: radius.lg,
         minHeight: 56,
       },
       label: {
         fontSize: typography.size.md,
-        fontWeight: typography.weight.semibold,
+        fontFamily: typography.fontFamily.sansBold,
       },
     },
   };
@@ -143,7 +119,7 @@ export function Button({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.78}
+      activeOpacity={0.85}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}

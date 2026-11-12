@@ -33,4 +33,5 @@ export const lightTheme = buildTheme('light');
 export const darkTheme = buildTheme('dark');
 
 export { lightColors, darkColors, typography, spacing, radius, shadows, zIndex, layout, animation };
+export { neo, candy, neoShadow } from './tokens';
 export { palette } from './tokens';

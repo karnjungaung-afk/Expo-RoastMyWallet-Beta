@@ -178,13 +178,13 @@ const styles = StyleSheet.create({
   },
   periodLabel: {
     fontSize: typography.size.xs,
-    fontFamily: 'Courier New',
+    fontFamily: 'Prompt_700Bold',
     letterSpacing: 0.5,
     marginBottom: 2,
   },
   spentAmount: {
     fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
+    fontFamily: 'Prompt_700Bold',
     letterSpacing: -0.5,
   },
   headerRight: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   limitAmount: {
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
+    fontFamily: 'Prompt_500Medium',
   },
   progressBar: {
     flexDirection: 'row',
@@ -218,9 +218,8 @@ const styles = StyleSheet.create({
   },
   percentText: {
     fontSize: typography.size.xs,
-    fontWeight: typography.weight.bold,
-    fontFamily: 'Courier New',
-  },
+    fontFamily: 'Prompt_700Bold',
+    },
 
   // Compact
   compact: {
@@ -233,11 +232,11 @@ const styles = StyleSheet.create({
   },
   compactPeriod: {
     fontSize: typography.size.xs,
-    fontFamily: 'Courier New',
+    fontFamily: 'Prompt_700Bold',
   },
   compactValue: {
     fontSize: typography.size.xs,
-    fontWeight: typography.weight.semibold,
+    fontFamily: 'Prompt_600SemiBold',
   },
 
   // Empty

@@ -150,7 +150,7 @@ export default function WaitingScreen() {
                 <View style={styles.searchNotice}>
                   <Text style={[styles.searchNoticeText, { color: colors.textSecondary }]}>คำค้น: {searchTerm}</Text>
                   <TouchableOpacity onPress={() => router.replace('/(tabs)/waiting' as any)} accessibilityRole="button">
-                    <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>ล้างคำค้น ×</Text>
+                    <Text style={{ color: colors.primary, fontSize: 12, fontFamily: 'Prompt_700Bold' }}>ล้างคำค้น ×</Text>
                   </TouchableOpacity>
                 </View>
               ) : null}
@@ -219,34 +219,34 @@ const styles = StyleSheet.create({
   pageContent: { width: '100%', maxWidth: 1280, alignSelf: 'center', gap: 20, marginBottom: 18 },
   topLine: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' },
   headingBlock: { flex: 1, minWidth: 220 },
-  eyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 7 },
-  headerTitle: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
+  eyebrow: { fontSize: 10, fontFamily: 'Prompt_800ExtraBold', letterSpacing: 1.5, marginBottom: 7 },
+  headerTitle: { fontSize: 30, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.8 },
   headerSub: { fontSize: 13, lineHeight: 19, marginTop: 5 },
   waitingTotal: { minWidth: 190, flexDirection: 'row', alignItems: 'center', gap: 11, padding: 13, borderWidth: 1, borderRadius: 18 },
   totalIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   totalLabel: { fontSize: 11, marginBottom: 3 },
-  totalValue: { fontSize: 18, fontWeight: '800' },
+  totalValue: { fontSize: 18, fontFamily: 'Prompt_800ExtraBold' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   summaryCard: { flexGrow: 1, flexBasis: 180, minWidth: 145, borderWidth: 1, borderRadius: 21, padding: 17, gap: 4 },
   summaryIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
-  summaryValue: { fontSize: 25, fontWeight: '800', letterSpacing: -0.5 },
-  summaryLabel: { fontSize: 12, fontWeight: '700' },
+  summaryValue: { fontSize: 25, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.5 },
+  summaryLabel: { fontSize: 12, fontFamily: 'Prompt_700Bold' },
   summaryHint: { fontSize: 10, marginTop: 2 },
   listPanel: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
   listHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 17, paddingBottom: 13, gap: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: '800' },
+  sectionTitle: { fontSize: 16, fontFamily: 'Prompt_800ExtraBold' },
   sectionSub: { fontSize: 11, marginTop: 4 },
-  resultCount: { fontSize: 11, fontWeight: '600' },
+  resultCount: { fontSize: 11, fontFamily: 'Prompt_600SemiBold' },
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, borderBottomWidth: 1 },
   filterTab: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
   filterText: { fontSize: 11 },
   filterCount: { minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  filterCountText: { fontSize: 9, fontWeight: '800' },
+  filterCountText: { fontSize: 9, fontFamily: 'Prompt_800ExtraBold' },
   searchNotice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 10 },
   searchNoticeText: { fontSize: 11 },
   purchaseRow: { width: '100%', maxWidth: 1180, alignSelf: 'center', borderWidth: Platform.OS === 'web' ? 1 : 0, borderRadius: 14, overflow: 'hidden' },
   empty: { width: '100%', maxWidth: 1180, alignSelf: 'center', alignItems: 'center', gap: 10, padding: 34, borderWidth: 1, borderRadius: 16, marginTop: 10 },
   emptyIcon: { width: 60, height: 60, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  emptyTitle: { fontSize: 15, fontFamily: 'Prompt_800ExtraBold', textAlign: 'center' },
   emptySub: { fontSize: 12, lineHeight: 18, textAlign: 'center', maxWidth: 360 },
 });

@@ -323,7 +323,7 @@ function YesNoRow({ q, value, onChange, yes, no, colors }: { q: string; value: Y
         {([[true, yes], [false, no]] as [boolean, string][]).map(([v, label]) => (
           <TouchableOpacity key={String(v)} onPress={() => onChange(v)} accessibilityRole="button" accessibilityState={{ selected: value === v }}
             style={[styles.yn, { backgroundColor: value === v ? colors.primary : colors.surface, borderColor: value === v ? colors.primary : colors.border }]}>
-            <Text style={{ color: value === v ? '#fff' : colors.textSecondary, fontWeight: '700', fontSize: 14 }}>{label}</Text>
+            <Text style={{ color: value === v ? '#fff' : colors.textSecondary, fontFamily: 'Prompt_700Bold', fontSize: 14 }}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -335,36 +335,36 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   col: { flex: 1, width: '100%', maxWidth: 560, alignSelf: 'center' },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 6 },
-  title: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
+  title: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.5 },
   subtitle: { fontSize: 13, marginTop: 3, lineHeight: 18 },
   close: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   scroll: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 24, gap: 20 },
   labelRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  label: { fontSize: 14, fontWeight: '700' },
+  label: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
   hint: { fontSize: 12 },
   error: { fontSize: 12 },
   input: { minHeight: 52, borderWidth: 1.5, borderRadius: 14, paddingHorizontal: 16, fontSize: 16, outlineStyle: 'none' as any },
   priceBox: { flexDirection: 'row', alignItems: 'center', minHeight: 60, borderWidth: 1.5, borderRadius: 14, paddingHorizontal: 16, gap: 8 },
-  baht: { fontSize: 24, fontWeight: '700' },
-  priceInput: { flex: 1, fontSize: 28, fontWeight: '800', letterSpacing: -0.6, paddingVertical: 10, outlineStyle: 'none' as any },
+  baht: { fontSize: 24, fontFamily: 'Prompt_700Bold' },
+  priceInput: { flex: 1, fontSize: 28, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.6, paddingVertical: 10, outlineStyle: 'none' as any },
   bleed: { marginHorizontal: -20 },
   chipRow: { gap: 8, paddingHorizontal: 20 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingVertical: 10, paddingHorizontal: 15, borderRadius: 999, borderWidth: 1.5 },
-  chipText: { fontSize: 14, fontWeight: '600' },
+  chipText: { fontSize: 14, fontFamily: 'Prompt_600SemiBold' },
   linkBox: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 52, borderWidth: 1.5, borderRadius: 14, paddingLeft: 14, paddingRight: 10 },
   linkInput: { flex: 1, fontSize: 15, paddingVertical: 12, outlineStyle: 'none' as any },
   pasteBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999 },
-  pasteText: { fontSize: 13, fontWeight: '700' },
+  pasteText: { fontSize: 13, fontFamily: 'Prompt_700Bold' },
   moreHead: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16, borderRadius: 16, borderWidth: 1 },
-  moreTitle: { fontSize: 14, fontWeight: '700' },
+  moreTitle: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
   moreBody: { padding: 16, borderRadius: 16, borderWidth: 1, gap: 18, marginTop: -8 },
-  q: { fontSize: 14, fontWeight: '600', lineHeight: 20 },
+  q: { fontSize: 14, fontFamily: 'Prompt_600SemiBold', lineHeight: 20 },
   yesNo: { flexDirection: 'row', gap: 8 },
   yn: { flex: 1, minHeight: 44, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   footer: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: 10, borderTopWidth: 1 },
   waitRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
   alert: { borderRadius: 10, padding: 12 },
   cta: { minHeight: 54, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  ctaText: { color: '#fff', fontSize: 16, fontFamily: 'Prompt_800ExtraBold' },
 });

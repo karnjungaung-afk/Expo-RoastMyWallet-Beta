@@ -13,9 +13,9 @@ interface RoastMascotProps {
 
 export function RoastMascot({ size = 120, mode = 'roasting' }: RoastMascotProps) {
   // Colors by mode
-  const flame1 = mode === 'success' ? '#00B8D9' : mode === 'roasting' ? '#E8A030' : '#3B82F6';
-  const flame2 = mode === 'success' ? '#0088A8' : mode === 'roasting' ? '#C04444' : '#2563EB';
-  const body   = '#1E3A8A';
+  const flame1 = mode === 'success' ? '#00B8D9' : mode === 'roasting' ? '#E8A030' : '#8B5CF6';
+  const flame2 = mode === 'success' ? '#0088A8' : mode === 'roasting' ? '#C04444' : '#8B5CF6';
+  const body   = '#8B5CF6';
   const accent = mode === 'roasting' ? '#E8A030' : '#00B8D9';
 
   return (

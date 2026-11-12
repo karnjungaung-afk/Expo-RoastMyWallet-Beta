@@ -45,9 +45,9 @@ export default function ForgotPasswordScreen() {
           <Text style={[styles.title, { color: colors.textPrimary }]}>ตรวจสอบอีเมลของคุณ</Text>
           <Text style={[styles.sub, { color: colors.textSecondary }]}>
             เราส่งลิงก์รีเซ็ตรหัสผ่านไปที่{'\n'}
-            <Text style={{ color: colors.primary, fontWeight: '700' }}>{email}</Text>
+            <Text style={{ color: colors.primary, fontFamily: 'Prompt_700Bold' }}>{email}</Text>
           </Text>
-          <TouchableOpacity style={[styles.cta, { backgroundColor: colors.primary, alignSelf: 'stretch' }]} onPress={goLogin} accessibilityRole="button">
+          <TouchableOpacity style={[styles.cta, { backgroundColor: '#D6F73C', alignSelf: 'stretch' }]} onPress={goLogin} accessibilityRole="button">
             <Text style={styles.ctaText}>กลับไปเข้าสู่ระบบ</Text>
           </TouchableOpacity>
         </View>
@@ -72,7 +72,7 @@ export default function ForgotPasswordScreen() {
             onSubmitEditing={handleReset}
           />
           <TouchableOpacity
-            style={[styles.cta, { backgroundColor: colors.primary }, loading && { opacity: 0.7 }]}
+            style={[styles.cta, { backgroundColor: '#D6F73C' }, loading && { opacity: 0.7 }]}
             onPress={handleReset}
             disabled={loading}
             activeOpacity={0.85}
@@ -87,10 +87,10 @@ export default function ForgotPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 20, fontWeight: '800', letterSpacing: -0.4, textAlign: 'center' },
+  title: { fontSize: 20, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.4, textAlign: 'center' },
   sub: { fontSize: 14, lineHeight: 21, textAlign: 'center' },
-  cta: { minHeight: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  cta: { minHeight: 52, borderRadius: 14, borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F', alignItems: 'center', justifyContent: 'center' },
+  ctaText: { color: '#14110F', fontSize: 16, fontFamily: 'Prompt_700Bold' },
   sentWrap: { alignItems: 'center', gap: 14, paddingVertical: 8 },
   sentIcon: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
 });

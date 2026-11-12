@@ -64,7 +64,7 @@ export default function ResetPasswordScreen() {
           <View style={[styles.bigIcon, { backgroundColor: colors.successSubtle }]}><CheckIcon size={34} color={colors.success} /></View>
           <Text style={[styles.title, { color: colors.textPrimary }]}>เปลี่ยนรหัสผ่านสำเร็จ</Text>
           <Text style={[styles.sub, { color: colors.textSecondary }]}>ใช้รหัสผ่านใหม่ในการเข้าสู่ระบบครั้งต่อไปได้เลย</Text>
-          <TouchableOpacity style={[styles.cta, { backgroundColor: colors.primary, alignSelf: 'stretch' }]} onPress={() => router.replace('/(tabs)')} accessibilityRole="button">
+          <TouchableOpacity style={[styles.cta, { backgroundColor: '#D6F73C', alignSelf: 'stretch' }]} onPress={() => router.replace('/(tabs)')} accessibilityRole="button">
             <Text style={styles.ctaText}>ไปหน้าหลัก</Text>
           </TouchableOpacity>
         </View>
@@ -133,7 +133,7 @@ export default function ResetPasswordScreen() {
         </View>
 
         <TouchableOpacity
-          style={[styles.cta, { backgroundColor: colors.primary }, loading && { opacity: 0.7 }]}
+          style={[styles.cta, { backgroundColor: '#D6F73C' }, loading && { opacity: 0.7 }]}
           onPress={handleSubmit}
           disabled={loading}
           activeOpacity={0.85}
@@ -147,15 +147,15 @@ export default function ResetPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 20, fontWeight: '800', letterSpacing: -0.4, textAlign: 'center' },
+  title: { fontSize: 20, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.4, textAlign: 'center' },
   sub: { fontSize: 14, lineHeight: 21, textAlign: 'center' },
-  cta: { minHeight: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  cta: { minHeight: 52, borderRadius: 14, borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F', alignItems: 'center', justifyContent: 'center' },
+  ctaText: { color: '#14110F', fontSize: 16, fontFamily: 'Prompt_700Bold' },
   alert: { borderRadius: 10, padding: 12 },
   strengthRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   bars: { flexDirection: 'row', gap: 4, flex: 1 },
   bar: { flex: 1, height: 4, borderRadius: 2 },
-  strengthLabel: { fontSize: 12, fontWeight: '700', minWidth: 72, textAlign: 'right' },
+  strengthLabel: { fontSize: 12, fontFamily: 'Prompt_700Bold', minWidth: 72, textAlign: 'right' },
   tipRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   tipDot: { width: 6, height: 6, borderRadius: 3 },
   centerWrap: { alignItems: 'center', gap: 14, paddingVertical: 8 },

@@ -82,7 +82,7 @@ export default function PurchaseDetailScreen() {
     ? ['#3A1010', '#1A0808']
     : risk === 'low'
     ? ['#0D2D1A', '#071610']
-    : ['#0F172A', '#070D1A'];
+    : ['#14110F', '#070D1A'];
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -123,14 +123,14 @@ export default function PurchaseDetailScreen() {
 
           {/* AI Roast */}
           {purchase.aiRoast && (
-            <View style={[styles.roastCard, { backgroundColor: isDark ? '#1E293B' : '#F4F6F9', borderColor: isDark ? '#1E2A3A' : '#E0E8F0' }]}>
+            <View style={[styles.roastCard, { backgroundColor: isDark ? '#14110F' : '#FFF4DC', borderColor: isDark ? '#14110F' : '#E0E8F0' }]}>
               <FlameIcon size={16} color="#E8A030" />
               <Text style={[styles.roastText, { color: colors.textPrimary }]}>{purchase.aiRoast}</Text>
             </View>
           )}
 
           {/* Details */}
-          <View style={[styles.detailCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
+          <View style={[styles.detailCard, { backgroundColor: isDark ? '#14110F' : '#fff', borderColor: colors.border }]}>
             <DetailRow icon={<WalletIcon size={16} color={colors.textSecondary} />} label="หมวดหมู่" value={formatCategoryName(purchase.category)} colors={colors} />
             {purchase.platform && purchase.platform !== 'unknown' && (
               <><Divider colors={colors} /><DetailRow icon={<ShieldIcon size={16} color={colors.textSecondary} />} label="แพลตฟอร์ม" value={formatPlatformName(purchase.platform)} colors={colors} /></>
@@ -149,7 +149,7 @@ export default function PurchaseDetailScreen() {
 
           {/* Notes */}
           {purchase.notes && (
-            <View style={[styles.notesCard, { backgroundColor: isDark ? '#1E293B' : '#FAFAFA', borderColor: colors.border }]}>
+            <View style={[styles.notesCard, { backgroundColor: isDark ? '#14110F' : '#FAFAFA', borderColor: colors.border }]}>
               <Text style={[styles.notesLabel, { color: colors.textMuted }]}>บันทึกเพิ่มเติม</Text>
               <Text style={[styles.notesText, { color: colors.textPrimary }]}>{purchase.notes}</Text>
             </View>
@@ -158,7 +158,7 @@ export default function PurchaseDetailScreen() {
           {/* URL */}
           {purchase.url && (
             <TouchableOpacity
-              style={[styles.urlCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}
+              style={[styles.urlCard, { backgroundColor: isDark ? '#14110F' : '#fff', borderColor: colors.border }]}
               onPress={() => Linking.openURL(purchase.url!)}
             >
               <Text style={[styles.urlText, { color: colors.primary }]} numberOfLines={1}>{purchase.url}</Text>
@@ -170,7 +170,7 @@ export default function PurchaseDetailScreen() {
 
       {/* Action buttons */}
       {isWaiting && (
-        <View style={[styles.actions, { paddingBottom: insets.bottom + 16, backgroundColor: isDark ? '#0F172A' : '#fff', borderTopColor: colors.border }]}>
+        <View style={[styles.actions, { paddingBottom: insets.bottom + 16, backgroundColor: isDark ? '#14110F' : '#fff', borderTopColor: colors.border }]}>
           {isReady ? (
             <>
               <TouchableOpacity
@@ -191,7 +191,7 @@ export default function PurchaseDetailScreen() {
           ) : (
             <>
               <TouchableOpacity
-                style={[styles.actionBtnSm, { backgroundColor: isDark ? '#1E2A3A' : '#F4F6F9', borderColor: colors.border }]}
+                style={[styles.actionBtnSm, { backgroundColor: isDark ? '#14110F' : '#FFF4DC', borderColor: colors.border }]}
                 onPress={handleExtend}
               >
                 <ClockIcon size={16} color={colors.textSecondary} />
@@ -232,23 +232,23 @@ const styles = StyleSheet.create({
   closeBtnText: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
   platformBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 100, borderWidth: 1 },
   platDot: { width: 6, height: 6, borderRadius: 3 },
-  platName: { fontSize: 12, fontWeight: '700' },
-  heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.5, textAlign: 'center', lineHeight: 28 },
-  heroPrice: { fontSize: 36, fontWeight: '800', color: '#fff', letterSpacing: -1.5 },
+  platName: { fontSize: 12, fontFamily: 'Prompt_700Bold' },
+  heroName: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', color: '#fff', letterSpacing: -0.5, textAlign: 'center', lineHeight: 28 },
+  heroPrice: { fontSize: 36, fontFamily: 'Prompt_800ExtraBold', color: '#fff', letterSpacing: -1.5 },
   scoreWrap: { marginVertical: 4 },
   riskBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 100, borderWidth: 1 },
   riskDot: { width: 7, height: 7, borderRadius: 4 },
-  riskLabel: { fontSize: 13, fontWeight: '700' },
+  riskLabel: { fontSize: 13, fontFamily: 'Prompt_700Bold' },
   content: { gap: 10, paddingTop: 16 },
   roastCard: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 22, borderWidth: 1, alignItems: 'flex-start' },
   roastText: { flex: 1, fontSize: 14, lineHeight: 21, fontStyle: 'italic' },
   detailCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
   detailRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 13 },
   detailLabel: { fontSize: 13, flex: 1 },
-  detailValue: { fontSize: 14, fontWeight: '600', textAlign: 'right', maxWidth: '55%' },
+  detailValue: { fontSize: 14, fontFamily: 'Prompt_600SemiBold', textAlign: 'right', maxWidth: '55%' },
   divider: { height: 1, marginLeft: 16 },
   notesCard: { borderRadius: 16, borderWidth: 1, padding: 14, gap: 6 },
-  notesLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6 },
+  notesLabel: { fontSize: 11, fontFamily: 'Prompt_600SemiBold', textTransform: 'uppercase', letterSpacing: 0.6 },
   notesText: { fontSize: 14, lineHeight: 20 },
   urlCard: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, padding: 14 },
   urlText: { flex: 1, fontSize: 13 },
@@ -256,9 +256,9 @@ const styles = StyleSheet.create({
   actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16 },
   avoidBtn: { backgroundColor: '#218B62' },
   buyBtn: { backgroundColor: '#D94343' },
-  actionBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  actionBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Prompt_700Bold' },
   actionBtnSm: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 14, borderRadius: 14, borderWidth: 1 },
-  actionBtnSmText: { fontSize: 13, fontWeight: '600' },
+  actionBtnSmText: { fontSize: 13, fontFamily: 'Prompt_600SemiBold' },
   notFoundText: { fontSize: 16, marginBottom: 16 },
   backBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
   backBtnText: { fontSize: 14 },

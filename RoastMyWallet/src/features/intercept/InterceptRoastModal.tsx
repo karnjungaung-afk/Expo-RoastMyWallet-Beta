@@ -58,7 +58,7 @@ export function InterceptRoastModal() {
       <Animated.View style={[styles.backdrop, { opacity: opacityAnim }]}>
         <TouchableOpacity style={StyleSheet.absoluteFill} onPress={dismiss} />
 
-        <Animated.View style={[styles.sheet, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', transform: [{ translateY: slideAnim }] }]}>
+        <Animated.View style={[styles.sheet, { backgroundColor: isDark ? '#14110F' : '#FFFFFF', transform: [{ translateY: slideAnim }] }]}>
           {/* Handle */}
           <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
@@ -80,7 +80,7 @@ export function InterceptRoastModal() {
           </View>
 
           {/* Roast message */}
-          <View style={[styles.roastBubble, { backgroundColor: isDark ? '#1E2A3A' : '#F4F6F9', borderColor: isDark ? '#2A3D52' : '#E0E8F0' }]}>
+          <View style={[styles.roastBubble, { backgroundColor: isDark ? '#14110F' : '#FFF4DC', borderColor: isDark ? '#2A3D52' : '#E0E8F0' }]}>
             <Text style={[styles.roastText, { color: colors.textPrimary }]}>{roastMessage}</Text>
           </View>
 
@@ -94,7 +94,7 @@ export function InterceptRoastModal() {
 
           {/* Primary CTA */}
           <LinearGradient
-            colors={['#1E3A8A', '#3B82F6']}
+            colors={['#8B5CF6', '#8B5CF6']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.primaryGradient}
@@ -136,12 +136,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 5, borderRadius: 100,
   },
   platformDot: { width: 7, height: 7, borderRadius: 4 },
-  platformName: { fontSize: 13, fontWeight: '700', letterSpacing: 0.2 },
+  platformName: { fontSize: 13, fontFamily: 'Prompt_700Bold', letterSpacing: 0.2 },
 
   mascotWrap: { marginVertical: 4 },
 
   textBlock: { alignItems: 'center', gap: 4 },
-  title: { fontSize: 28, fontWeight: '800', letterSpacing: -0.8 },
+  title: { fontSize: 28, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.8 },
   subtitle: { fontSize: 14 },
 
   roastBubble: {
@@ -153,17 +153,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     width: '100%', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
   },
-  waitReminderText: { fontSize: 13, fontWeight: '600' },
+  waitReminderText: { fontSize: 13, fontFamily: 'Prompt_600SemiBold' },
 
   primaryGradient: { width: '100%', borderRadius: 16, marginTop: 4 },
   primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16 },
-  primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  primaryBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Prompt_700Bold' },
 
   secondaryBtn: {
     width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 14, borderRadius: 14, borderWidth: 1.5,
   },
-  secondaryBtnText: { fontSize: 14, fontWeight: '500' },
+  secondaryBtnText: { fontSize: 14, fontFamily: 'Prompt_500Medium' },
 
   dismissBtn: { paddingVertical: 8 },
   dismissText: { fontSize: 13 },

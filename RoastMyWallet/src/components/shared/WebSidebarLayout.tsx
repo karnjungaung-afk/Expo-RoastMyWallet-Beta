@@ -99,9 +99,9 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
       >
         {/* Logo */}
         <View style={[styles.sidebarLogo, { borderBottomColor: colors.border }]}>
-          <View style={[styles.logoMark, { borderColor: '#F15B50', backgroundColor: '#FFF0E1' }]}>
+          <View style={[styles.logoMark, { borderColor: '#FF6B4A', backgroundColor: '#FFF0E1' }]}>
             <View style={styles.pauseBars}>
-              <View style={[styles.pauseBar, { backgroundColor: '#F15B50' }]} />
+              <View style={[styles.pauseBar, { backgroundColor: '#FF6B4A' }]} />
               <View style={[styles.pauseBar, { backgroundColor: '#7139D5' }]} />
             </View>
             <View style={[styles.cornerTL, { borderColor: '#75B5FF' }]} />
@@ -150,7 +150,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                     </Text>
                   )}
                   {badge > 0 && (
-                    <View style={[styles.navBadge, { backgroundColor: '#F15B50' }]}>
+                    <View style={[styles.navBadge, { backgroundColor: '#FF6B4A' }]}>
                       <Text style={styles.navBadgeText}>
                         {badge > 99 ? '99+' : badge}
                       </Text>
@@ -198,8 +198,8 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                   </Text>
                   {isPro() && (
                     <View style={styles.proLine}>
-                      <FlameIcon size={10} color="#B9D9FF" />
-                      <Text style={[styles.proBadgeText, { color: '#B9D9FF' }]}>Pro</Text>
+                      <FlameIcon size={10} color="#C9B6FF" />
+                      <Text style={[styles.proBadgeText, { color: '#C9B6FF' }]}>Pro</Text>
                     </View>
                   )}
                 </View>
@@ -210,7 +210,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
             </>
           ) : (
             <View style={[styles.footerAvatar, { backgroundColor: '#1C4D80', marginHorizontal: 'auto' }]}>
-              <Text style={[styles.footerAvatarText, { color: '#B9D9FF' }]}>
+              <Text style={[styles.footerAvatarText, { color: '#C9B6FF' }]}>
                 {(profile?.displayName ?? 'U').charAt(0).toUpperCase()}
               </Text>
             </View>
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: typography.size.base,
-    fontWeight: typography.weight.bold,
+    fontFamily: 'Prompt_700Bold',
     letterSpacing: -0.5,
   },
   navItems: {
@@ -343,11 +343,11 @@ const styles = StyleSheet.create({
   },
   navLabel: {
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
+    fontFamily: 'Prompt_500Medium',
     flex: 1,
   },
   navLabelActive: {
-    fontWeight: typography.weight.semibold,
+    fontFamily: 'Prompt_600SemiBold',
   },
   navBadge: {
     minWidth: 18,
@@ -360,14 +360,14 @@ const styles = StyleSheet.create({
   navBadgeText: {
     color: '#fff',
     fontSize: 9,
-    fontWeight: '700',
+    fontFamily: 'Prompt_700Bold',
   },
   sidebarProCard: { backgroundColor: '#173D63', borderColor: '#315D87', borderWidth: 1, borderRadius: 14, padding: 12, gap: 7, marginBottom: 12 },
   sidebarProIcon: { width: 30, height: 30, borderRadius: 9, backgroundColor: 'rgba(255,210,122,0.14)', alignItems: 'center', justifyContent: 'center' },
-  sidebarProTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
+  sidebarProTitle: { color: '#FFFFFF', fontSize: 12, fontFamily: 'Prompt_800ExtraBold' },
   sidebarProCopy: { color: '#BDD0E3', fontSize: 10, lineHeight: 15 },
   sidebarProButton: { alignSelf: 'flex-start', backgroundColor: '#2877DC', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginTop: 2 },
-  sidebarProButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800' },
+  sidebarProButtonText: { color: '#FFFFFF', fontSize: 10, fontFamily: 'Prompt_800ExtraBold' },
   sidebarFooter: {
     borderTopWidth: 1,
     padding: spacing[3],
@@ -388,11 +388,11 @@ const styles = StyleSheet.create({
   },
   footerAvatarText: {
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.bold,
+    fontFamily: 'Prompt_700Bold',
   },
   footerName: {
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
+    fontFamily: 'Prompt_500Medium',
   },
   proLine: {
     flexDirection: 'row',
@@ -402,11 +402,11 @@ const styles = StyleSheet.create({
   },
   proBadgeText: {
     fontSize: typography.size.xs,
-    fontWeight: typography.weight.semibold,
+    fontFamily: 'Prompt_600SemiBold',
   },
   sysStatus: {
     fontSize: 9,
-    fontFamily: 'Courier New',
+    fontFamily: 'Prompt_700Bold',
     letterSpacing: 0.5,
   },
   content: {
@@ -437,10 +437,10 @@ const styles = StyleSheet.create({
   searchGlyph: { fontSize: 24, lineHeight: 26 },
   searchInput: { flex: 1, minWidth: 0, paddingVertical: 8, fontSize: 13 },
   searchAction: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  searchActionText: { color: '#fff', fontSize: 11, fontWeight: '800' },
+  searchActionText: { color: '#fff', fontSize: 11, fontFamily: 'Prompt_800ExtraBold' },
   topbarUser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingVertical: 5, paddingHorizontal: 7, maxWidth: 200 },
   topbarAvatar: { width: 30, height: 30, borderRadius: 10, backgroundColor: '#FFE3DE', alignItems: 'center', justifyContent: 'center' },
-  topbarAvatarText: { color: '#C84A40', fontWeight: '900', fontSize: 13 },
-  topbarUserName: { fontSize: 12, fontWeight: '700', maxWidth: 145 },
+  topbarAvatarText: { color: '#C84A40', fontFamily: 'Prompt_800ExtraBold', fontSize: 13 },
+  topbarUserName: { fontSize: 12, fontFamily: 'Prompt_700Bold', maxWidth: 145 },
   screenContent: { flex: 1, minHeight: 0 },
 });

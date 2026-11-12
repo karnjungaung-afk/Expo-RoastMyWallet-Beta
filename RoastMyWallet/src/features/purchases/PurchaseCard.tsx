@@ -9,9 +9,9 @@ import { formatCurrency, formatCountdown, formatCategoryName } from '@/utils/for
 import type { Purchase, ShoppingPlatform } from '@/types';
 
 const RISK = {
-  high:   { color:'#D45050', bg:'#FAE8E8', label:'เสี่ยงสูง',     darkBg:'#2D1010' },
-  medium: { color:'#C07820', bg:'#FDF3E0', label:'ปานกลาง',        darkBg:'#2A1E08' },
-  low:    { color:'#2E7A4F', bg:'#E3F5EC', label:'เสี่ยงต่ำ',     darkBg:'#0D2016' },
+  high:   { color:'#14110F', bg:'#FF9EB5', label:'เสี่ยงสูง',     darkBg:'#FF9EB5' },
+  medium: { color:'#14110F', bg:'#FFD84D', label:'ปานกลาง',        darkBg:'#FFD84D' },
+  low:    { color:'#14110F', bg:'#7AE8B5', label:'เสี่ยงต่ำ',     darkBg:'#7AE8B5' },
 };
 
 export function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPress?: () => void }) {
@@ -38,12 +38,12 @@ export function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPres
   return (
     <TouchableOpacity onPress={handle} activeOpacity={0.8}>
       <View style={[styles.card, {
-        backgroundColor: isDark ? '#1E293B' : '#fff',
-        borderColor: isDark ? '#1E2A3A' : '#EDE8DF',
-        shadowColor: isDark ? '#000' : '#7A5A30',
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+        boxShadow: `4px 4px 0px 0px ${colors.border}`,
       }]}>
         {/* Left: category color block */}
-        <LinearGradient colors={catGrad} style={styles.colorBlock} start={{x:0,y:0}} end={{x:1,y:1}}>
+        <LinearGradient colors={catGrad} style={[styles.colorBlock, { borderRightColor: colors.border }]} start={{x:0,y:0}} end={{x:1,y:1}}>
           {plat && plat !== 'unknown'
             ? <PlatformTile platform={plat} size={38} />
             : <View style={styles.catBubble}><Text style={styles.catLetter}>{formatCategoryName(purchase.category).charAt(0)}</Text></View>
@@ -57,7 +57,7 @@ export function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPres
             <Text style={[styles.price, { color: colors.textPrimary }]}>{formatCurrency(purchase.price, purchase.currency)}</Text>
           </View>
 
-          <Text style={[styles.cat, { color: isDark ? colors.textMuted : '#9A7A5A' }]}>
+          <Text style={[styles.cat, { color: colors.textMuted }]}>
             {formatCategoryName(purchase.category)}
           </Text>
 
@@ -67,15 +67,15 @@ export function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPres
 
           {isWait ? (
             <View style={styles.timerBlock}>
-              <View style={[styles.timerBg, { backgroundColor: isDark ? '#252B38' : '#EDE8DF' }]}>
+              <View style={[styles.timerBg, { backgroundColor: colors.surfaceRaised, borderColor: colors.border }]}>
                 <LinearGradient
-                  colors={isReady ? ['#2E7A4F','#52B57D'] : [cfg.color, cfg.color+'88']}
+                  colors={isReady ? ['#2FBF71','#7AE8B5'] : [cfg.bg, cfg.bg]}
                   start={{x:0,y:0}} end={{x:1,y:0}}
                   style={[styles.timerFill, { width:`${pct}%` as any }]}
                 />
               </View>
               <View style={styles.timerRow}>
-                <View style={[styles.riskPill, { backgroundColor: isDark ? cfg.darkBg : cfg.bg }]}>
+                <View style={[styles.riskPill, { backgroundColor: cfg.bg, borderColor: colors.border }]}>
                   {risk==='high' ? <FlameIcon size={10} color={cfg.color}/> : risk==='low' ? <ShieldIcon size={10} color={cfg.color}/> : <ClockIcon size={10} color={cfg.color}/>}
                   <Text style={[styles.riskTxt, { color: cfg.color }]}>{cfg.label}</Text>
                 </View>
@@ -104,24 +104,24 @@ export function PurchaseCard({ purchase, onPress }: { purchase: Purchase; onPres
 }
 
 const styles = StyleSheet.create({
-  card:{ borderRadius:18, borderWidth:1, flexDirection:'row', overflow:'hidden', shadowOffset:{width:0,height:2}, shadowOpacity:0.07, shadowRadius:10, elevation:2 },
-  colorBlock:{ width:76, alignItems:'center', justifyContent:'center' },
-  catBubble:{ width:38, height:38, borderRadius:12, backgroundColor:'rgba(255,255,255,0.25)', alignItems:'center', justifyContent:'center' },
-  catLetter:{ fontSize:18, fontWeight:'800', color:'#fff' },
+  card:{ borderRadius:20, borderWidth:2.5, flexDirection:'row', overflow:'hidden' },
+  colorBlock:{ width:76, borderRightWidth:2.5, alignItems:'center', justifyContent:'center' },
+  catBubble:{ width:38, height:38, borderRadius:12, backgroundColor:'#FFFFFF', borderWidth:2, borderColor:'#14110F', alignItems:'center', justifyContent:'center' },
+  catLetter:{ fontSize:18, fontFamily: 'Prompt_800ExtraBold', color:'#14110F' },
   body:{ flex:1, padding:12, gap:5 },
   topRow:{ flexDirection:'row', justifyContent:'space-between', alignItems:'flex-start', gap:8 },
-  name:{ flex:1, fontSize:15, fontWeight:'700', letterSpacing:-0.2 },
-  price:{ fontSize:15, fontWeight:'800', letterSpacing:-0.5 },
-  cat:{ fontSize:11, fontWeight:'600', textTransform:'uppercase', letterSpacing:0.5 },
+  name:{ flex:1, fontSize:15, fontFamily: 'Prompt_700Bold', letterSpacing:-0.2 },
+  price:{ fontSize:15, fontFamily: 'Prompt_800ExtraBold', letterSpacing:-0.5 },
+  cat:{ fontSize:11, fontFamily: 'Prompt_600SemiBold', textTransform:'uppercase', letterSpacing:0.5 },
   roast:{ fontSize:11, lineHeight:16, fontStyle:'italic' },
   timerBlock:{ gap:5, marginTop:2 },
-  timerBg:{ height:5, borderRadius:3, overflow:'hidden' },
-  timerFill:{ height:5, borderRadius:3 },
+  timerBg:{ height:12, borderRadius:8, borderWidth:2, overflow:'hidden' },
+  timerFill:{ height:'100%', borderRadius:6 },
   timerRow:{ flexDirection:'row', justifyContent:'space-between', alignItems:'center' },
-  riskPill:{ flexDirection:'row', alignItems:'center', gap:3, paddingHorizontal:7, paddingVertical:3, borderRadius:100 },
-  riskTxt:{ fontSize:10, fontWeight:'700' },
+  riskPill:{ flexDirection:'row', alignItems:'center', gap:3, paddingHorizontal:8, paddingVertical:3, borderRadius:100, borderWidth:2 },
+  riskTxt:{ fontSize:10, fontFamily: 'Prompt_700Bold' },
   countdownRow:{ flexDirection:'row', alignItems:'center', gap:3 },
-  countdownTxt:{ fontSize:11, fontWeight:'500' },
+  countdownTxt:{ fontSize:11, fontFamily: 'Prompt_500Medium' },
   decidedRow:{ flexDirection:'row', alignItems:'center', gap:5, marginTop:3 },
-  decidedTxt:{ fontSize:12, fontWeight:'600' },
+  decidedTxt:{ fontSize:12, fontFamily: 'Prompt_600SemiBold' },
 });

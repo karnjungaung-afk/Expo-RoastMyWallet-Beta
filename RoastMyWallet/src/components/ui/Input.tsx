@@ -4,7 +4,7 @@ import {
   type TextInputProps, type ViewStyle,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing, radius, typography } from '@/theme/tokens';
+import { spacing, radius, typography, neo, neoShadow } from '@/theme/tokens';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -21,7 +21,7 @@ export const Input = forwardRef<React.ComponentRef<typeof TextInput>, InputProps
     const { colors } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
 
-    const borderColor = error ? colors.danger : isFocused ? colors.primary : colors.border;
+    const borderColor = error ? colors.danger : colors.border;
 
     return (
       <View style={[styles.container, containerStyle]}>
@@ -32,7 +32,7 @@ export const Input = forwardRef<React.ComponentRef<typeof TextInput>, InputProps
           </View>
         )}
 
-        <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor }]}>
+        <View style={[styles.inputWrapper, { backgroundColor: isFocused ? '#FFF7B8' : colors.inputBackground, borderColor }, neoShadow(error ? colors.danger : colors.border, isFocused ? neo.shadowOffset : 2)]}>
           {leftIcon != null && <View style={styles.leftIcon}>{leftIcon}</View>}
 
           <TextInput
@@ -94,6 +94,7 @@ export function SelectTrigger({
         style={[styles.inputWrapper, {
           backgroundColor: colors.inputBackground,
           borderColor: error != null ? colors.danger : colors.border,
+          ...neoShadow(colors.border, 2),
         }]}
       >
         <Text
@@ -115,14 +116,14 @@ export function SelectTrigger({
 const styles = StyleSheet.create({
   container: { gap: spacing[1.5] },
   labelRow: { flexDirection: 'row', alignItems: 'center' },
-  label: { fontSize: typography.size.sm, fontWeight: typography.weight.medium },
+  label: { fontSize: typography.size.sm, fontFamily: typography.fontFamily.sansBold },
   required: { fontSize: typography.size.sm },
   inputWrapper: {
-    flexDirection: 'row', alignItems: 'center', borderWidth: 1,
-    borderRadius: radius.md, minHeight: 48, overflow: 'hidden',
+    flexDirection: 'row', alignItems: 'center', borderWidth: neo.borderWidth,
+    borderRadius: radius.md, minHeight: 50, overflow: 'hidden',
   },
   input: {
-    flex: 1, fontSize: typography.size.base, fontWeight: typography.weight.regular,
+    flex: 1, fontSize: typography.size.base, fontFamily: typography.fontFamily.sans,
     paddingHorizontal: spacing[3], paddingVertical: spacing[3], includeFontPadding: false,
   },
   inputWithLeftIcon: { paddingLeft: spacing[1] },
@@ -130,5 +131,5 @@ const styles = StyleSheet.create({
   selectText: { paddingVertical: spacing[3.5] },
   leftIcon: { paddingLeft: spacing[3] },
   rightElement: { paddingRight: spacing[3] },
-  helper: { fontSize: typography.size.xs, fontWeight: typography.weight.regular },
+  helper: { fontSize: typography.size.xs, fontFamily: 'Prompt_400Regular' },
 });

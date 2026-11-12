@@ -16,21 +16,17 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isDark ? colors.tabBar : '#FFFFFF',
-          borderTopColor: colors.border,
-          borderTopWidth: 0, borderTopLeftRadius: 22, borderTopRightRadius: 22,
-          height: 64 + bottom,
+          backgroundColor: colors.tabBar,
+          borderTopColor: isDark ? '#FFF8E8' : '#14110F',
+          borderTopWidth: 3,
+          height: 68 + bottom,
           paddingBottom: bottom,
-          paddingTop: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: isDark ? 0.3 : 0.06,
-          shadowRadius: 12,
+          paddingTop: 8,
           elevation: 0,
         },
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: '#14110F',
         tabBarInactiveTintColor: colors.tabInactive,
-        tabBarLabelStyle: { fontSize: 10, lineHeight: 14, fontWeight: '600', marginTop: 1 },
+        tabBarLabelStyle: { fontSize: 10, lineHeight: 14, fontFamily: 'Prompt_700Bold', marginTop: 1 },
         tabBarHideOnKeyboard: true,
       }}
     >
@@ -89,10 +85,12 @@ export default function TabLayout() {
   );
 }
 
-function TabIconWrap({ children, focused, color }: { children: React.ReactNode; focused: boolean; color: string }) {
+function TabIconWrap({ children, focused }: { children: React.ReactNode; focused: boolean; color?: string }) {
+  const { isDark } = useTheme();
   if (!focused) return <>{children}</>;
+  const ink = isDark ? '#FFF8E8' : '#14110F';
   return (
-    <View style={[styles.activeWrap, { backgroundColor: color + '15' }]}>
+    <View style={[styles.activeWrap, { backgroundColor: '#D6F73C', borderColor: ink, boxShadow: `2px 2px 0px 0px ${ink}` }]}>
       {children}
     </View>
   );
@@ -107,7 +105,7 @@ function WaitingTabIcon({ color, focused }: { color: ColorValue; focused: boolea
       <View style={styles.badgeWrap}>
         <ClockIcon size={22} color={String(color)} strokeWidth={focused ? 2.2 : 1.7} />
         {waitingCount > 0 && (
-          <View style={[styles.badge, { backgroundColor: '#E8A030' }]}>
+          <View style={[styles.badge, { backgroundColor: '#FF6B4A', borderWidth: 2, borderColor: '#14110F' }]}>
             <Text style={styles.badgeText}>{waitingCount > 99 ? '99+' : waitingCount}</Text>
           </View>
         )}
@@ -117,12 +115,12 @@ function WaitingTabIcon({ color, focused }: { color: ColorValue; focused: boolea
 }
 
 const styles = StyleSheet.create({
-  activeWrap: { width: 40, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  activeWrap: { width: 46, height: 34, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   badgeWrap: { position: 'relative', width: 28, height: 24, alignItems: 'center', justifyContent: 'center' },
   badge: {
     position: 'absolute', top: -4, right: -6,
     minWidth: 16, height: 16, borderRadius: 8,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
   },
-  badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
+  badgeText: { color: '#fff', fontSize: 9, fontFamily: 'Prompt_800ExtraBold' },
 });

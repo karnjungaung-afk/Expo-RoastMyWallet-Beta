@@ -47,8 +47,8 @@ export const AuthField = forwardRef<React.ComponentRef<typeof TextInput>, Props>
 AuthField.displayName = 'AuthField';
 
 const styles = StyleSheet.create({
-  label: { fontSize: 13, fontWeight: '600' },
-  row: { flexDirection: 'row', alignItems: 'center', minHeight: 50, borderWidth: 1.5, borderRadius: 12, paddingHorizontal: 12, gap: 10 },
+  label: { fontSize: 13, fontFamily: 'Prompt_600SemiBold' },
+  row: { flexDirection: 'row', alignItems: 'center', minHeight: 52, borderWidth: 2.5, borderRadius: 14, paddingHorizontal: 12, gap: 10, boxShadow: '2px 2px 0px 0px #14110F' },
   icon: { width: 22, alignItems: 'center' },
   input: { flex: 1, fontSize: 15, paddingVertical: 12, outlineStyle: 'none' as any },
   eye: { padding: 2 },

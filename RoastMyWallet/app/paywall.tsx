@@ -61,7 +61,7 @@ export default function PaywallScreen() {
   };
 
   return (
-    <LinearGradient colors={['#F15B50', '#7139D5', '#31B9CE']} style={styles.root}>
+    <LinearGradient colors={['#FF6B4A', '#7139D5', '#31B9CE']} style={styles.root}>
       <ScrollView
         contentContainerStyle={[styles.page, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 }]}
         showsVerticalScrollIndicator={false}
@@ -95,7 +95,7 @@ export default function PaywallScreen() {
 
         {isLoading && packages.length === 0 ? (
           <View style={styles.stateCard}>
-            <ActivityIndicator color="#93C5FD" />
+            <ActivityIndicator color="#C9B6FF" />
             <Text style={styles.stateText}>กำลังโหลดแพ็กเกจสมาชิก…</Text>
           </View>
         ) : packages.length > 0 ? (
@@ -164,7 +164,7 @@ export default function PaywallScreen() {
 
         {Platform.OS !== 'web' && (
           <TouchableOpacity onPress={() => { void handleRestore(); }} disabled={isRestoring} style={styles.restoreButton} accessibilityRole="button">
-            {isRestoring ? <ActivityIndicator color="#93C5FD" /> : <Text style={styles.restoreText}>กู้คืนการซื้อเดิม</Text>}
+            {isRestoring ? <ActivityIndicator color="#C9B6FF" /> : <Text style={styles.restoreText}>กู้คืนการซื้อเดิม</Text>}
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -178,38 +178,38 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   page: { width: '100%', maxWidth: 820, alignSelf: 'center', paddingHorizontal: 20, gap: 18 },
   back: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingVertical: 8, gap: 2 },
-  backText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  backText: { color: '#fff', fontSize: 15, fontFamily: 'Prompt_600SemiBold' },
   hero: { alignItems: 'center', gap: 10, paddingTop: 4 },
   crown: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(245,158,11,0.15)', borderWidth: 1, borderColor: 'rgba(245,158,11,0.4)', alignItems: 'center', justifyContent: 'center' },
-  title: { color: '#fff', fontSize: 28, fontWeight: '900', letterSpacing: -0.8, textAlign: 'center' },
+  title: { color: '#fff', fontSize: 28, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.8, textAlign: 'center' },
   sub: { color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 21, textAlign: 'center', maxWidth: 460 },
   activeBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#D1FAE5', paddingHorizontal: 12, paddingVertical: 8, gap: 6, borderRadius: 999, marginTop: 4 },
-  activeBadgeText: { color: '#0F5132', fontWeight: '700', fontSize: 12 },
+  activeBadgeText: { color: '#0F5132', fontFamily: 'Prompt_700Bold', fontSize: 12 },
   toggle: { flexDirection: 'row', alignSelf: 'center', width: '100%', maxWidth: 360, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 14, padding: 4 },
   toggleBtn: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 11 },
-  toggleOn: { backgroundColor: '#F15B50' },
-  toggleText: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: '600' },
-  toggleTextOn: { color: '#fff', fontWeight: '800' },
+  toggleOn: { backgroundColor: '#FF6B4A' },
+  toggleText: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontFamily: 'Prompt_600SemiBold' },
+  toggleTextOn: { color: '#fff', fontFamily: 'Prompt_800ExtraBold' },
   planGrid: { gap: 14, alignItems: 'stretch' },
   planCard: { ...glass, borderRadius: 24, padding: 22, gap: 8, borderWidth: 1.5 },
-  planCardOn: { borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.16)' },
+  planCardOn: { borderColor: '#8B5CF6', backgroundColor: 'rgba(59,130,246,0.16)' },
   saveBadge: { position: 'absolute', top: -11, right: 14, backgroundColor: '#22C55E', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  saveBadgeText: { color: '#fff', fontSize: 11, fontWeight: '800' },
-  planName: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontWeight: '700' },
+  saveBadgeText: { color: '#fff', fontSize: 11, fontFamily: 'Prompt_800ExtraBold' },
+  planName: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontFamily: 'Prompt_700Bold' },
   priceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
-  planPrice: { color: '#fff', fontSize: 32, fontWeight: '900', letterSpacing: -1 },
+  planPrice: { color: '#fff', fontSize: 32, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -1 },
   planUnit: { color: 'rgba(255,255,255,0.55)', fontSize: 13, marginBottom: 6 },
   planPeriod: { color: 'rgba(255,255,255,0.55)', fontSize: 12, marginBottom: 8 },
-  planButton: { backgroundColor: '#F15B50', borderRadius: 16, padding: 15, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
-  planButtonText: { color: '#fff', fontWeight: '800', fontSize: 14 },
+  planButton: { backgroundColor: '#FF6B4A', borderRadius: 16, padding: 15, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  planButtonText: { color: '#fff', fontFamily: 'Prompt_800ExtraBold', fontSize: 14 },
   disabledButton: { opacity: 0.75 },
   stateCard: { ...glass, borderRadius: 24, padding: 24, alignItems: 'center', gap: 8 },
   warningIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: 'rgba(245,158,11,0.15)', alignItems: 'center', justifyContent: 'center' },
-  stateTitle: { color: '#fff', fontSize: 17, fontWeight: '800' },
+  stateTitle: { color: '#fff', fontSize: 17, fontFamily: 'Prompt_800ExtraBold' },
   stateText: { color: 'rgba(255,255,255,0.75)', textAlign: 'center', lineHeight: 21, maxWidth: 560 },
   setupHint: { color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: 12, lineHeight: 18, maxWidth: 560 },
-  retryButton: { paddingHorizontal: 22, paddingVertical: 12, backgroundColor: '#2563EB', borderRadius: 12, marginTop: 6 },
-  retryText: { color: '#fff', fontWeight: '700' },
+  retryButton: { paddingHorizontal: 22, paddingVertical: 12, backgroundColor: '#8B5CF6', borderRadius: 12, marginTop: 6 },
+  retryText: { color: '#fff', fontFamily: 'Prompt_700Bold' },
   benefits: { gap: 10, alignSelf: 'center', width: '100%', maxWidth: 420, marginTop: 4 },
   benefit: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   benefitCheck: { width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.18)', alignItems: 'center', justifyContent: 'center' },
@@ -217,5 +217,5 @@ const styles = StyleSheet.create({
   feedback: { borderRadius: 12, padding: 14 },
   disclaimer: { color: 'rgba(255,255,255,0.45)', fontSize: 12, lineHeight: 18, textAlign: 'center' },
   restoreButton: { alignSelf: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 20 },
-  restoreText: { color: '#93C5FD', fontWeight: '600' },
+  restoreText: { color: '#C9B6FF', fontFamily: 'Prompt_600SemiBold' },
 });

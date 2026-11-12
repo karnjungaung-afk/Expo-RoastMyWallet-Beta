@@ -39,7 +39,7 @@ export default function TabLayoutWeb() {
     tabBarStyle,
     tabBarActiveTintColor: colors.primary,
     tabBarInactiveTintColor: colors.tabInactive,
-    tabBarLabelStyle: { fontSize: 10, lineHeight: 14, fontWeight: '600' as const, marginTop: 2 },
+    tabBarLabelStyle: { fontSize: 10, lineHeight: 14, fontFamily: 'Prompt_600SemiBold', marginTop: 2 },
   };
 
   const tabs = (
@@ -72,5 +72,5 @@ function WaitingIcon({ color, focused }: { color: ColorValue; focused: boolean }
 const styles = StyleSheet.create({
   wrap: { position: 'relative', width: 28, height: 24, alignItems: 'center', justifyContent: 'center' },
   badge: { position: 'absolute', top: -3, right: -6, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
-  badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
+  badgeText: { color: '#fff', fontSize: 9, fontFamily: 'Prompt_800ExtraBold' },
 });

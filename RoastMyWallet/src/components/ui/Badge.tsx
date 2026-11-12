@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { spacing, radius, typography } from '@/theme/tokens';
+import { spacing, radius, typography, neo, neoShadow } from '@/theme/tokens';
 import type { ImpulseRisk } from '@/types';
 
 // ─── RISK BADGE ───────────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ export function RiskBadge({ risk, style }: RiskBadgeProps) {
     <View
       style={[
         styles.riskBadge,
-        { backgroundColor: config.bg },
+        { backgroundColor: config.bg, borderWidth: neo.borderWidthThin, borderColor: colors.border, ...neoShadow(colors.border, 2) },
         style,
       ]}
       accessibilityLabel={`Impulse risk: ${risk}`}
@@ -182,11 +182,11 @@ export function ProGateBadge({ style }: ProGateBadgeProps) {
     <View
       style={[
         styles.proGateBadge,
-        { backgroundColor: colors.primarySubtle, borderColor: colors.primary },
+        { backgroundColor: '#D6F73C', borderColor: colors.border, ...neoShadow(colors.border, 2) },
         style,
       ]}
     >
-      <Text style={[styles.proGateText, { color: colors.primary }]}>
+      <Text style={[styles.proGateText, { color: '#14110F' }]}>
         PRO
       </Text>
     </View>
@@ -235,8 +235,7 @@ const styles = StyleSheet.create({
   },
   riskLabel: {
     fontSize: typography.size.xs,
-    fontWeight: typography.weight.bold,
-    fontFamily: 'Courier New',
+    fontFamily: 'Prompt_700Bold',
     letterSpacing: typography.tracking.wide,
   },
 
@@ -248,7 +247,7 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontSize: typography.size.xs,
-    fontWeight: typography.weight.semibold,
+    fontFamily: 'Prompt_600SemiBold',
     letterSpacing: typography.tracking.wide,
   },
 
@@ -267,9 +266,8 @@ const styles = StyleSheet.create({
   },
   dividerLabel: {
     fontSize: typography.size.xs,
-    fontWeight: typography.weight.medium,
     letterSpacing: typography.tracking.wider,
-    fontFamily: 'Courier New',
+    fontFamily: 'Prompt_700Bold',
   },
   statusDot: {
     width: 6,
@@ -286,9 +284,8 @@ const styles = StyleSheet.create({
   },
   proGateText: {
     fontSize: typography.size['2xs'],
-    fontWeight: typography.weight.bold,
+    fontFamily: 'Prompt_700Bold',
     letterSpacing: typography.tracking.widest,
-    fontFamily: 'Courier New',
   },
 
   // System label
@@ -300,7 +297,7 @@ const styles = StyleSheet.create({
   },
   systemLabelText: {
     fontSize: typography.size['2xs'],
-    fontFamily: 'Courier New',
+    fontFamily: 'Prompt_700Bold',
     letterSpacing: 0.5,
   },
 });

@@ -71,7 +71,7 @@ export function ProGateModal({
             accessibilityLabel="Close"
             style={[styles.closeBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
-            <Text style={{ color: colors.textMuted, fontSize: 16, fontWeight: '600' }}>✕</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 16, fontFamily: 'Prompt_600SemiBold' }}>✕</Text>
           </TouchableOpacity>
         </View>
 
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: typography.size.xl,
-    fontWeight: typography.weight.bold,
+    fontFamily: 'Prompt_700Bold',
     textAlign: 'center',
     letterSpacing: -0.4,
   },
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   benefitsTitle: {
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
+    fontFamily: 'Prompt_600SemiBold',
     letterSpacing: typography.tracking.wide,
   },
   benefitsList: {
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
+    fontFamily: 'Prompt_500Medium',
     lineHeight: 20,
   },
   valueSub: {
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   },
   savingsLabel: {
     fontSize: typography.size.xs,
-    fontWeight: typography.weight.medium,
+    fontFamily: 'Prompt_500Medium',
     textAlign: 'center',
   },
   restoreLink: {

@@ -29,7 +29,7 @@ export function LineShoppingTile({ size = 44 }: TileProps) {
 export function GrabTile({ size = 44 }: TileProps) {
   return <View style={[s.tile,{width:size,height:size,borderRadius:size/2,backgroundColor:'#00B14F'}]}><Svg width={size*.54} height={size*.54} viewBox="0 0 24 24"><Circle cx="12" cy="8" r="3" fill="none" stroke="#fff" strokeWidth="1.8"/><Path d="M5 20C5 16.7 8.1 14 12 14S19 16.7 19 20" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" fill="none"/></Svg></View>;
 }
-export function GenericShopTile({ size = 44, color = '#7C6AF0' }: TileProps & { color?: string }) {
+export function GenericShopTile({ size = 44, color = '#8B5CF6' }: TileProps & { color?: string }) {
   return <View style={[s.tile,{width:size,height:size,borderRadius:size/2,backgroundColor:color}]}><Svg width={size*.54} height={size*.54} viewBox="0 0 24 24"><Path d="M6 2L3 6V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V6L18 2Z" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinejoin="round"/><Path d="M3 6H21" stroke="#fff" strokeWidth="1.8"/><Path d="M16 10C16 12.2 14.2 14 12 14C9.8 14 8 12.2 8 10" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round"/></Svg></View>;
 }
 
@@ -51,13 +51,13 @@ export function PlatformTile({ platform, size = 44 }: { platform: ShoppingPlatfo
     case 'zalora':        return <GenericShopTile size={size} color="#1A1A1A" />;
     case 'facebook':      return <GenericShopTile size={size} color="#1877F2" />;
     case 'klook':         return <GenericShopTile size={size} color="#FF5722" />;
-    default:              return <GenericShopTile size={size} color="#7C6AF0" />;
+    default:              return <GenericShopTile size={size} color="#8B5CF6" />;
   }
 }
 
 export const CATEGORY_GRADIENT: Record<string, [string, string]> = {
   electronics:   ['#4A90D9','#1B5EA8'], fashion:       ['#E91E8C','#9B1060'],
-  beauty:        ['#FF6B9D','#C44D7A'], gaming:        ['#7C6AF0','#4A3AB0'],
+  beauty:        ['#FF6B9D','#C44D7A'], gaming:        ['#8B5CF6','#4A3AB0'],
   home:          ['#52B57D','#2E7A4F'], food:          ['#FF8C42','#C05A20'],
   sports:        ['#00BCD4','#007A8A'], health:        ['#4CAF50','#2E7D32'],
   books:         ['#795548','#4E342E'], travel:        ['#03A9F4','#0277BD'],

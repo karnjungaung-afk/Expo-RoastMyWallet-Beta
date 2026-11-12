@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   line: { flex: 1, height: 1 },
   or: { fontSize: 12 },
   row: { flexDirection: 'row', gap: 10 },
-  btn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, borderRadius: 12, borderWidth: 1.5 },
-  btnText: { fontSize: 14, fontWeight: '600' },
+  btn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, borderRadius: 14, borderWidth: 2.5, boxShadow: '3px 3px 0px 0px #14110F' },
+  btnText: { fontSize: 14, fontFamily: 'Prompt_600SemiBold' },
   error: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
 });
