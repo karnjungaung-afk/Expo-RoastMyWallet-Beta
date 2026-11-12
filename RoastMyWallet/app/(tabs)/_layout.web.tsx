@@ -26,10 +26,10 @@ export default function TabLayoutWeb() {
   const tabBarStyle = showSidebar
     ? { display: 'none' as const }
     : {
-        backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+        backgroundColor: isDark ? colors.tabBar : '#FFFFFF',
         borderTopColor: colors.border,
-        borderTopWidth: 1,
-        height: 72,
+        borderTopWidth: 0, borderTopLeftRadius: 22, borderTopRightRadius: 22,
+        height: 76,
         paddingBottom: 8,
         paddingTop: 8,
       };
