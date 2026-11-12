@@ -60,12 +60,6 @@ export default function ProfileScreen() {
     if (savingAvatar) return;
 
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        showMessage('ต้องอนุญาตเข้าถึงรูปภาพ', 'อนุญาตให้ RoastMyWallet เลือกรูปจากอุปกรณ์ของคุณก่อน');
-        return;
-      }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
