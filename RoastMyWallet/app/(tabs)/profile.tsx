@@ -78,7 +78,7 @@ export default function ProfileScreen() {
         return;
       }
       setSavingAvatar(true);
-      await updateAvatar(asset.uri, mimeType);
+      await updateAvatar(asset.uri, mimeType, asset.file ?? null);
       showMessage('เปลี่ยนรูปสำเร็จ', 'บันทึกรูปโปรไฟล์ใหม่แล้ว');
     } catch (error) {
       showMessage('เปลี่ยนรูปไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
