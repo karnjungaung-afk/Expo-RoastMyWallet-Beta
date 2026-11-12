@@ -76,7 +76,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const user = mapSupabaseUser(session.user);
+        // getSession() may contain cached user_metadata from this device.
+        // Fetch the authoritative user so avatar changes made on web/another
+        // device become visible after the app is reopened.
+        const { data: { user: freshUser }, error: refreshError } = await supabase.auth.getUser();
+        if (refreshError) {
+          console.warn('[AuthStore] Could not refresh user metadata:', refreshError.message);
+        }
+        const user = mapSupabaseUser(freshUser ?? session.user);
         const profile = await loadProfileForUser(user.id);
         set({ user, profile, isInitialized: true });
       } else {
