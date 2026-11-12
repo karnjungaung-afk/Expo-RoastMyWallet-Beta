@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Platform } from 'react-native';
 import type { User, UserProfile } from '@/types';
 import { supabase } from '@/services/supabase';
+import { File } from 'expo-file-system';
 
 // ─── PRIVATE HELPERS (module-scoped, not part of store state) ─────────────────
 
@@ -181,34 +182,46 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const currentUser = get().user;
     if (!currentUser) throw new Error('กรุณาเข้าสู่ระบบอีกครั้ง');
 
-    // Expo ImagePicker's native base64 payload is JPEG data even when the
-    // source photo had another MIME type. Keep the stored extension/content type
-    // aligned with the actual bytes to prevent invalid image responses.
-    const normalizedMime = Platform.OS !== 'web'
-      ? 'image/jpeg'
-      : (mimeType?.toLowerCase() ?? 'image/jpeg');
-    const extension = normalizedMime === 'image/png'
-      ? 'png'
-      : normalizedMime === 'image/webp'
-        ? 'webp'
-        : 'jpg';
-    const filePath = `${currentUser.id}/avatar.${extension}`;
-
-    // Use the browser File on web and picker-provided base64 on native.
-    // This avoids reading temporary file:// or content:// URIs on Android.
+    let uploadMime = mimeType?.toLowerCase() ?? 'image/jpeg';
     let fileBody: Blob | ArrayBuffer;
+
     if (Platform.OS === 'web' && pickedFile) {
       fileBody = pickedFile;
+    } else if (Platform.OS !== 'web') {
+      // Prefer ImagePicker's JPEG Base64. Some Android document providers
+      // omit it, so read the returned file/content URI through Expo FileSystem.
+      if (base64) {
+        fileBody = decodeBase64ToArrayBuffer(base64);
+        uploadMime = 'image/jpeg';
+      } else {
+        try {
+          const localFile = new File(uri);
+          const localBase64 = await localFile.base64();
+          fileBody = decodeBase64ToArrayBuffer(localBase64);
+        } catch (readError) {
+          console.error('[AuthStore] Avatar URI read failed:', readError);
+          throw new Error('มือถืออ่านรูปจากแกลเลอรีไม่ได้ กรุณาลองเลือกรูปที่บันทึกไว้ในเครื่องอีกครั้ง');
+        }
+      }
     } else if (base64) {
       fileBody = decodeBase64ToArrayBuffer(base64);
     } else {
-      throw new Error('ไม่ได้รับข้อมูลรูปภาพจากตัวเลือกไฟล์ กรุณาอัปเดตแอปเป็นเวอร์ชันล่าสุดแล้วเลือกรูปอีกครั้ง');
+      throw new Error('เบราว์เซอร์ไม่ได้ส่งข้อมูลรูปภาพ กรุณาเลือกรูปอีกครั้ง');
     }
+
+    const extension = uploadMime === 'image/png'
+      ? 'png'
+      : uploadMime === 'image/webp'
+        ? 'webp'
+        : uploadMime === 'image/heic' || uploadMime === 'image/heif'
+          ? 'heic'
+          : 'jpg';
+    const filePath = `${currentUser.id}/avatar.${extension}`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(filePath, fileBody, {
-        contentType: normalizedMime,
+        contentType: uploadMime,
         cacheControl: '3600',
         upsert: true,
       });
