@@ -7,22 +7,33 @@ import { supabase } from '@/services/supabase';
 
 function decodeBase64ToArrayBuffer(value: string): ArrayBuffer {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  const input = value.replace(/^data:[^,]*,/, '').replace(/\\s/g, '');
+  const input = value.replace(/^data:[^,]*,/, '').replace(/\s/g, '');
+
+  if (!input || input.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(input)) {
+    throw new Error('ข้อมูลรูปภาพที่ได้รับไม่สมบูรณ์ กรุณาเลือกรูปใหม่');
+  }
+
   const padding = input.endsWith('==') ? 2 : input.endsWith('=') ? 1 : 0;
-  const output = new Uint8Array(Math.floor(input.length * 3 / 4) - padding);
+  const output = new Uint8Array((input.length / 4) * 3 - padding);
   let outputIndex = 0;
+
   for (let i = 0; i < input.length; i += 4) {
-    const a = alphabet.indexOf(input[i] ?? '');
-    const b = alphabet.indexOf(input[i + 1] ?? '');
-    const c = alphabet.indexOf(input[i + 2] ?? '');
-    const d = alphabet.indexOf(input[i + 3] ?? '');
-    if (a < 0 || b < 0) throw new Error('ข้อมูลรูปภาพไม่ถูกต้อง กรุณาเลือกรูปใหม่');
-    const chunk = (a << 18) | (b << 12) | (Math.max(c, 0) << 6) | Math.max(d, 0);
+    const a = alphabet.indexOf(input[i]);
+    const b = alphabet.indexOf(input[i + 1]);
+    const c = input[i + 2] === '=' ? 0 : alphabet.indexOf(input[i + 2]);
+    const d = input[i + 3] === '=' ? 0 : alphabet.indexOf(input[i + 3]);
+
+    if (a < 0 || b < 0 || c < 0 || d < 0) {
+      throw new Error('ข้อมูลรูปภาพเสียหาย กรุณาเลือกรูปใหม่');
+    }
+
+    const chunk = (a << 18) | (b << 12) | (c << 6) | d;
     if (outputIndex < output.length) output[outputIndex++] = (chunk >> 16) & 255;
     if (outputIndex < output.length) output[outputIndex++] = (chunk >> 8) & 255;
     if (outputIndex < output.length) output[outputIndex++] = chunk & 255;
   }
-  if (output.length === 0) throw new Error('ไฟล์รูปภาพว่างเปล่า กรุณาเลือกรูปอื่น');
+
+  if (output.length < 4) throw new Error('ไฟล์รูปภาพว่างเปล่าหรือไม่สมบูรณ์');
   return output.buffer;
 }
 
@@ -170,7 +181,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const currentUser = get().user;
     if (!currentUser) throw new Error('กรุณาเข้าสู่ระบบอีกครั้ง');
 
-    const normalizedMime = mimeType?.toLowerCase() ?? 'image/jpeg';
+    // Expo ImagePicker's native base64 payload is JPEG data even when the
+    // source photo had another MIME type. Keep the stored extension/content type
+    // aligned with the actual bytes to prevent invalid image responses.
+    const normalizedMime = Platform.OS !== 'web'
+      ? 'image/jpeg'
+      : (mimeType?.toLowerCase() ?? 'image/jpeg');
     const extension = normalizedMime === 'image/png'
       ? 'png'
       : normalizedMime === 'image/webp'
