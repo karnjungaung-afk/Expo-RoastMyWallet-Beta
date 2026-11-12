@@ -214,8 +214,8 @@ export function AddPurchaseSheet({ onClose, prefillUrl }: Props) {
               {url ? (
                 <TouchableOpacity onPress={() => setUrl('')} hitSlop={8} accessibilityRole="button" accessibilityLabel="ล้างลิงก์"><CloseIcon size={16} color={colors.textMuted} /></TouchableOpacity>
               ) : (
-                <TouchableOpacity onPress={paste} style={[styles.pasteBtn, { backgroundColor: colors.primarySubtle }]} accessibilityRole="button">
-                  <Text style={[styles.pasteText, { color: colors.primary }]}>วาง</Text>
+                <TouchableOpacity onPress={paste} style={[styles.pasteBtn, { backgroundColor: '#D6F73C' }]} accessibilityRole="button">
+                  <Text style={[styles.pasteText, { color: '#14110F' }]}>วาง</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -276,10 +276,10 @@ export function AddPurchaseSheet({ onClose, prefillUrl }: Props) {
             <Text style={[styles.hint, { color: colors.textMuted }]}>จะเข้า Waiting List และรอ {waitHours} ชม. ก่อนให้คุณตัดสินใจ</Text>
           </View>
           <TouchableOpacity
-            style={[styles.cta, { backgroundColor: colors.primary }, (!nameOk || !priceOk) && !saving && { opacity: 0.5 }, saving && { opacity: 0.8 }]}
+            style={[styles.cta, { backgroundColor: '#D6F73C' }, (!nameOk || !priceOk) && !saving && { opacity: 0.5 }, saving && { opacity: 0.8 }]}
             onPress={submit} disabled={saving} activeOpacity={0.85} accessibilityRole="button"
           >
-            {saving ? <ActivityIndicator color="#fff" /> : <><CheckIcon size={18} color="#fff" /><Text style={styles.ctaText}>เพิ่มใน Waiting List</Text></>}
+            {saving ? <ActivityIndicator color="#14110F" /> : <><CheckIcon size={18} color="#14110F" /><Text style={styles.ctaText}>เพิ่มใน Waiting List</Text></>}
           </TouchableOpacity>
         </View>
       </View>
@@ -306,9 +306,9 @@ function Chip({ label, on, onPress, colors, small }: { label: string; on: boolea
   return (
     <TouchableOpacity
       onPress={onPress} activeOpacity={0.8} accessibilityRole="button" accessibilityState={{ selected: on }}
-      style={[styles.chip, small && { paddingVertical: 7, paddingHorizontal: 12 }, { backgroundColor: on ? colors.primary : colors.surface, borderColor: on ? colors.primary : colors.border }]}
+      style={[styles.chip, small && { paddingVertical: 7, paddingHorizontal: 12 }, { backgroundColor: on ? '#D6F73C' : colors.surface, borderColor: colors.border }]}
     >
-      <Text style={[styles.chipText, small && { fontSize: 13 }, { color: on ? '#fff' : colors.textSecondary }]}>{label}</Text>
+      <Text style={[styles.chipText, small && { fontSize: 13 }, { color: on ? '#14110F' : colors.textSecondary }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -320,8 +320,8 @@ function YesNoRow({ q, value, onChange, yes, no, colors }: { q: string; value: Y
       <View style={styles.yesNo}>
         {([[true, yes], [false, no]] as [boolean, string][]).map(([v, label]) => (
           <TouchableOpacity key={String(v)} onPress={() => onChange(v)} accessibilityRole="button" accessibilityState={{ selected: value === v }}
-            style={[styles.yn, { backgroundColor: value === v ? colors.primary : colors.surface, borderColor: value === v ? colors.primary : colors.border }]}>
-            <Text style={{ color: value === v ? '#fff' : colors.textSecondary, fontFamily: 'Prompt_700Bold', fontSize: 14 }}>{label}</Text>
+            style={[styles.yn, { backgroundColor: value === v ? '#D6F73C' : colors.surface, borderColor: colors.border }]}>
+            <Text style={{ color: value === v ? '#14110F' : colors.textSecondary, fontFamily: 'Prompt_700Bold', fontSize: 14 }}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 6 },
   title: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.5 },
   subtitle: { fontSize: 13, marginTop: 3, lineHeight: 18 },
-  close: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  close: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 2.5, borderColor: '#14110F', boxShadow: '2px 2px 0px 0px #14110F' },
   scroll: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 24, gap: 20 },
   labelRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   label: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
@@ -348,21 +348,21 @@ const styles = StyleSheet.create({
   bleed: { marginHorizontal: -20 },
   chipRow: { gap: 8, paddingHorizontal: 20 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingVertical: 10, paddingHorizontal: 15, borderRadius: 999, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
+  chip: { paddingVertical: 10, paddingHorizontal: 15, borderRadius: 999, borderWidth: 2.5, boxShadow: '2px 2px 0px 0px #14110F' },
   chipText: { fontSize: 14, fontFamily: 'Prompt_600SemiBold' },
   linkBox: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 52, borderWidth: 2.5, borderRadius: 14, paddingLeft: 14, paddingRight: 10, boxShadow: '4px 4px 0px 0px #14110F' },
   linkInput: { flex: 1, fontSize: 15, paddingVertical: 12, outlineStyle: 'none' as any },
-  pasteBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999 },
+  pasteBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, borderWidth: 2, borderColor: '#14110F' },
   pasteText: { fontSize: 13, fontFamily: 'Prompt_700Bold' },
   moreHead: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16, borderRadius: 16, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   moreTitle: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
   moreBody: { padding: 16, borderRadius: 16, borderWidth: 2.5, gap: 18, marginTop: -8, boxShadow: '4px 4px 0px 0px #14110F' },
   q: { fontSize: 14, fontFamily: 'Prompt_600SemiBold', lineHeight: 20 },
   yesNo: { flexDirection: 'row', gap: 8 },
-  yn: { flex: 1, minHeight: 44, borderRadius: 12, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center', boxShadow: '4px 4px 0px 0px #14110F' },
-  footer: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: 10, borderTopWidth: 1 },
+  yn: { flex: 1, minHeight: 44, borderRadius: 12, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center', boxShadow: '2px 2px 0px 0px #14110F' },
+  footer: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: 10, borderTopWidth: 3 },
   waitRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
   alert: { borderRadius: 10, padding: 12 },
-  cta: { minHeight: 54, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  ctaText: { color: '#fff', fontSize: 16, fontFamily: 'Prompt_800ExtraBold' },
+  cta: { minHeight: 54, borderRadius: 14, borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  ctaText: { color: '#14110F', fontSize: 16, fontFamily: 'Prompt_800ExtraBold' },
 });

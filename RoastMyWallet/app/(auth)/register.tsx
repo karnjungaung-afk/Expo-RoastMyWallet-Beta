@@ -74,7 +74,7 @@ export default function RegisterScreen() {
           <Text style={[styles.confirmTitle, { color: colors.textPrimary }]}>ยืนยันอีเมลของคุณ</Text>
           <Text style={[styles.confirmSub, { color: colors.textSecondary }]}>
             เราส่งลิงก์ยืนยันไปที่{'\n'}
-            <Text style={{ color: colors.primary, fontFamily: 'Prompt_700Bold' }}>{email}</Text>
+            <Text style={{ color: '#14110F', fontFamily: 'Prompt_800ExtraBold', textDecorationLine: 'underline' }}>{email}</Text>
             {'\n'}กดลิงก์ในอีเมลเพื่อเปิดใช้งานบัญชี
           </Text>
           <TouchableOpacity style={[styles.cta, { backgroundColor: '#D6F73C', alignSelf: 'stretch' }]} onPress={goLogin} accessibilityRole="button">

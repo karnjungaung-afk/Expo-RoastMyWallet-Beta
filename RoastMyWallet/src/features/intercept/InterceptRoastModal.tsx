@@ -59,19 +59,19 @@ export function InterceptRoastModal() {
       <Animated.View style={[styles.backdrop, { opacity: opacityAnim }]}>
         <TouchableOpacity style={StyleSheet.absoluteFill} onPress={dismiss} />
 
-        <Animated.View style={[styles.sheet, { backgroundColor: isDark ? '#14110F' : '#FFFFFF', transform: [{ translateY: slideAnim }] }]}>
+        <Animated.View style={[styles.sheet, { backgroundColor: isDark ? '#2A2148' : '#FFFDF6', borderTopWidth: 3, borderLeftWidth: 3, borderRightWidth: 3, borderColor: '#14110F', transform: [{ translateY: slideAnim }] }]}>
           {/* Handle */}
-          <View style={[styles.handle, { backgroundColor: colors.border }]} />
+          <View style={[styles.handle, { backgroundColor: '#14110F', width: 48, height: 6, borderRadius: 3 }]} />
 
           {/* Platform tag */}
-          <View style={[styles.platformTag, { backgroundColor: meta.color + '15', borderColor: meta.color + '30', borderWidth: 1 }]}>
+          <View style={[styles.platformTag, { backgroundColor: '#FFFFFF', borderColor: '#14110F', borderWidth: 2.5, boxShadow: '2px 2px 0px 0px #14110F' }]}>
             <View style={[styles.platformDot, { backgroundColor: meta.color }]} />
-            <Text style={[styles.platformName, { color: meta.color }]}>{meta.name}</Text>
+            <Text style={[styles.platformName, { color: '#14110F' }]}>{meta.name}</Text>
           </View>
 
           {/* Mascot */}
           <View style={styles.mascotWrap}>
-            <RoastMascot size={100} mode="roasting" />
+            <RoastMascot size={110} mode="roasting" />
           </View>
 
           {/* Header */}
@@ -81,7 +81,7 @@ export function InterceptRoastModal() {
           </View>
 
           {/* Roast message */}
-          <View style={[styles.roastBubble, { backgroundColor: isDark ? '#14110F' : '#FFF4DC', borderColor: isDark ? '#2A3D52' : '#E0E8F0' }]}>
+          <View style={[styles.roastBubble, { backgroundColor: '#FFE08A', borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F' }]}>
             <Text style={[styles.roastText, { color: colors.textPrimary }]}>{roastMessage}</Text>
           </View>
 
@@ -101,7 +101,7 @@ export function InterceptRoastModal() {
             style={styles.primaryGradient}
           >
             <TouchableOpacity style={styles.primaryBtn} onPress={handleAddToWaitList} activeOpacity={0.85}>
-              <PlusIcon size={18} color="#fff" />
+              <PlusIcon size={18} color="#14110F" />
               <Text style={styles.primaryBtnText}>เพิ่มใน Waiting List</Text>
             </TouchableOpacity>
           </LinearGradient>
@@ -151,20 +151,20 @@ const styles = StyleSheet.create({
   roastText: { fontSize: 14, lineHeight: 22, textAlign: 'center' },
 
   waitReminder: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    width: '100%', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 2.5, borderColor: '#14110F',
+    width: '100%', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
   },
   waitReminderText: { fontSize: 13, fontFamily: 'Prompt_600SemiBold' },
 
-  primaryGradient: { width: '100%', borderRadius: 16, marginTop: 4 },
+  primaryGradient: { width: '100%', borderRadius: 16, marginTop: 4, borderWidth: 3, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F', overflow: 'hidden' },
   primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16 },
-  primaryBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Prompt_700Bold' },
+  primaryBtnText: { color: '#14110F', fontSize: 16, fontFamily: 'Prompt_700Bold' },
 
   secondaryBtn: {
     width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 14, borderRadius: 14, borderWidth: 1.5,
+    gap: 6, paddingVertical: 14, borderRadius: 14, borderWidth: 2.5, backgroundColor: '#FFFFFF', boxShadow: '3px 3px 0px 0px #14110F',
   },
-  secondaryBtnText: { fontSize: 14, fontFamily: 'Prompt_500Medium' },
+  secondaryBtnText: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
 
   dismissBtn: { paddingVertical: 8 },
   dismissText: { fontSize: 13 },

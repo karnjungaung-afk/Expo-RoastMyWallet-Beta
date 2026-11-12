@@ -3,6 +3,7 @@ import { View, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Platform,
 import { Text } from '@/components/ui/AppText';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { RoastMascot } from '@/components/icons/RoastMascot';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -190,7 +191,7 @@ function EmptyState({ filter, colors, searchTerm }: { filter: Filter; colors: an
     : messages[filter];
   return (
     <View style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>{message.icon}</View>
+      <RoastMascot size={96} mode="neutral" />
       <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>{message.title}</Text>
       <Text style={[styles.emptySub, { color: colors.textSecondary }]}>{message.sub}</Text>
     </View>

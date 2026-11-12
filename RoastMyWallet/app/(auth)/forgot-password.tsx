@@ -46,7 +46,7 @@ export default function ForgotPasswordScreen() {
           <Text style={[styles.title, { color: colors.textPrimary }]}>ตรวจสอบอีเมลของคุณ</Text>
           <Text style={[styles.sub, { color: colors.textSecondary }]}>
             เราส่งลิงก์รีเซ็ตรหัสผ่านไปที่{'\n'}
-            <Text style={{ color: colors.primary, fontFamily: 'Prompt_700Bold' }}>{email}</Text>
+            <Text style={{ color: '#14110F', fontFamily: 'Prompt_800ExtraBold', textDecorationLine: 'underline' }}>{email}</Text>
           </Text>
           <TouchableOpacity style={[styles.cta, { backgroundColor: '#D6F73C', alignSelf: 'stretch' }]} onPress={goLogin} accessibilityRole="button">
             <Text style={styles.ctaText}>กลับไปเข้าสู่ระบบ</Text>

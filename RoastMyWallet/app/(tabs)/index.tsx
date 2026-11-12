@@ -142,9 +142,9 @@ export default function HomeScreen() {
             <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]}>ภาพรวมการตัดสินใจซื้อและเงินที่คุณช่วยตัวเองไว้</Text>
           </View>
           <View style={styles.headerActions}>
-            <View style={[styles.statusPill, { backgroundColor: isPro() ? '#D9FBE8' : (isDark ? '#202A39' : '#E5EEF9') }]}>
-              <View style={[styles.statusDot, { backgroundColor: isPro() ? '#20A464' : '#4D84C7' }]} />
-              <Text style={[styles.statusText, { color: isPro() ? '#12613D' : (isDark ? '#C9D7E9' : '#315A89') }]}>{isPro() ? 'Pro' : 'Free plan'}</Text>
+            <View style={[styles.statusPill, { backgroundColor: isPro() ? '#7AE8B5' : '#C9B6FF', borderWidth: 2.5, borderColor: '#14110F', boxShadow: '2px 2px 0px 0px #14110F' }]}>
+              <View style={[styles.statusDot, { backgroundColor: '#14110F' }]} />
+              <Text style={[styles.statusText, { color: '#14110F' }]}>{isPro() ? 'Pro' : 'Free plan'}</Text>
             </View>
             {isDesktop && (
               <TouchableOpacity style={styles.primaryButton} onPress={() => setShowAddSheet(true)} accessibilityRole="button">

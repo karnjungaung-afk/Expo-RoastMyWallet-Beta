@@ -150,8 +150,8 @@ export default function PaywallScreen() {
         </View>
 
         {(feedback || error) ? (
-          <View style={[styles.feedback, { backgroundColor: error ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)' }]}>
-            <Text style={{ color: error ? '#FCA5A5' : '#86EFAC' }}>{error || feedback}</Text>
+          <View style={[styles.feedback, { backgroundColor: error ? '#FF9EB5' : '#7AE8B5', borderWidth: 2.5, borderColor: '#14110F', boxShadow: '3px 3px 0px 0px #14110F' }]}>
+            <Text style={{ color: '#14110F', fontFamily: 'Prompt_700Bold' }}>{error || feedback}</Text>
           </View>
         ) : null}
 
