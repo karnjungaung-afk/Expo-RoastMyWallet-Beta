@@ -1,10 +1,30 @@
 import { create } from 'zustand';
 import { Platform } from 'react-native';
-import { File } from 'expo-file-system';
 import type { User, UserProfile } from '@/types';
 import { supabase } from '@/services/supabase';
 
 // ─── PRIVATE HELPERS (module-scoped, not part of store state) ─────────────────
+
+function decodeBase64ToArrayBuffer(value: string): ArrayBuffer {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const input = value.replace(/^data:[^,]*,/, '').replace(/\\s/g, '');
+  const padding = input.endsWith('==') ? 2 : input.endsWith('=') ? 1 : 0;
+  const output = new Uint8Array(Math.floor(input.length * 3 / 4) - padding);
+  let outputIndex = 0;
+  for (let i = 0; i < input.length; i += 4) {
+    const a = alphabet.indexOf(input[i] ?? '');
+    const b = alphabet.indexOf(input[i + 1] ?? '');
+    const c = alphabet.indexOf(input[i + 2] ?? '');
+    const d = alphabet.indexOf(input[i + 3] ?? '');
+    if (a < 0 || b < 0) throw new Error('ข้อมูลรูปภาพไม่ถูกต้อง กรุณาเลือกรูปใหม่');
+    const chunk = (a << 18) | (b << 12) | (Math.max(c, 0) << 6) | Math.max(d, 0);
+    if (outputIndex < output.length) output[outputIndex++] = (chunk >> 16) & 255;
+    if (outputIndex < output.length) output[outputIndex++] = (chunk >> 8) & 255;
+    if (outputIndex < output.length) output[outputIndex++] = chunk & 255;
+  }
+  if (output.length === 0) throw new Error('ไฟล์รูปภาพว่างเปล่า กรุณาเลือกรูปอื่น');
+  return output.buffer;
+}
 
 async function loadProfileForUser(userId: string): Promise<UserProfile | null> {
 
@@ -30,7 +50,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string, currentPassword?: string) => Promise<void>;
-  updateAvatar: (uri: string, mimeType?: string | null, pickedFile?: Blob | null) => Promise<void>;
+  updateAvatar: (uri: string, mimeType?: string | null, pickedFile?: Blob | null, base64?: string | null) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -146,11 +166,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  updateAvatar: async (uri, mimeType, pickedFile) => {
+  updateAvatar: async (uri, mimeType, pickedFile, base64) => {
     const currentUser = get().user;
     if (!currentUser) throw new Error('กรุณาเข้าสู่ระบบอีกครั้ง');
 
-    const normalizedMime = mimeType?.toLowerCase();
+    const normalizedMime = mimeType?.toLowerCase() ?? 'image/jpeg';
     const extension = normalizedMime === 'image/png'
       ? 'png'
       : normalizedMime === 'image/webp'
@@ -158,50 +178,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         : 'jpg';
     const filePath = `${currentUser.id}/avatar.${extension}`;
 
-    // Browser picker returns a browser-readable URI; native picker returns a
-    // local file/content URI. Read native files with Expo FileSystem instead
-    // of fetch(), which is unreliable for Android content:// and file:// URIs.
+    // Use the browser File on web and picker-provided base64 on native.
+    // This avoids reading temporary file:// or content:// URIs on Android.
     let fileBody: Blob | ArrayBuffer;
-    if (Platform.OS === 'web') {
-      // ImagePicker exposes the original browser File on web. Prefer it over
-      // fetching a blob: URI, which can fail after the picker closes.
-      if (pickedFile) {
-        fileBody = pickedFile;
-      } else {
-        try {
-          const response = await fetch(uri);
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-          fileBody = await response.blob();
-        } catch (error) {
-          const detail = error instanceof Error ? error.message : String(error);
-          throw new Error(`อ่านไฟล์รูปภาพจากเบราว์เซอร์ไม่สำเร็จ: ${detail}`);
-        }
-      }
+    if (Platform.OS === 'web' && pickedFile) {
+      fileBody = pickedFile;
+    } else if (base64) {
+      fileBody = decodeBase64ToArrayBuffer(base64);
     } else {
-      try {
-        const localFile = new File(uri);
-        if (!localFile.exists) {
-          throw new Error('ไม่พบไฟล์รูปภาพในเครื่อง กรุณาเลือกรูปอีกครั้ง');
-        }
-        fileBody = await localFile.arrayBuffer();
-        if (fileBody.byteLength === 0) {
-          throw new Error('ไฟล์รูปภาพว่างเปล่า กรุณาเลือกรูปอื่น');
-        }
-      } catch (error) {
-        if (error instanceof Error && (
-          error.message.includes('ไม่พบไฟล์') || error.message.includes('ว่างเปล่า')
-        )) throw error;
-        const detail = error instanceof Error ? error.message : String(error);
-        throw new Error(`อ่านไฟล์รูปภาพจากมือถือไม่สำเร็จ: ${detail}`);
-      }
+      throw new Error('ไม่ได้รับข้อมูลรูปภาพจากตัวเลือกไฟล์ กรุณาอัปเดตแอปเป็นเวอร์ชันล่าสุดแล้วเลือกรูปอีกครั้ง');
     }
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(filePath, fileBody, {
-        contentType: normalizedMime ?? 'image/jpeg',
+        contentType: normalizedMime,
         cacheControl: '3600',
         upsert: true,
       });
