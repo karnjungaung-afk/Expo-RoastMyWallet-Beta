@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Platform } from 'react-native';
+import { File } from 'expo-file-system';
 import type { User, UserProfile } from '@/types';
 import { supabase } from '@/services/supabase';
 
@@ -157,13 +158,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         : 'jpg';
     const filePath = `${currentUser.id}/avatar.${extension}`;
 
-    const response = await fetch(uri);
-    if (!response.ok) throw new Error('อ่านไฟล์รูปภาพไม่สำเร็จ');
-
-    // Supabase Storage expects ArrayBuffer on React Native; Blob is supported on web.
-    const fileBody = Platform.OS === 'web'
-      ? await response.blob()
-      : await response.arrayBuffer();
+    // Browser picker returns a browser-readable URI; native picker returns a
+    // local file/content URI. Read native files with Expo FileSystem instead
+    // of fetch(), which is unreliable for Android content:// and file:// URIs.
+    let fileBody: Blob | ArrayBuffer;
+    if (Platform.OS === 'web') {
+      const response = await fetch(uri);
+      if (!response.ok) {
+        throw new Error(`อ่านไฟล์รูปภาพไม่สำเร็จ (HTTP ${response.status})`);
+      }
+      fileBody = await response.blob();
+    } else {
+      const localFile = new File(uri);
+      if (!localFile.exists) {
+        throw new Error('ไม่พบไฟล์รูปภาพในเครื่อง กรุณาเลือกรูปอีกครั้ง');
+      }
+      fileBody = await localFile.arrayBuffer();
+      if (fileBody.byteLength === 0) {
+        throw new Error('ไฟล์รูปภาพว่างเปล่า กรุณาเลือกรูปอื่น');
+      }
+    }
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
