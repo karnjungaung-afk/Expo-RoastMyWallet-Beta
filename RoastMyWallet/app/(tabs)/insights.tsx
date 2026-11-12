@@ -12,6 +12,7 @@ import { formatCurrency } from '@/utils/formatting';
 import type { Purchase, ShoppingPlatform } from '@/types';
 
 // SVG text does not inherit the page font on web.
+const CHART_PALETTE = ['#F15B50', '#F7CE43', '#31B9CE', '#7139D5', '#218B62'];
 const SVG_FONT = Platform.OS === 'web' ? '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' : undefined;
 const MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 const DAYS = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
@@ -242,7 +243,7 @@ export default function InsightsScreen() {
               )}
 
               {/* 6. Impulse takeaway */}
-              <LinearGradient colors={['#1E3A8A', '#2563EB']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.tip, styles.cell]}>
+              <LinearGradient colors={['#F15B50', '#7139D5']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.tip, styles.cell]}>
                 <FlameIcon size={22} color="#FCD34D" />
                 <Text style={styles.tipTitle}>สรุปสำหรับคุณ</Text>
                 <Text style={styles.tipText}>
@@ -328,7 +329,7 @@ function Legend({ color, label, text }: { color: string; label: string; text: st
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  page: { width: '100%', maxWidth: 1160, paddingHorizontal: 20, gap: 20 },
+  page: { width: '100%', maxWidth: 1280, paddingHorizontal: 20, gap: 20 },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' },
   title: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
   subtitle: { fontSize: 13, lineHeight: 19, marginTop: 4 },
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
   segText: { fontSize: 13, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' },
   cell: { flexGrow: 1, flexShrink: 1, flexBasis: 370, minWidth: 0, maxWidth: '100%' },
-  card: { borderRadius: 17, borderWidth: 1, padding: 20, gap: 10 },
+  card: { borderRadius: 22, borderWidth: 1, padding: 22, gap: 10 },
   cardTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
   note: { fontSize: 12, lineHeight: 17 },
   scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 },
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
   rankText: { fontSize: 12, fontWeight: '800' },
   winName: { flex: 1, fontSize: 14, fontWeight: '600' },
   winPrice: { fontSize: 14, fontWeight: '800' },
-  tip: { borderRadius: 18, padding: 22, gap: 11, justifyContent: 'center' },
+  tip: { borderRadius: 24, padding: 24, gap: 11, justifyContent: 'center' },
   tipTitle: { color: '#fff', fontSize: 16, fontWeight: '800' },
   tipText: { color: 'rgba(255,255,255,0.88)', fontSize: 14, lineHeight: 21 },
   tipPill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.16)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, marginTop: 4 },
