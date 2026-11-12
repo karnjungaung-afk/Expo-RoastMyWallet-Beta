@@ -76,7 +76,7 @@ export function StatCard({ label, value, unit, valueColor, style }: StatCardProp
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row', borderRadius: radius.lg, borderWidth: 1, overflow: 'hidden',
+    flexDirection: 'row', borderRadius: 22, borderWidth: 1, overflow: 'hidden', shadowColor: '#A45B3C', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.07, shadowRadius: 14, elevation: 2,
   },
   accentLine: { width: 2 },
   cornerMark: {
@@ -84,9 +84,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.5, borderRightWidth: 1.5, borderRadius: 0,
   },
   content: { flex: 1 },
-  sectionCard: { borderRadius: radius.lg, borderWidth: 1, overflow: 'hidden' },
+  sectionCard: { borderRadius: 22, borderWidth: 1, overflow: 'hidden' },
   statCard: {
-    borderRadius: radius.md, borderWidth: 1, padding: spacing[3], gap: spacing[1],
+    borderRadius: 18, borderWidth: 1, padding: spacing[4], gap: spacing[1],
   },
   statLabel: {
     fontSize: typography.size.xs, fontFamily: 'Courier New',
