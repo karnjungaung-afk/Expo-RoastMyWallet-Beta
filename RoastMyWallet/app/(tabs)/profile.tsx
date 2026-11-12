@@ -64,6 +64,7 @@ export default function ProfileScreen() {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.9,
+        base64: true,
         selectionLimit: 1,
       });
       if (result.canceled || !result.assets?.[0]) return;
@@ -78,7 +79,7 @@ export default function ProfileScreen() {
         return;
       }
       setSavingAvatar(true);
-      await updateAvatar(asset.uri, mimeType, asset.file ?? null);
+      await updateAvatar(asset.uri, mimeType, asset.file ?? null, asset.base64 ?? null);
       showMessage('เปลี่ยนรูปสำเร็จ', 'บันทึกรูปโปรไฟล์ใหม่แล้ว');
     } catch (error) {
       showMessage('เปลี่ยนรูปไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
