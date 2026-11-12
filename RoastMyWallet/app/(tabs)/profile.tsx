@@ -61,7 +61,10 @@ export default function ProfileScreen() {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        allowsEditing: true,
+        // Android's native crop activity can fail for some gallery/document
+        // providers. The avatar is rendered with cover-cropping in the UI, so
+        // keep native selection unedited and avoid the extra URI conversion.
+        allowsEditing: Platform.OS !== 'android',
         aspect: [1, 1],
         quality: 0.9,
         base64: true,
