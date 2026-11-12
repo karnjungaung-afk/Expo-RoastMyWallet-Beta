@@ -157,12 +157,12 @@ export default function ProfileScreen() {
 
         {/* ── Hero header ─────────────────────────────────── */}
         <LinearGradient
-          colors={isDark ? ['#0F172A', '#1E293B'] : ['#1E3A8A', '#3B82F6']}
+          colors={isDark ? ['#342A38', '#211C24'] : ['#F15B50', '#7139D5']}
           style={[styles.hero, { paddingTop: insets.top + 20 }]}
         >
           {/* Avatar */}
           <View style={styles.avatarWrap}>
-            <LinearGradient colors={['#2563EB', '#1E3A8A']} style={styles.avatar}>
+            <LinearGradient colors={['#F7CE43', '#F15B50']} style={styles.avatar}>
               <Text style={styles.avatarText}>{initials}</Text>
             </LinearGradient>
             {isProUser && (
@@ -199,7 +199,7 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            <LinearGradient colors={['#1E3A8A', '#2563EB']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <LinearGradient colors={['#7139D5', '#31B9CE']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.upgradeTitle}>อัพเกรดเป็น Pro</Text>
                 <Text style={styles.upgradeSub}>ปลดล็อค AI roast, Squad, Insights ขั้นสูง และอีกมาก</Text>
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
   heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
   heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
   content: { gap: 14, paddingTop: 18, paddingHorizontal: 18, width: '100%', maxWidth: 760, alignSelf: 'center' },
-  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 17, padding: 18, borderWidth: 1 },
+  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 22, padding: 20, borderWidth: 1 },
   proTitle: { fontSize: 15, fontWeight: '700' },
   proSub: { fontSize: 12, marginTop: 2 },
   proManage: { fontSize: 13, fontWeight: '600' },
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
   upgradeBtnText: { color: '#1E3A8A', fontSize: 13, fontWeight: '700' },
   group: { gap: 6 },
   groupTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
-  groupCard: { borderRadius: 15, borderWidth: 1, overflow: 'hidden' },
+  groupCard: { borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12, minHeight: 52 },
   rowIcon: {},
   rowLabel: { fontSize: 15 },
@@ -526,6 +526,6 @@ const styles = StyleSheet.create({
   modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
   modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
-  modalSave: { backgroundColor: '#1769E0', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
+  modalSave: { backgroundColor: '#F15B50', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
   modalSaveText: { color: '#fff', fontWeight: '700' },
 });
