@@ -61,7 +61,7 @@ export default function PaywallScreen() {
   };
 
   return (
-    <LinearGradient colors={['#0A1233', '#12266B', '#1E3A8A']} style={styles.root}>
+    <LinearGradient colors={['#F15B50', '#7139D5', '#31B9CE']} style={styles.root}>
       <ScrollView
         contentContainerStyle={[styles.page, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 }]}
         showsVerticalScrollIndicator={false}
@@ -187,11 +187,11 @@ const styles = StyleSheet.create({
   activeBadgeText: { color: '#0F5132', fontWeight: '700', fontSize: 12 },
   toggle: { flexDirection: 'row', alignSelf: 'center', width: '100%', maxWidth: 360, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 14, padding: 4 },
   toggleBtn: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 11 },
-  toggleOn: { backgroundColor: '#2563EB' },
+  toggleOn: { backgroundColor: '#F15B50' },
   toggleText: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: '600' },
   toggleTextOn: { color: '#fff', fontWeight: '800' },
   planGrid: { gap: 14, alignItems: 'stretch' },
-  planCard: { ...glass, borderRadius: 20, padding: 20, gap: 6, borderWidth: 1.5 },
+  planCard: { ...glass, borderRadius: 24, padding: 22, gap: 8, borderWidth: 1.5 },
   planCardOn: { borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.16)' },
   saveBadge: { position: 'absolute', top: -11, right: 14, backgroundColor: '#22C55E', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
   saveBadgeText: { color: '#fff', fontSize: 11, fontWeight: '800' },
@@ -200,10 +200,10 @@ const styles = StyleSheet.create({
   planPrice: { color: '#fff', fontSize: 32, fontWeight: '900', letterSpacing: -1 },
   planUnit: { color: 'rgba(255,255,255,0.55)', fontSize: 13, marginBottom: 6 },
   planPeriod: { color: 'rgba(255,255,255,0.55)', fontSize: 12, marginBottom: 8 },
-  planButton: { backgroundColor: '#2563EB', borderRadius: 12, padding: 14, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  planButton: { backgroundColor: '#F15B50', borderRadius: 16, padding: 15, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   planButtonText: { color: '#fff', fontWeight: '800', fontSize: 14 },
   disabledButton: { opacity: 0.75 },
-  stateCard: { ...glass, borderRadius: 20, padding: 24, alignItems: 'center', gap: 8 },
+  stateCard: { ...glass, borderRadius: 24, padding: 24, alignItems: 'center', gap: 8 },
   warningIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: 'rgba(245,158,11,0.15)', alignItems: 'center', justifyContent: 'center' },
   stateTitle: { color: '#fff', fontSize: 17, fontWeight: '800' },
   stateText: { color: 'rgba(255,255,255,0.75)', textAlign: 'center', lineHeight: 21, maxWidth: 560 },

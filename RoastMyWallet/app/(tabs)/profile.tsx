@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform, Modal, TextInput, KeyboardAvoidingView, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -21,7 +22,7 @@ export default function ProfileScreen() {
 
   const user    = useAuthStore(selectUser);
   const profile = useAuthStore(selectProfile);
-  const { signOut, updateProfile, updatePassword } = useAuthStore();
+  const { signOut, updateProfile, updatePassword, updateAvatar } = useAuthStore();
   const setSettingsCurrency = useSettingsStore(state => state.setCurrency);
   const { isPro } = useSubscriptionStore();
   const purchases = usePurchaseStore(state => state.purchases);
@@ -33,6 +34,7 @@ export default function ProfileScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState(profile?.displayName ?? '');
   const [saving, setSaving] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
   const [currencyVisible, setCurrencyVisible] = useState(false);
   const [savingCurrency, setSavingCurrency] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -52,6 +54,46 @@ export default function ProfileScreen() {
   const showMessage = (title: string, message: string) => {
     if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
     else Alert.alert(title, message);
+  };
+
+  const chooseAvatar = async () => {
+    if (savingAvatar) return;
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        // Android's native crop activity can fail for some gallery/document
+        // providers. The avatar is rendered with cover-cropping in the UI, so
+        // keep native selection unedited and avoid the extra URI conversion.
+        allowsEditing: Platform.OS !== 'android',
+        aspect: [1, 1],
+        quality: 0.9,
+        base64: true,
+        selectionLimit: 1,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+      const asset = result.assets[0];
+      // Native ImagePicker base64 is JPEG-encoded by Expo, regardless of
+      // the original photo format (for example HEIC). Web uploads keep the
+      // original File and therefore validate its actual MIME type.
+      // Pass the original MIME as a fallback for FileSystem reads.
+      // The store switches to image/jpeg only when ImagePicker Base64 is used.
+      const mimeType = asset.mimeType ?? 'image/jpeg';
+      if (Platform.OS === 'web' && !['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {
+        showMessage('ไฟล์ไม่รองรับ', 'กรุณาเลือกรูป JPG, PNG หรือ WebP');
+        return;
+      }
+      if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
+        showMessage('รูปมีขนาดใหญ่เกินไป', 'กรุณาเลือกรูปที่มีขนาดไม่เกิน 5 MB');
+        return;
+      }
+      setSavingAvatar(true);
+      await updateAvatar(asset.uri, mimeType, asset.file ?? null, asset.base64 ?? null);
+      showMessage('เปลี่ยนรูปสำเร็จ', 'บันทึกรูปโปรไฟล์ใหม่แล้ว');
+    } catch (error) {
+      showMessage('เปลี่ยนรูปไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+    } finally {
+      setSavingAvatar(false);
+    }
   };
 
   const currency  = profile?.currency ?? 'THB';
@@ -157,20 +199,39 @@ export default function ProfileScreen() {
 
         {/* ── Hero header ─────────────────────────────────── */}
         <LinearGradient
-          colors={isDark ? ['#0F172A', '#1E293B'] : ['#1E3A8A', '#3B82F6']}
+          colors={isDark ? ['#342A38', '#211C24'] : ['#F15B50', '#7139D5']}
           style={[styles.hero, { paddingTop: insets.top + 20 }]}
         >
           {/* Avatar */}
           <View style={styles.avatarWrap}>
-            <LinearGradient colors={['#2563EB', '#1E3A8A']} style={styles.avatar}>
-              <Text style={styles.avatarText}>{initials}</Text>
-            </LinearGradient>
+            <TouchableOpacity
+              style={styles.avatar}
+              onPress={() => { void chooseAvatar(); }}
+              disabled={savingAvatar}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="เปลี่ยนรูปโปรไฟล์"
+            >
+              {user?.avatarUrl ? (
+                <Image key={user.avatarUrl} source={{ uri: user.avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
+              ) : (
+                <LinearGradient colors={['#F7CE43', '#F15B50']} style={styles.avatarFallback}>
+                  <Text style={styles.avatarText}>{initials}</Text>
+                </LinearGradient>
+              )}
+              <View style={styles.avatarEditBadge}>
+                <Text style={styles.avatarEditIcon}>{savingAvatar ? '…' : '✎'}</Text>
+              </View>
+            </TouchableOpacity>
             {isProUser && (
               <View style={styles.proBadge}>
                 <FlameIcon size={10} color="#fff" />
               </View>
             )}
           </View>
+          <TouchableOpacity onPress={() => { void chooseAvatar(); }} disabled={savingAvatar} accessibilityRole="button" style={styles.avatarAction}>
+            <Text style={styles.avatarActionText}>{savingAvatar ? 'กำลังบันทึกรูป…' : 'เปลี่ยนรูปโปรไฟล์'}</Text>
+          </TouchableOpacity>
 
           <Text style={styles.heroName}>{profile?.displayName ?? 'ผู้ใช้ RoastMyWallet'}</Text>
           <Text style={styles.heroEmail}>{user?.email ?? ''}</Text>
@@ -199,7 +260,7 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            <LinearGradient colors={['#1E3A8A', '#2563EB']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <LinearGradient colors={['#7139D5', '#31B9CE']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.upgradeTitle}>อัพเกรดเป็น Pro</Text>
                 <Text style={styles.upgradeSub}>ปลดล็อค AI roast, Squad, Insights ขั้นสูง และอีกมาก</Text>
@@ -467,9 +528,15 @@ const CURRENCY_OPTIONS: { code: Currency; name: string; symbol: string }[] = [
 const styles = StyleSheet.create({
   root: { flex: 1 },
   hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900 },
-  avatarWrap: { position: 'relative', marginBottom: 4 },
-  avatar: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
+  avatarWrap: { position: 'relative', marginBottom: 4 },
+  avatar: { width: 88, height: 88, borderRadius: 28, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F15B50', borderWidth: 3, borderColor: 'rgba(255,255,255,0.9)' },
+  avatarFallback: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
+  avatarImage: { width: '100%', height: '100%' },
+  avatarEditBadge: { position: 'absolute', right: 2, bottom: 2, width: 25, height: 25, borderRadius: 13, backgroundColor: '#7139D5', borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  avatarEditIcon: { color: '#fff', fontSize: 13, fontWeight: '800', lineHeight: 16 },
+  avatarAction: { paddingHorizontal: 12, paddingVertical: 5, marginBottom: 2 },
+  avatarActionText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0F172A' },
   heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
   heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
@@ -479,7 +546,7 @@ const styles = StyleSheet.create({
   heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
   heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
   content: { gap: 14, paddingTop: 18, paddingHorizontal: 18, width: '100%', maxWidth: 760, alignSelf: 'center' },
-  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 17, padding: 18, borderWidth: 1 },
+  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 22, padding: 20, borderWidth: 1 },
   proTitle: { fontSize: 15, fontWeight: '700' },
   proSub: { fontSize: 12, marginTop: 2 },
   proManage: { fontSize: 13, fontWeight: '600' },
@@ -490,7 +557,7 @@ const styles = StyleSheet.create({
   upgradeBtnText: { color: '#1E3A8A', fontSize: 13, fontWeight: '700' },
   group: { gap: 6 },
   groupTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
-  groupCard: { borderRadius: 15, borderWidth: 1, overflow: 'hidden' },
+  groupCard: { borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12, minHeight: 52 },
   rowIcon: {},
   rowLabel: { fontSize: 15 },
@@ -526,6 +593,6 @@ const styles = StyleSheet.create({
   modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
   modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
-  modalSave: { backgroundColor: '#1769E0', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
+  modalSave: { backgroundColor: '#F15B50', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
   modalSaveText: { color: '#fff', fontWeight: '700' },
 });

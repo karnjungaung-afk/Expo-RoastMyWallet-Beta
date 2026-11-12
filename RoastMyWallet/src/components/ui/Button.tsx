@@ -48,7 +48,7 @@ export function Button({
   const variantStyles: Record<Variant, { container: ViewStyle; label: TextStyle }> = {
     primary: {
       container: {
-        backgroundColor: colors.primary,
+        backgroundColor: colors.primary, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 3,
         borderWidth: 0,
       },
       label: {
@@ -102,7 +102,7 @@ export function Button({
       container: {
         paddingHorizontal: spacing[3],
         paddingVertical: spacing[1.5],
-        borderRadius: radius.md,
+        borderRadius: 15,
         minHeight: 36,
       },
       label: {
@@ -128,7 +128,7 @@ export function Button({
       container: {
         paddingHorizontal: spacing[6],
         paddingVertical: spacing[4],
-        borderRadius: radius.lg,
+        borderRadius: 18,
         minHeight: 56,
       },
       label: {

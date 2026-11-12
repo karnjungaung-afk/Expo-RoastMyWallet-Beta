@@ -2,8 +2,70 @@ import { create } from 'zustand';
 import { Platform } from 'react-native';
 import type { User, UserProfile } from '@/types';
 import { supabase } from '@/services/supabase';
+import { File } from 'expo-file-system';
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 
 // ─── PRIVATE HELPERS (module-scoped, not part of store state) ─────────────────
+
+function decodeBase64ToArrayBuffer(value: string): ArrayBuffer {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const input = value.replace(/^data:[^,]*,/, '').replace(/\s/g, '');
+
+  if (!input || input.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(input)) {
+    throw new Error('ข้อมูลรูปภาพที่ได้รับไม่สมบูรณ์ กรุณาเลือกรูปใหม่');
+  }
+
+  const padding = input.endsWith('==') ? 2 : input.endsWith('=') ? 1 : 0;
+  const output = new Uint8Array((input.length / 4) * 3 - padding);
+  let outputIndex = 0;
+
+  for (let i = 0; i < input.length; i += 4) {
+    const a = alphabet.indexOf(input[i]);
+    const b = alphabet.indexOf(input[i + 1]);
+    const c = input[i + 2] === '=' ? 0 : alphabet.indexOf(input[i + 2]);
+    const d = input[i + 3] === '=' ? 0 : alphabet.indexOf(input[i + 3]);
+
+    if (a < 0 || b < 0 || c < 0 || d < 0) {
+      throw new Error('ข้อมูลรูปภาพเสียหาย กรุณาเลือกรูปใหม่');
+    }
+
+    const chunk = (a << 18) | (b << 12) | (c << 6) | d;
+    if (outputIndex < output.length) output[outputIndex++] = (chunk >> 16) & 255;
+    if (outputIndex < output.length) output[outputIndex++] = (chunk >> 8) & 255;
+    if (outputIndex < output.length) output[outputIndex++] = chunk & 255;
+  }
+
+  if (output.length < 4) throw new Error('ไฟล์รูปภาพว่างเปล่าหรือไม่สมบูรณ์');
+  return output.buffer;
+}
+
+async function readAvatarUriAsBase64(uri: string): Promise<string> {
+  // First try the modern File API for normal file:// URIs.
+  try {
+    const value = await new File(uri).base64();
+    if (value) return value;
+  } catch (error) {
+    console.warn('[AuthStore] Modern avatar file read failed; trying Android URI copy:', error);
+  }
+
+  // Android gallery providers may return content:// URIs. FileSystem.copyAsync
+  // supports content:// sources, while readAsStringAsync reads the copied
+  // file:// URI from the app cache.
+  const cacheDirectory = LegacyFileSystem.cacheDirectory;
+  if (!cacheDirectory) throw new Error('ไม่พบพื้นที่จัดเก็บชั่วคราวสำหรับอ่านรูปภาพ');
+
+  const temporaryUri = `${cacheDirectory}avatar-import-${Date.now()}.jpg`;
+  try {
+    await LegacyFileSystem.copyAsync({ from: uri, to: temporaryUri });
+    const value = await LegacyFileSystem.readAsStringAsync(temporaryUri, {
+      encoding: LegacyFileSystem.EncodingType.Base64,
+    });
+    if (!value) throw new Error('ไฟล์รูปภาพไม่มีข้อมูล');
+    return value;
+  } finally {
+    await LegacyFileSystem.deleteAsync(temporaryUri, { idempotent: true }).catch(() => undefined);
+  }
+}
 
 async function loadProfileForUser(userId: string): Promise<UserProfile | null> {
 
@@ -29,6 +91,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string, currentPassword?: string) => Promise<void>;
+  updateAvatar: (uri: string, mimeType?: string | null, pickedFile?: Blob | null, base64?: string | null) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -42,7 +105,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const user = mapSupabaseUser(session.user);
+        // getSession() may contain cached user_metadata from this device.
+        // Fetch the authoritative user so avatar changes made on web/another
+        // device become visible after the app is reopened.
+        const { data: { user: freshUser }, error: refreshError } = await supabase.auth.getUser();
+        if (refreshError) {
+          console.warn('[AuthStore] Could not refresh user metadata:', refreshError.message);
+        }
+        const user = mapSupabaseUser(freshUser ?? session.user);
         const profile = await loadProfileForUser(user.id);
         set({ user, profile, isInitialized: true });
       } else {
@@ -142,6 +212,69 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  updateAvatar: async (uri, mimeType, pickedFile, base64) => {
+    const currentUser = get().user;
+    if (!currentUser) throw new Error('กรุณาเข้าสู่ระบบอีกครั้ง');
+
+    let uploadMime = mimeType?.toLowerCase() ?? 'image/jpeg';
+    let fileBody: Blob | ArrayBuffer;
+
+    if (Platform.OS === 'web' && pickedFile) {
+      fileBody = pickedFile;
+    } else if (Platform.OS !== 'web') {
+      // Prefer ImagePicker's JPEG Base64. Some Android document providers
+      // omit it, so read the returned file/content URI through Expo FileSystem.
+      if (base64) {
+        fileBody = decodeBase64ToArrayBuffer(base64);
+        uploadMime = 'image/jpeg';
+      } else {
+        try {
+          const localBase64 = await readAvatarUriAsBase64(uri);
+          fileBody = decodeBase64ToArrayBuffer(localBase64);
+        } catch (readError) {
+          console.error('[AuthStore] Avatar URI read failed:', readError);
+          throw new Error('อ่านไฟล์รูปภาพไม่สำเร็จ กรุณาลองเลือกรูปจากแกลเลอรีอีกครั้ง');
+        }
+      }
+    } else if (base64) {
+      fileBody = decodeBase64ToArrayBuffer(base64);
+    } else {
+      throw new Error('เบราว์เซอร์ไม่ได้ส่งข้อมูลรูปภาพ กรุณาเลือกรูปอีกครั้ง');
+    }
+
+    const extension = uploadMime === 'image/png'
+      ? 'png'
+      : uploadMime === 'image/webp'
+        ? 'webp'
+        : uploadMime === 'image/heic' || uploadMime === 'image/heif'
+          ? 'heic'
+          : 'jpg';
+    const filePath = `${currentUser.id}/avatar.${extension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, fileBody, {
+        contentType: uploadMime,
+        cacheControl: '3600',
+        upsert: true,
+      });
+    if (uploadError) throw uploadError;
+
+    const { data: publicData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+    const avatarUrl = `${publicData.publicUrl}?v=${Date.now()}`;
+
+    const { data, error: metadataError } = await supabase.auth.updateUser({
+      data: { avatar_url: avatarUrl },
+    });
+    if (metadataError) throw metadataError;
+
+    set({
+      user: data.user ? mapSupabaseUser(data.user) : { ...currentUser, avatarUrl },
+    });
   },
 
   updatePassword: async (newPassword, currentPassword) => {

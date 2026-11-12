@@ -155,7 +155,7 @@ export default function HomeScreen() {
         </View>
 
         {!isWide && (
-          <LinearGradient colors={['#1E40AF', '#2563EB', '#3B82F6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
+          <LinearGradient colors={['#F15B50', '#FF8068', '#F7CE43']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
             <View style={styles.heroTop}>
               <Text style={styles.heroLabel}>ประหยัดได้เดือนนี้</Text>
               <View style={styles.heroIcon}><WalletIcon size={18} color="#fff" /></View>
@@ -333,7 +333,7 @@ export default function HomeScreen() {
 
             {!isPro() && (
               <TouchableOpacity onPress={() => router.push('/paywall' as any)} accessibilityRole="link">
-                <LinearGradient colors={['#13375B', '#2364AC']} style={styles.proCard}>
+                <LinearGradient colors={['#7139D5', '#A77BFF']} style={styles.proCard}>
                   <View style={styles.proIcon}><FlameIcon size={18} color="#FFD27A" /></View>
                   <Text style={styles.proTitle}>RoastMyWallet Pro</Text>
                   <Text style={styles.proSubtitle}>ปลดล็อกการวิเคราะห์เชิงลึกและเครื่องมือเพิ่มเติม</Text>
@@ -561,7 +561,7 @@ function statusLabel(purchase: Purchase): string {
 }
 
 const styles = StyleSheet.create({
-  heroCard: { borderRadius: 22, padding: 20, gap: 9, shadowColor: '#1769E0', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 18, elevation: 6 },
+  heroCard: { borderRadius: 26, padding: 22, gap: 9, shadowColor: '#F15B50', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 18, elevation: 6 },
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
   heroIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   statusPill: { flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
   statusDot: { width: 7, height: 7, borderRadius: 4 },
   statusText: { fontSize: 11, fontWeight: '800' },
-  primaryButton: { backgroundColor: '#1769E0', flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
+  primaryButton: { backgroundColor: '#F15B50', flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
   primaryButtonText: { color: '#fff', fontSize: 13, fontWeight: '800' },
   metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   metricCard: { borderWidth: 1, borderRadius: 16, padding: 17, minHeight: 142, gap: 7, overflow: 'hidden', shadowColor: '#173B63', shadowOpacity: 0.04, shadowOffset: { width: 0, height: 4 }, shadowRadius: 14, elevation: 1 },
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
   metricAccent: { height: 3, width: 34, borderRadius: 3, marginTop: 'auto' },
   analyticsRow: { gap: 14, alignItems: 'stretch' },
   contentRow: { gap: 14, alignItems: 'flex-start' },
-  panel: { borderWidth: 1, borderRadius: 17, padding: 19, gap: 15, shadowColor: '#173B63', shadowOpacity: 0.035, shadowOffset: { width: 0, height: 4 }, shadowRadius: 12, elevation: 1 },
+  panel: { borderWidth: 1, borderRadius: 22, padding: 20, gap: 15, shadowColor: '#173B63', shadowOpacity: 0.035, shadowOffset: { width: 0, height: 4 }, shadowRadius: 12, elevation: 1 },
   panelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   panelTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
   panelSubtitle: { fontSize: 11, lineHeight: 16, marginTop: 3 },

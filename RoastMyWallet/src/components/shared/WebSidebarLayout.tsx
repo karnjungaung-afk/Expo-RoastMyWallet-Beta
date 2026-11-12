@@ -91,23 +91,23 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
         style={[
           styles.sidebar,
           {
-            backgroundColor: '#102D4A',
-            borderRightColor: '#1E4267',
+            backgroundColor: colors.surface,
+            borderRightColor: colors.border,
             width: isWide ? 232 : 188,
           },
         ]}
       >
         {/* Logo */}
-        <View style={[styles.sidebarLogo, { borderBottomColor: '#1E4267' }]}>
-          <View style={[styles.logoMark, { borderColor: '#75B5FF' }]}>
+        <View style={[styles.sidebarLogo, { borderBottomColor: colors.border }]}>
+          <View style={[styles.logoMark, { borderColor: '#F15B50', backgroundColor: '#FFF0E1' }]}>
             <View style={styles.pauseBars}>
-              <View style={[styles.pauseBar, { backgroundColor: '#75B5FF' }]} />
-              <View style={[styles.pauseBar, { backgroundColor: '#347FE0' }]} />
+              <View style={[styles.pauseBar, { backgroundColor: '#F15B50' }]} />
+              <View style={[styles.pauseBar, { backgroundColor: '#7139D5' }]} />
             </View>
             <View style={[styles.cornerTL, { borderColor: '#75B5FF' }]} />
           </View>
           {showLabels && (
-            <Text style={[styles.logoText, { color: '#FFFFFF' }]}>
+            <Text style={[styles.logoText, { color: colors.textPrimary }]}>
               RoastMyWallet
             </Text>
           )}
@@ -128,21 +128,21 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                 accessibilityState={{ selected: active }}
                 style={[
                   styles.navItem,
-                  active && [styles.navItemActive, { borderLeftColor: '#8FC1FF', backgroundColor: '#1D5FAF' }],
+                  active && [styles.navItemActive, { borderLeftColor: colors.primary, backgroundColor: colors.primarySubtle }],
                   { paddingLeft: isWide ? spacing[5] : spacing[4] },
                 ]}
               >
                 <View style={styles.navItemInner}>
                   <item.Icon
                     size={18}
-                    color={active ? '#FFFFFF' : '#A9BED5'}
+                    color={active ? colors.primary : colors.textMuted}
                     strokeWidth={active ? 2.2 : 1.6}
                   />
                   {showLabels && (
                     <Text
                       style={[
                         styles.navLabel,
-                        { color: active ? '#FFFFFF' : '#D0DCE9' },
+                        { color: active ? colors.primary : colors.textSecondary },
                         active && styles.navLabelActive,
                       ]}
                     >
@@ -150,7 +150,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                     </Text>
                   )}
                   {badge > 0 && (
-                    <View style={[styles.navBadge, { backgroundColor: '#397DD6' }]}>
+                    <View style={[styles.navBadge, { backgroundColor: '#F15B50' }]}>
                       <Text style={styles.navBadgeText}>
                         {badge > 99 ? '99+' : badge}
                       </Text>
@@ -163,7 +163,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
         </View>
 
         {/* Sidebar footer — subscription status + system info */}
-        <View style={[styles.sidebarFooter, { borderTopColor: '#1E4267' }]}>
+        <View style={[styles.sidebarFooter, { borderTopColor: colors.border }]}>
           {isWide ? (
             <>
               {!isPro() && (
@@ -184,8 +184,8 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                 </TouchableOpacity>
               )}
               <View style={styles.footerUser}>
-                <View style={[styles.footerAvatar, { backgroundColor: '#1C4D80' }]}>
-                  <Text style={[styles.footerAvatarText, { color: '#B9D9FF' }]}>
+                <View style={[styles.footerAvatar, { backgroundColor: '#FFE3DE' }]}>
+                  <Text style={[styles.footerAvatarText, { color: '#C84A40' }]}>
                     {(profile?.displayName ?? 'U').charAt(0).toUpperCase()}
                   </Text>
                 </View>
@@ -204,7 +204,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
                   )}
                 </View>
               </View>
-              <Text style={[styles.sysStatus, { color: '#8FAAC6' }]}>
+              <Text style={[styles.sysStatus, { color: colors.textMuted }]}>
                 SYS ▸ ACTIVE
               </Text>
             </>
@@ -247,7 +247,7 @@ export function WebSidebarLayout({ children }: WebSidebarLayoutProps) {
               }}
               accessibilityRole="button"
               accessibilityLabel="ค้นหา"
-              style={styles.searchAction}
+              style={[styles.searchAction, { backgroundColor: colors.primary }]}
             >
               <Text style={styles.searchActionText}>ค้นหา</Text>
             </TouchableOpacity>
@@ -436,11 +436,11 @@ const styles = StyleSheet.create({
   },
   searchGlyph: { fontSize: 24, lineHeight: 26 },
   searchInput: { flex: 1, minWidth: 0, paddingVertical: 8, fontSize: 13 },
-  searchAction: { backgroundColor: '#1769E0', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  searchAction: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   searchActionText: { color: '#fff', fontSize: 11, fontWeight: '800' },
   topbarUser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingVertical: 5, paddingHorizontal: 7, maxWidth: 200 },
-  topbarAvatar: { width: 30, height: 30, borderRadius: 10, backgroundColor: '#DCEBFF', alignItems: 'center', justifyContent: 'center' },
-  topbarAvatarText: { color: '#1B5DB5', fontWeight: '900', fontSize: 13 },
+  topbarAvatar: { width: 30, height: 30, borderRadius: 10, backgroundColor: '#FFE3DE', alignItems: 'center', justifyContent: 'center' },
+  topbarAvatarText: { color: '#C84A40', fontWeight: '900', fontSize: 13 },
   topbarUserName: { fontSize: 12, fontWeight: '700', maxWidth: 145 },
   screenContent: { flex: 1, minHeight: 0 },
 });
