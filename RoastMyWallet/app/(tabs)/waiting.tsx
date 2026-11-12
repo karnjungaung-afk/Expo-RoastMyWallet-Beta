@@ -1,8 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl,
-  Platform, useWindowDimensions,
-} from 'react-native';
+import { View, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Platform, useWindowDimensions } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
@@ -71,7 +69,7 @@ export default function WaitingScreen() {
   const ready = waiting.filter(p => p.waitingUntil && new Date(p.waitingUntil) <= new Date());
   const decided = purchases.filter(p => ['bought', 'avoided', 'expired'].includes(p.status));
   const totalValue = waiting.reduce((sum, item) => sum + item.price, 0);
-  const pageBg = Platform.OS === 'web' && !isDark ? '#F3F6FB' : colors.background;
+  const pageBg = Platform.OS === 'web' && !isDark ? '#FFF4DC' : colors.background;
 
   return (
     <View style={[styles.root, { backgroundColor: pageBg }]}>
@@ -112,7 +110,7 @@ export default function WaitingScreen() {
             </View>
 
             <View style={styles.statsGrid}>
-              <SummaryCard label="กำลังรอตัดสินใจ" value={waiting.length} hint="รายการทั้งหมด" icon={<ClockIcon size={18} color={colors.primary} />} accent={colors.primary} colors={colors} />
+              <SummaryCard label="กำลังรอตัดสินใจ" value={waiting.length} hint="รายการทั้งหมด" icon={<ClockIcon size={18} color={colors.primary} />} accent="#FF6B4A" colors={colors} />
               <SummaryCard label="พร้อมตัดสินใจ" value={ready.length} hint="ครบเวลาพักการซื้อแล้ว" icon={<ShieldIcon size={18} color="#218B62" />} accent="#218B62" colors={colors} />
               <SummaryCard label="ความเสี่ยงสูง" value={waiting.filter(p => p.impulseRisk === 'high').length} hint="ควรทบทวนอีกครั้ง" icon={<FlameIcon size={18} color="#D68A13" />} accent="#D68A13" colors={colors} />
               <SummaryCard label="ตัดสินใจแล้ว" value={decided.length} hint="ประวัติการซื้อและงดซื้อ" icon={<CheckIcon size={18} color="#7139D5" />} accent="#7139D5" colors={colors} />
@@ -165,15 +163,17 @@ export default function WaitingScreen() {
   );
 }
 
+const SUMMARY_PASTEL: Record<string, string> = { '#FF6B4A': '#FFB9A8', '#218B62': '#7AE8B5', '#D68A13': '#FFE08A', '#7139D5': '#C9B6FF' };
+
 function SummaryCard({ label, value, hint, icon, accent, colors }: {
   label: string; value: number; hint: string; icon: React.ReactNode; accent: string; colors: any;
 }) {
   return (
-    <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <View style={[styles.summaryIcon, { backgroundColor: accent + '16' }]}>{icon}</View>
-      <Text style={[styles.summaryValue, { color: colors.textPrimary }]}>{value}</Text>
-      <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{label}</Text>
-      <Text style={[styles.summaryHint, { color: colors.textMuted }]}>{hint}</Text>
+    <View style={[styles.summaryCard, { backgroundColor: SUMMARY_PASTEL[accent] ?? '#FFE08A', borderColor: '#14110F' }]}>
+      <View style={[styles.summaryIcon, { backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#14110F' }]}>{icon}</View>
+      <Text style={[styles.summaryValue, { color: '#14110F' }]}>{value}</Text>
+      <Text style={[styles.summaryLabel, { color: '#14110F' }]}>{label}</Text>
+      <Text style={[styles.summaryHint, { color: '#3B342F' }]}>{hint}</Text>
     </View>
   );
 }
@@ -222,17 +222,17 @@ const styles = StyleSheet.create({
   eyebrow: { fontSize: 10, fontFamily: 'Prompt_800ExtraBold', letterSpacing: 1.5, marginBottom: 7 },
   headerTitle: { fontSize: 30, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.8 },
   headerSub: { fontSize: 13, lineHeight: 19, marginTop: 5 },
-  waitingTotal: { minWidth: 190, flexDirection: 'row', alignItems: 'center', gap: 11, padding: 13, borderWidth: 1, borderRadius: 18 },
+  waitingTotal: { minWidth: 190, flexDirection: 'row', alignItems: 'center', gap: 11, padding: 13, borderWidth: 2.5, borderRadius: 18, boxShadow: '4px 4px 0px 0px #14110F' },
   totalIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   totalLabel: { fontSize: 11, marginBottom: 3 },
   totalValue: { fontSize: 18, fontFamily: 'Prompt_800ExtraBold' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  summaryCard: { flexGrow: 1, flexBasis: 180, minWidth: 145, borderWidth: 1, borderRadius: 21, padding: 17, gap: 4 },
+  summaryCard: { flexGrow: 1, flexBasis: 180, minWidth: 145, borderWidth: 2.5, borderRadius: 21, padding: 17, gap: 4, boxShadow: '4px 4px 0px 0px #14110F' },
   summaryIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
   summaryValue: { fontSize: 25, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.5 },
   summaryLabel: { fontSize: 12, fontFamily: 'Prompt_700Bold' },
   summaryHint: { fontSize: 10, marginTop: 2 },
-  listPanel: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
+  listPanel: { borderWidth: 2.5, borderRadius: 16, overflow: 'hidden', boxShadow: '4px 4px 0px 0px #14110F' },
   listHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 17, paddingBottom: 13, gap: 10 },
   sectionTitle: { fontSize: 16, fontFamily: 'Prompt_800ExtraBold' },
   sectionSub: { fontSize: 11, marginTop: 4 },
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   searchNotice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 10 },
   searchNoticeText: { fontSize: 11 },
   purchaseRow: { width: '100%', maxWidth: 1180, alignSelf: 'center', borderWidth: Platform.OS === 'web' ? 1 : 0, borderRadius: 14, overflow: 'hidden' },
-  empty: { width: '100%', maxWidth: 1180, alignSelf: 'center', alignItems: 'center', gap: 10, padding: 34, borderWidth: 1, borderRadius: 16, marginTop: 10 },
+  empty: { width: '100%', maxWidth: 1180, alignSelf: 'center', alignItems: 'center', gap: 10, padding: 34, borderWidth: 2.5, borderRadius: 16, marginTop: 10, boxShadow: '4px 4px 0px 0px #14110F' },
   emptyIcon: { width: 60, height: 60, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   emptyTitle: { fontSize: 15, fontFamily: 'Prompt_800ExtraBold', textAlign: 'center' },
   emptySub: { fontSize: 12, lineHeight: 18, textAlign: 'center', maxWidth: 360 },

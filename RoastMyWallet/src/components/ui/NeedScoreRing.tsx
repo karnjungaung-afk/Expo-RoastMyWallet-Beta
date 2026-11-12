@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import Svg, { Circle, G } from 'react-native-svg';
 import { useTheme } from '@/hooks/useTheme';
 import { typography, spacing } from '@/theme/tokens';
@@ -83,7 +84,7 @@ export function NeedScoreRing({
         {/* Track */}
         <Circle
           cx={center} cy={center} r={innerRadius}
-          stroke={colors.border} strokeWidth={strokeWidth} fill="none"
+          stroke="#FFFFFF" strokeWidth={strokeWidth} fill="none"
         />
         {/* Progress ring — static at final score value */}
         <G rotation="-90" origin={`${center}, ${center}`}>
@@ -92,30 +93,30 @@ export function NeedScoreRing({
             stroke={riskColor} strokeWidth={strokeWidth} fill="none"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
-            opacity={0.9}
+            opacity={1}
           />
         </G>
         {/* Tick marks */}
         {ticks.map((tick, i) => (
           <Circle
             key={i} cx={tick.x} cy={tick.y} r={1.5}
-            fill={tick.isActive ? riskColor : colors.borderSubtle}
+            fill="#14110F"
           />
         ))}
       </Svg>
 
       {/* Animated score number — centered over the ring */}
       <View style={[styles.scoreOverlay, { width: size, height: size }]}>
-        <Text style={[styles.scoreNumber, { color: colors.textPrimary }]}>
+        <Text style={[styles.scoreNumber, { color: '#14110F' }]}>
           {displayScore}
         </Text>
-        <Text style={[styles.scoreMax, { color: colors.textMuted }]}>/100</Text>
+        <Text style={[styles.scoreMax, { color: '#3B342F' }]}>/100</Text>
       </View>
 
       {showLabel && (
         <View style={styles.labelContainer}>
           <View style={[styles.riskDot, { backgroundColor: riskColor }]} />
-          <Text style={[styles.riskLabel, { color: riskColor }]}>{riskLabel}</Text>
+          <Text style={[styles.riskLabel, { color: '#14110F' }]}>{riskLabel}</Text>
         </View>
       )}
     </View>

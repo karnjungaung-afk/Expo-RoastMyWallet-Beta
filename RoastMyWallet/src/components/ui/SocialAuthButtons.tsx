@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import Svg, { Path } from 'react-native-svg';
 import { useTheme } from '@/hooks/useTheme';
 import {

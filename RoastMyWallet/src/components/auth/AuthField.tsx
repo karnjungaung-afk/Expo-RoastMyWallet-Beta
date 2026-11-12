@@ -1,5 +1,6 @@
 import React, { forwardRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, type TextInputProps } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, type TextInputProps } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { useTheme } from '@/hooks/useTheme';
 import { EyeIcon, EyeOffIcon } from '@/components/icons/RmwIcons';
 

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  View, Text, TouchableOpacity, TextInput,
-  StyleSheet, FlatList, KeyboardAvoidingView, Platform,
-} from 'react-native';
+import { View, TouchableOpacity, TextInput, StyleSheet, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,11 +31,11 @@ function ProGate({ colors, isDark, insets }: any) {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <LinearGradient
-        colors={isDark ? ['#211C24', colors.background] : ['#FF6B4A', '#7139D5']}
+        colors={isDark ? ['#2A2148', colors.background] : ['#C9B6FF', '#FF9ECF']}
         style={[styles.gateHeader, { paddingTop: insets.top + 24 }]}
       >
         <View style={styles.gateIconWrap}>
-          <SquadIcon size={36} color="rgba(255,255,255,0.7)" />
+          <SquadIcon size={36} color="#14110F" />
         </View>
         <Text style={styles.gateTitle}>Squad</Text>
         <Text style={styles.gateSub}>หยุดซื้อของไม่จำเป็นพร้อมกับเพื่อน</Text>
@@ -51,7 +49,7 @@ function ProGate({ colors, isDark, insets }: any) {
           </View>
         ))}
 
-        <LinearGradient colors={['#F7CE43', '#FF6B4A']} style={styles.upgradeGrad}>
+        <LinearGradient colors={['#D6F73C', '#D6F73C']} style={styles.upgradeGrad}>
           <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85}>
             <FlameIcon size={18} color="#fff" />
             <Text style={styles.upgradeBtnText}>อัพเกรดเป็น Pro</Text>
@@ -145,7 +143,7 @@ function SquadMain({ colors, isDark, insets }: any) {
               style={[styles.squadActionCard, { backgroundColor: isDark ? '#14110F' : '#fff', borderColor: colors.border }]}
               onPress={() => setMode('create')}
             >
-              <LinearGradient colors={['#7139D5', '#31B9CE']} style={styles.squadActionIcon}>
+              <LinearGradient colors={['#C9B6FF', '#C9B6FF']} style={styles.squadActionIcon}>
                 <PlusIcon size={20} color="#fff" />
               </LinearGradient>
               <View style={{ flex: 1 }}>
@@ -159,7 +157,7 @@ function SquadMain({ colors, isDark, insets }: any) {
               style={[styles.squadActionCard, { backgroundColor: isDark ? '#14110F' : '#fff', borderColor: colors.border }]}
               onPress={() => setMode('join')}
             >
-              <LinearGradient colors={['#218B62', '#31B9CE']} style={styles.squadActionIcon}>
+              <LinearGradient colors={['#7AE8B5', '#7AE8B5']} style={styles.squadActionIcon}>
                 <SquadIcon size={20} color="#fff" />
               </LinearGradient>
               <View style={{ flex: 1 }}>
@@ -181,7 +179,7 @@ function SquadMain({ colors, isDark, insets }: any) {
               placeholderTextColor={colors.textMuted}
               autoFocus
             />
-            <LinearGradient colors={['#8B5CF6', '#8B5CF6']} style={styles.codeSubmitGrad}>
+            <LinearGradient colors={['#D6F73C', '#D6F73C']} style={styles.codeSubmitGrad}>
               <TouchableOpacity style={styles.codeSubmit} onPress={handleCreate}>
                 <Text style={styles.codeSubmitText}>สร้าง Squad</Text>
               </TouchableOpacity>
@@ -202,7 +200,7 @@ function SquadMain({ colors, isDark, insets }: any) {
               placeholderTextColor={colors.textMuted}
               autoCapitalize="characters" autoFocus
             />
-            <LinearGradient colors={['#235E3B', '#3A9960']} style={styles.codeSubmitGrad}>
+            <LinearGradient colors={['#7AE8B5', '#7AE8B5']} style={styles.codeSubmitGrad}>
               <TouchableOpacity style={styles.codeSubmit} onPress={handleJoin}>
                 <Text style={styles.codeSubmitText}>เข้าร่วม</Text>
               </TouchableOpacity>
@@ -280,35 +278,35 @@ function SquadMain({ colors, isDark, insets }: any) {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  gateHeader: { paddingHorizontal: 24, paddingBottom: 28, alignItems: 'center', gap: 8 },
-  gateIconWrap: { width: 64, height: 64, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  gateTitle: { fontSize: 28, fontFamily: 'Prompt_800ExtraBold', color: '#fff', letterSpacing: -0.8 },
-  gateSub: { fontSize: 14, color: 'rgba(255,255,255,0.45)', textAlign: 'center' },
+  gateHeader: { paddingHorizontal: 24, paddingBottom: 28, alignItems: 'center', gap: 8, borderBottomWidth: 3, borderBottomColor: '#14110F' },
+  gateIconWrap: { width: 68, height: 68, borderRadius: 20, backgroundColor: '#D6F73C', borderWidth: 3, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  gateTitle: { fontSize: 28, fontFamily: 'Prompt_800ExtraBold', color: '#14110F', letterSpacing: -0.8 },
+  gateSub: { fontSize: 14, color: '#3B342F', textAlign: 'center' },
   gateContent: { flex: 1, paddingTop: 24, gap: 12 },
-  perkRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 22, borderWidth: 1 },
+  perkRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 22, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   perkIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   perkText: { flex: 1, fontSize: 14, fontFamily: 'Prompt_500Medium', lineHeight: 20 },
   upgradeGrad: { borderRadius: 16, marginTop: 8 },
   upgradeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16 },
-  upgradeBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Prompt_700Bold' },
+  upgradeBtnText: { color: '#14110F', fontSize: 16, fontFamily: 'Prompt_700Bold' },
   gateNote: { textAlign: 'center', fontSize: 12 },
   noSquadContent: { paddingTop: 24, gap: 12 },
-  squadActionCard: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 16, borderWidth: 1 },
+  squadActionCard: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 16, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   squadActionIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   squadActionTitle: { fontSize: 15, fontFamily: 'Prompt_700Bold' },
   squadActionSub: { fontSize: 12, marginTop: 2 },
   inputLabel: { fontSize: 13, fontFamily: 'Prompt_600SemiBold', letterSpacing: 0.2 },
-  codeInput: { height: 52, borderWidth: 1.5, borderRadius: 14, paddingHorizontal: 16, fontSize: 16 },
+  codeInput: { height: 52, borderWidth: 2.5, borderRadius: 14, paddingHorizontal: 16, fontSize: 16, boxShadow: '4px 4px 0px 0px #14110F' },
   codeSubmitGrad: { borderRadius: 14 },
   codeSubmit: { paddingVertical: 15, alignItems: 'center' },
   codeSubmitText: { color: '#fff', fontSize: 15, fontFamily: 'Prompt_700Bold' },
   cancelText: { fontSize: 14, paddingVertical: 8 },
   chatHeader: { paddingHorizontal: 20, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   chatName: { fontSize: 20, fontFamily: 'Prompt_800ExtraBold', color: '#fff' },
-  chatMembers: { fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
-  inviteCodePill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+  chatMembers: { fontSize: 12, color: '#3B342F', marginTop: 2 },
+  inviteCodePill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F' },
   inviteCodeText: { color: '#fff', fontSize: 14, fontFamily: 'Prompt_800ExtraBold', letterSpacing: 2 },
-  inviteCodeCopy: { color: 'rgba(255,255,255,0.5)', fontSize: 11 },
+  inviteCodeCopy: { color: '#3B342F', fontSize: 11 },
   msgRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   msgRowMe: { flexDirection: 'row-reverse' },
   msgAvatar: { width: 28, height: 28, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
@@ -316,6 +314,6 @@ const styles = StyleSheet.create({
   msgSender: { fontSize: 11, fontFamily: 'Prompt_600SemiBold' },
   msgText: { fontSize: 14, lineHeight: 20 },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: 16, paddingTop: 10, borderTopWidth: 1 },
-  msgInput: { flex: 1, borderWidth: 1.5, borderRadius: 22, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, fontSize: 15, maxHeight: 120 },
+  msgInput: { flex: 1, borderWidth: 2.5, borderRadius: 22, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, fontSize: 15, maxHeight: 120, boxShadow: '4px 4px 0px 0px #14110F' },
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
 });

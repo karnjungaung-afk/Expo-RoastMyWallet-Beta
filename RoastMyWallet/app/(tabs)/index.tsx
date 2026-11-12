@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Modal, Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions, type StyleProp, type ViewStyle,
-} from 'react-native';
+import { Modal, Platform, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { RoastMascot } from '@/components/icons/RoastMascot';
 import { neoShadow, neo } from '@/theme/tokens';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
@@ -61,7 +61,7 @@ export default function HomeScreen() {
   const displayName = profile?.displayName?.split(' ')[0] ?? 'คุณ';
   const isDesktop = Platform.OS === 'web' && width >= 1024;
   const isWide = width >= 720;
-  const bg = Platform.OS === 'web' && !isDark ? '#F2F6FC' : isDark ? colors.background : '#F7F9FC';
+  const bg = Platform.OS === 'web' && !isDark ? '#FFF4DC' : isDark ? colors.background : '#FFF4DC';
 
   const recentPlatforms = useMemo(() => [...new Set(
     purchases.slice(0, 20).map(p => p.platform).filter(Boolean),
@@ -275,7 +275,7 @@ export default function HomeScreen() {
             </View>
             {loadingState === 'loading' && waiting.length === 0 ? (
               <View style={styles.cardList}>
-                {[0, 1, 2].map(n => <View key={n} style={[styles.skeleton, { backgroundColor: isDark ? '#1B2737' : '#F2E2BD' }]} />)}
+                {[0, 1, 2].map(n => <View key={n} style={[styles.skeleton, { backgroundColor: isDark ? '#33295A' : '#F2E2BD' }]} />)}
               </View>
             ) : waiting.length === 0 ? (
               <EmptyState colors={colors} isDark={isDark} onAdd={() => setShowAddSheet(true)} />
@@ -366,7 +366,7 @@ export default function HomeScreen() {
         presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
         onRequestClose={() => setShowAddSheet(false)}
       >
-        <View style={[styles.modal, { backgroundColor: isDark ? '#14110F' : '#F3F7FC', paddingTop: insets.top }]}>
+        <View style={[styles.modal, { backgroundColor: isDark ? '#14110F' : '#FFF4DC', paddingTop: insets.top }]}>
           <AddPurchaseSheet
             onClose={() => { setShowAddSheet(false); setPrefillUrl(undefined); }}
             prefillUrl={prefillUrl}
@@ -446,13 +446,13 @@ function WeeklyBarChart({ values, currency, colors, isDark }: {
           {points.length > 1 && (
             <>
               <Path d={areaPath} fill={isDark ? '#8B5CF6' : '#DCEBFF'} opacity={isDark ? 0.2 : 0.8} />
-              <Path d={linePath} fill="none" stroke="#2878E2" strokeWidth="3"
+              <Path d={linePath} fill="none" stroke="#14110F" strokeWidth="3"
                 strokeLinecap="round" strokeLinejoin="round" />
             </>
           )}
           {points.map(point => (
             <Circle key={point.key} cx={point.x} cy={point.y} r="4"
-              fill={isDark ? '#172B49' : '#FFFFFF'} stroke="#2878E2" strokeWidth="2.5" />
+              fill={isDark ? '#2A2148' : '#FFFFFF'} stroke="#14110F" strokeWidth="2.5" />
           ))}
         </Svg>
       </View>
@@ -487,7 +487,7 @@ function CategoryDonut({ categories, total, currency, colors, isDark }: {
       <View style={styles.donutWrap}>
         <Svg width={132} height={132} viewBox="0 0 132 132">
           <Circle cx="66" cy="66" r={radius} fill="none"
-            stroke={isDark ? '#26364C' : '#EAF0F7'} strokeWidth="15" />
+            stroke={isDark ? '#4A3F72' : '#F2E2BD'} strokeWidth="15" />
           {total > 0 && categories.map((item, index) => {
             const fraction = item.amount / total;
             const segment = fraction * circumference;
@@ -542,10 +542,8 @@ function EmptyState({ colors, isDark, onAdd }: {
   colors: ReturnType<typeof useTheme>['colors']; isDark: boolean; onAdd: () => void;
 }) {
   return (
-    <View style={[styles.empty, { backgroundColor: isDark ? '#162133' : '#F8FAFD', borderColor: colors.border }]}>
-      <View style={[styles.emptyIcon, { backgroundColor: isDark ? '#243247' : '#E5EEF9' }]}>
-        <ClockIcon size={30} color={colors.primary} />
-      </View>
+    <View style={[styles.empty, { backgroundColor: isDark ? '#241C40' : '#FFF4DC', borderColor: colors.border }]}>
+      <RoastMascot size={104} mode="neutral" />
       <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>ยังไม่มีรายการที่รอซื้อ</Text>
       <Text style={[styles.emptySub, { color: colors.textSecondary }]}>เก็บของที่อยากได้ไว้ก่อน แล้วค่อยตัดสินใจเมื่อพร้อม</Text>
       <TouchableOpacity style={styles.emptyButton} onPress={onAdd} accessibilityRole="button">

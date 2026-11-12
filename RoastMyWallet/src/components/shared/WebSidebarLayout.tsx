@@ -14,7 +14,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { useRouter, usePathname } from 'expo-router';
 import { HomeIcon, ClockIcon, ChartIcon, SquadIcon, UserIcon, FlameIcon } from '@/components/icons/RmwIcons';
 import { useTheme } from '@/hooks/useTheme';
@@ -362,7 +363,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: 'Prompt_700Bold',
   },
-  sidebarProCard: { backgroundColor: '#173D63', borderColor: '#315D87', borderWidth: 1, borderRadius: 14, padding: 12, gap: 7, marginBottom: 12 },
+  sidebarProCard: { backgroundColor: '#173D63', borderColor: '#315D87', borderWidth: 2.5, borderRadius: 14, padding: 12, gap: 7, marginBottom: 12, boxShadow: '4px 4px 0px 0px #14110F' },
   sidebarProIcon: { width: 30, height: 30, borderRadius: 9, backgroundColor: 'rgba(255,210,122,0.14)', alignItems: 'center', justifyContent: 'center' },
   sidebarProTitle: { color: '#FFFFFF', fontSize: 12, fontFamily: 'Prompt_800ExtraBold' },
   sidebarProCopy: { color: '#BDD0E3', fontSize: 10, lineHeight: 15 },
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, minWidth: 0, paddingVertical: 8, fontSize: 13 },
   searchAction: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   searchActionText: { color: '#fff', fontSize: 11, fontFamily: 'Prompt_800ExtraBold' },
-  topbarUser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingVertical: 5, paddingHorizontal: 7, maxWidth: 200 },
+  topbarUser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 2.5, borderRadius: 12, paddingVertical: 5, paddingHorizontal: 7, maxWidth: 200, boxShadow: '4px 4px 0px 0px #14110F' },
   topbarAvatar: { width: 30, height: 30, borderRadius: 10, backgroundColor: '#FFE3DE', alignItems: 'center', justifyContent: 'center' },
   topbarAvatarText: { color: '#C84A40', fontFamily: 'Prompt_800ExtraBold', fontSize: 13 },
   topbarUserName: { fontSize: 12, fontFamily: 'Prompt_700Bold', maxWidth: 145 },

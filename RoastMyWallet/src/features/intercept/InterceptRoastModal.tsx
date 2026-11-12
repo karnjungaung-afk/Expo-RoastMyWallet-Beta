@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Platform } from 'react-native';
+import { Modal, View, TouchableOpacity, StyleSheet, Animated, Easing, Platform } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useInterceptStore } from '@/store/interceptStore';

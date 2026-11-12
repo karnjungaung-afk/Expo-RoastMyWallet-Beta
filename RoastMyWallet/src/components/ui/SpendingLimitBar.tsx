@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { useTheme } from '@/hooks/useTheme';
 import { useSpendingProgress } from '@/hooks/useSpendingProgress';
 import { spacing, typography } from '@/theme/tokens';

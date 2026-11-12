@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions,
-} from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -61,18 +60,18 @@ export default function PaywallScreen() {
   };
 
   return (
-    <LinearGradient colors={['#FF6B4A', '#7139D5', '#31B9CE']} style={styles.root}>
+    <LinearGradient colors={['#FFC62E', '#FF9ECF', '#C9B6FF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.root}>
       <ScrollView
         contentContainerStyle={[styles.page, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 }]}
         showsVerticalScrollIndicator={false}
       >
         <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))} style={styles.back} accessibilityRole="button" accessibilityLabel="กลับ">
-          <ChevronLeftIcon size={22} color="#fff" />
+          <ChevronLeftIcon size={22} color="#14110F" />
           <Text style={styles.backText}>กลับ</Text>
         </TouchableOpacity>
 
         <View style={styles.hero}>
-          <View style={styles.crown}><CrownIcon size={34} color="#F59E0B" /></View>
+          <View style={styles.crown}><CrownIcon size={34} color="#14110F" /></View>
           <Text style={styles.title}>RoastMyWallet Pro</Text>
           <Text style={styles.sub}>ปลดล็อกเครื่องมือเต็มรูปแบบ เพื่อเห็นรูปแบบการตัดสินใจซื้อของคุณชัดขึ้น ไม่ได้บังคับให้ซื้อเพิ่ม</Text>
           {isPro && (
@@ -115,12 +114,12 @@ export default function PaywallScreen() {
                   </View>
                   <Text style={styles.planPeriod}>{isYear ? 'เรียกเก็บตามรอบปี' : 'เรียกเก็บทุกเดือน'}</Text>
                   <TouchableOpacity
-                    style={[styles.planButton, isPro && { backgroundColor: '#15803D' }, (isPurchasing || isPro) && styles.disabledButton]}
+                    style={[styles.planButton, isPro && { backgroundColor: '#7AE8B5' }, (isPurchasing || isPro) && styles.disabledButton]}
                     onPress={() => { void handlePurchase(pkg.id); }}
                     disabled={isPurchasing || isPro}
                     accessibilityRole="button"
                   >
-                    {isPurchasing ? <ActivityIndicator color="#fff" /> :
+                    {isPurchasing ? <ActivityIndicator color="#14110F" /> :
                       <Text style={styles.planButtonText}>{isPro ? 'เปิดใช้งานแล้ว' : isYear ? 'เลือกแผนรายปี' : 'เลือกแผนรายเดือน'}</Text>}
                   </TouchableOpacity>
                 </TouchableOpacity>
@@ -172,50 +171,50 @@ export default function PaywallScreen() {
   );
 }
 
-const glass = { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.14)', borderWidth: 1 } as const;
+const glass = { backgroundColor: '#FFFDF6', borderColor: '#14110F', borderWidth: 2.5 } as const;
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
   page: { width: '100%', maxWidth: 820, alignSelf: 'center', paddingHorizontal: 20, gap: 18 },
   back: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingVertical: 8, gap: 2 },
-  backText: { color: '#fff', fontSize: 15, fontFamily: 'Prompt_600SemiBold' },
+  backText: { color: '#14110F', fontSize: 15, fontFamily: 'Prompt_600SemiBold' },
   hero: { alignItems: 'center', gap: 10, paddingTop: 4 },
-  crown: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(245,158,11,0.15)', borderWidth: 1, borderColor: 'rgba(245,158,11,0.4)', alignItems: 'center', justifyContent: 'center' },
-  title: { color: '#fff', fontSize: 28, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.8, textAlign: 'center' },
-  sub: { color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 21, textAlign: 'center', maxWidth: 460 },
+  crown: { width: 72, height: 72, borderRadius: 36, backgroundColor: '#D6F73C', borderWidth: 3, borderColor: '#14110F', alignItems: 'center', justifyContent: 'center', boxShadow: '4px 4px 0px 0px #14110F' },
+  title: { color: '#14110F', fontSize: 28, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.8, textAlign: 'center' },
+  sub: { color: '#3B342F', fontSize: 14, lineHeight: 21, textAlign: 'center', maxWidth: 460 },
   activeBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#D1FAE5', paddingHorizontal: 12, paddingVertical: 8, gap: 6, borderRadius: 999, marginTop: 4 },
   activeBadgeText: { color: '#0F5132', fontFamily: 'Prompt_700Bold', fontSize: 12 },
-  toggle: { flexDirection: 'row', alignSelf: 'center', width: '100%', maxWidth: 360, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 14, padding: 4 },
+  toggle: { flexDirection: 'row', alignSelf: 'center', width: '100%', maxWidth: 360, backgroundColor: '#FFFDF6', borderWidth: 2.5, borderColor: '#14110F', borderRadius: 16, padding: 4 },
   toggleBtn: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 11 },
-  toggleOn: { backgroundColor: '#FF6B4A' },
-  toggleText: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontFamily: 'Prompt_600SemiBold' },
-  toggleTextOn: { color: '#fff', fontFamily: 'Prompt_800ExtraBold' },
+  toggleOn: { backgroundColor: '#D6F73C', borderWidth: 2.5, borderColor: '#14110F' },
+  toggleText: { color: '#3B342F', fontSize: 14, fontFamily: 'Prompt_600SemiBold' },
+  toggleTextOn: { color: '#14110F', fontFamily: 'Prompt_800ExtraBold' },
   planGrid: { gap: 14, alignItems: 'stretch' },
-  planCard: { ...glass, borderRadius: 24, padding: 22, gap: 8, borderWidth: 1.5 },
-  planCardOn: { borderColor: '#8B5CF6', backgroundColor: 'rgba(59,130,246,0.16)' },
-  saveBadge: { position: 'absolute', top: -11, right: 14, backgroundColor: '#22C55E', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  saveBadgeText: { color: '#fff', fontSize: 11, fontFamily: 'Prompt_800ExtraBold' },
-  planName: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontFamily: 'Prompt_700Bold' },
+  planCard: { ...glass, borderRadius: 24, padding: 22, gap: 8, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
+  planCardOn: { backgroundColor: '#FFE08A', boxShadow: '6px 6px 0px 0px #14110F' },
+  saveBadge: { position: 'absolute', top: -13, right: 14, backgroundColor: '#7AE8B5', borderWidth: 2.5, borderColor: '#14110F', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
+  saveBadgeText: { color: '#14110F', fontSize: 11, fontFamily: 'Prompt_800ExtraBold' },
+  planName: { color: '#3B342F', fontSize: 14, fontFamily: 'Prompt_700Bold' },
   priceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
-  planPrice: { color: '#fff', fontSize: 32, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -1 },
-  planUnit: { color: 'rgba(255,255,255,0.55)', fontSize: 13, marginBottom: 6 },
-  planPeriod: { color: 'rgba(255,255,255,0.55)', fontSize: 12, marginBottom: 8 },
-  planButton: { backgroundColor: '#FF6B4A', borderRadius: 16, padding: 15, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
-  planButtonText: { color: '#fff', fontFamily: 'Prompt_800ExtraBold', fontSize: 14 },
+  planPrice: { color: '#14110F', fontSize: 32, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -1 },
+  planUnit: { color: '#3B342F', fontSize: 13, marginBottom: 6 },
+  planPeriod: { color: '#3B342F', fontSize: 12, marginBottom: 8 },
+  planButton: { backgroundColor: '#D6F73C', borderWidth: 2.5, borderColor: '#14110F', boxShadow: '3px 3px 0px 0px #14110F', borderRadius: 16, padding: 15, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  planButtonText: { color: '#14110F', fontFamily: 'Prompt_800ExtraBold', fontSize: 14 },
   disabledButton: { opacity: 0.75 },
   stateCard: { ...glass, borderRadius: 24, padding: 24, alignItems: 'center', gap: 8 },
   warningIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: 'rgba(245,158,11,0.15)', alignItems: 'center', justifyContent: 'center' },
-  stateTitle: { color: '#fff', fontSize: 17, fontFamily: 'Prompt_800ExtraBold' },
-  stateText: { color: 'rgba(255,255,255,0.75)', textAlign: 'center', lineHeight: 21, maxWidth: 560 },
-  setupHint: { color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: 12, lineHeight: 18, maxWidth: 560 },
+  stateTitle: { color: '#14110F', fontSize: 17, fontFamily: 'Prompt_800ExtraBold' },
+  stateText: { color: '#3B342F', textAlign: 'center', lineHeight: 21, maxWidth: 560 },
+  setupHint: { color: '#3B342F', textAlign: 'center', fontSize: 12, lineHeight: 18, maxWidth: 560 },
   retryButton: { paddingHorizontal: 22, paddingVertical: 12, backgroundColor: '#8B5CF6', borderRadius: 12, marginTop: 6 },
-  retryText: { color: '#fff', fontFamily: 'Prompt_700Bold' },
+  retryText: { color: '#14110F', fontFamily: 'Prompt_700Bold' },
   benefits: { gap: 10, alignSelf: 'center', width: '100%', maxWidth: 420, marginTop: 4 },
   benefit: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   benefitCheck: { width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.18)', alignItems: 'center', justifyContent: 'center' },
-  benefitText: { color: 'rgba(255,255,255,0.88)', fontSize: 14, flexShrink: 1 },
+  benefitText: { color: '#3B342F', fontSize: 14, flexShrink: 1 },
   feedback: { borderRadius: 12, padding: 14 },
-  disclaimer: { color: 'rgba(255,255,255,0.45)', fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  disclaimer: { color: '#3B342F', fontSize: 12, lineHeight: 18, textAlign: 'center' },
   restoreButton: { alignSelf: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 20 },
   restoreText: { color: '#C9B6FF', fontFamily: 'Prompt_600SemiBold' },
 });

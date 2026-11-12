@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
+import { View, StyleSheet, type ViewStyle } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { useTheme } from '@/hooks/useTheme';
 import { spacing, radius, typography, neo, neoShadow } from '@/theme/tokens';
 import type { ImpulseRisk } from '@/types';

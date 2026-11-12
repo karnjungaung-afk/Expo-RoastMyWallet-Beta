@@ -1,12 +1,6 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
+import { View, Modal, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { FlameIcon, CheckIcon } from '@/components/icons/RmwIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';

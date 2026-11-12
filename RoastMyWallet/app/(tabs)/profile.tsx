@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform, Modal, TextInput, KeyboardAvoidingView, Image } from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform, Modal, TextInput, KeyboardAvoidingView, Image } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -199,7 +200,7 @@ export default function ProfileScreen() {
 
         {/* ── Hero header ─────────────────────────────────── */}
         <LinearGradient
-          colors={isDark ? ['#342A38', '#211C24'] : ['#FF6B4A', '#7139D5']}
+          colors={isDark ? ['#2A2148', '#1B1530'] : ['#FFC62E', '#FF9ECF']}
           style={[styles.hero, { paddingTop: insets.top + 20 }]}
         >
           {/* Avatar */}
@@ -238,7 +239,7 @@ export default function ProfileScreen() {
 
           {/* Stats row */}
           <View style={styles.heroStats}>
-            <HeroStat value={formatCurrency(avoided, currency, { compact: true })} label="ประหยัดได้" accent="#E8A030" />
+            <HeroStat value={formatCurrency(avoided, currency, { compact: true })} label="ประหยัดได้" accent="#14110F" />
             <View style={styles.heroStatDiv} />
             <HeroStat value={String(avoidedCount)} label="ไม่ซื้อแล้ว" accent="#52B57D" />
             <View style={styles.heroStatDiv} />
@@ -260,7 +261,7 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            <LinearGradient colors={['#7139D5', '#31B9CE']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <LinearGradient colors={['#C9B6FF', '#7CD4FF']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.upgradeTitle}>อัพเกรดเป็น Pro</Text>
                 <Text style={styles.upgradeSub}>ปลดล็อค AI roast, Squad, Insights ขั้นสูง และอีกมาก</Text>
@@ -434,7 +435,7 @@ export default function ProfileScreen() {
                     accessibilityRole="button"
                     accessibilityState={{ selected, disabled: savingCurrency }}
                   >
-                    <View style={[styles.currencyCode, { backgroundColor: isDark ? '#20334A' : '#EAF2FC' }]}>
+                    <View style={[styles.currencyCode, { backgroundColor: isDark ? '#42347A' : '#E4D6FF' }]}>
                       <Text style={[styles.currencyCodeText, { color: colors.primary }]}>{item.code}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
@@ -538,26 +539,26 @@ const styles = StyleSheet.create({
   avatarAction: { paddingHorizontal: 12, paddingVertical: 5, marginBottom: 2 },
   avatarActionText: { color: '#FFFFFF', fontSize: 12, fontFamily: 'Prompt_700Bold' },
   proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#14110F' },
-  heroName: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', color: '#fff', letterSpacing: -0.4 },
-  heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
-  heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  heroName: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', color: '#14110F', letterSpacing: -0.4 },
+  heroEmail: { fontSize: 13, color: '#3B342F' },
+  heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F' },
   heroStatItem: { flex: 1, alignItems: 'center', paddingVertical: 12 },
   heroStatValue: { fontSize: 18, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.5 },
-  heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
-  heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
+  heroStatLabel: { fontSize: 11, color: '#3B342F', marginTop: 2 },
+  heroStatDiv: { width: 2, backgroundColor: '#14110F', marginVertical: 10 },
   content: { gap: 14, paddingTop: 18, paddingHorizontal: 18, width: '100%', maxWidth: 760, alignSelf: 'center' },
-  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 22, padding: 20, borderWidth: 1 },
+  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 22, padding: 20, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   proTitle: { fontSize: 15, fontFamily: 'Prompt_700Bold' },
   proSub: { fontSize: 12, marginTop: 2 },
   proManage: { fontSize: 13, fontFamily: 'Prompt_600SemiBold' },
-  upgradeCard: { borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  upgradeTitle: { fontSize: 16, fontFamily: 'Prompt_800ExtraBold', color: '#fff' },
-  upgradeSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 3, lineHeight: 17 },
-  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  upgradeBtnText: { color: '#8B5CF6', fontSize: 13, fontFamily: 'Prompt_700Bold' },
+  upgradeCard: { borderRadius: 20, padding: 16, borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F', flexDirection: 'row', alignItems: 'center', gap: 12 },
+  upgradeTitle: { fontSize: 16, fontFamily: 'Prompt_800ExtraBold', color: '#14110F' },
+  upgradeSub: { fontSize: 12, color: '#3B342F', marginTop: 3, lineHeight: 17 },
+  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#D6F73C', borderWidth: 2.5, borderColor: '#14110F', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
+  upgradeBtnText: { color: '#14110F', fontSize: 13, fontFamily: 'Prompt_700Bold' },
   group: { gap: 6 },
   groupTitle: { fontSize: 12, fontFamily: 'Prompt_600SemiBold', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
-  groupCard: { borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
+  groupCard: { borderRadius: 20, borderWidth: 2.5, overflow: 'hidden', boxShadow: '4px 4px 0px 0px #14110F' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12, minHeight: 52 },
   rowIcon: {},
   rowLabel: { fontSize: 15 },
@@ -565,7 +566,7 @@ const styles = StyleSheet.create({
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rowValue: { fontSize: 13 },
   divider: { height: 1, marginLeft: 16 },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, borderRadius: 14, borderWidth: 1.5 },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, borderRadius: 14, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   logoutText: { fontSize: 15, fontFamily: 'Prompt_700Bold' },
   deleteLink: { alignSelf: 'center', paddingVertical: 8 },
   deleteText: { fontSize: 13, textDecorationLine: 'underline' },
@@ -574,12 +575,12 @@ const styles = StyleSheet.create({
   version: { textAlign: 'center', fontSize: 11, paddingVertical: 8 },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(8,22,40,0.62)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalKeyboard: { width: '100%' },
-  modalCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 480 },
-  currencyModal: { borderRadius: 22, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 460, maxHeight: '85%' },
+  modalCard: { borderRadius: 20, padding: 20, borderWidth: 2.5, gap: 12, width: '100%', maxWidth: 480, boxShadow: '4px 4px 0px 0px #14110F' },
+  currencyModal: { borderRadius: 22, padding: 20, borderWidth: 2.5, gap: 12, width: '100%', maxWidth: 460, maxHeight: '85%', boxShadow: '4px 4px 0px 0px #14110F' },
   currencyHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   closeButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
   currencyList: { maxHeight: 390 },
-  currencyOption: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 11, marginBottom: 8, minHeight: 58 },
+  currencyOption: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 2.5, borderRadius: 14, padding: 11, marginBottom: 8, minHeight: 58, boxShadow: '4px 4px 0px 0px #14110F' },
   currencyCode: { width: 46, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   currencyCodeText: { fontSize: 11, fontFamily: 'Prompt_800ExtraBold' },
   currencyName: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
@@ -590,7 +591,7 @@ const styles = StyleSheet.create({
   passwordVisibility: { alignSelf: 'flex-end', paddingVertical: 6, paddingHorizontal: 2, marginBottom: 8 },
   modalTitle: { fontSize: 19, fontFamily: 'Prompt_800ExtraBold' },
   modalLabel: { fontSize: 13 },
-  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
+  modalInput: { borderWidth: 2.5, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, boxShadow: '4px 4px 0px 0px #14110F' },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
   modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
   modalSave: { backgroundColor: '#FF6B4A', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },

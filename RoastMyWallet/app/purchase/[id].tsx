@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Alert, ActivityIndicator, Linking,
-} from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Linking } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -79,10 +77,10 @@ export default function PurchaseDetailScreen() {
   };
 
   const gradColors: [string, string] = risk === 'high'
-    ? ['#3A1010', '#1A0808']
+    ? ['#FF9EB5', '#FF6B4A']
     : risk === 'low'
-    ? ['#0D2D1A', '#071610']
-    : ['#14110F', '#070D1A'];
+    ? ['#7AE8B5', '#D6F73C']
+    : ['#FFE08A', '#FF9F43'];
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -113,9 +111,9 @@ export default function PurchaseDetailScreen() {
           )}
 
           {/* Risk badge */}
-          <View style={[styles.riskBadge, { backgroundColor: riskCfg.color + '20', borderColor: riskCfg.color + '40' }]}>
+          <View style={[styles.riskBadge, { backgroundColor: '#FFFFFF', borderColor: '#14110F' }]}>
             <View style={[styles.riskDot, { backgroundColor: riskCfg.color }]} />
-            <Text style={[styles.riskLabel, { color: riskCfg.color }]}>{riskCfg.label}</Text>
+            <Text style={[styles.riskLabel, { color: '#14110F' }]}>{riskCfg.label}</Text>
           </View>
         </LinearGradient>
 
@@ -177,14 +175,14 @@ export default function PurchaseDetailScreen() {
                 style={[styles.actionBtn, styles.avoidBtn]}
                 onPress={() => decide('avoided')} disabled={deciding}
               >
-                <ShieldIcon size={18} color="#fff" />
+                <ShieldIcon size={18} color="#14110F" />
                 <Text style={styles.actionBtnText}>ไม่ซื้อแล้ว</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.buyBtn]}
                 onPress={() => decide('bought')} disabled={deciding}
               >
-                <WalletIcon size={18} color="#fff" />
+                <WalletIcon size={18} color="#14110F" />
                 <Text style={styles.actionBtnText}>ซื้อเลย</Text>
               </TouchableOpacity>
             </>
@@ -198,11 +196,11 @@ export default function PurchaseDetailScreen() {
                 <Text style={[styles.actionBtnSmText, { color: colors.textSecondary }]}>รอเพิ่มอีก 24 ชม.</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.actionBtnSm, { backgroundColor: '#D46060' + '15', borderColor: '#D46060' + '30' }]}
+                style={[styles.actionBtnSm, { backgroundColor: '#FF9EB5', borderColor: '#14110F' }]}
                 onPress={() => decide('avoided')}
               >
                 <CheckIcon size={16} color="#D46060" />
-                <Text style={[styles.actionBtnSmText, { color: '#D46060' }]}>เลิกซื้อเลย</Text>
+                <Text style={[styles.actionBtnSmText, { color: '#14110F' }]}>เลิกซื้อเลย</Text>
               </TouchableOpacity>
             </>
           )}
@@ -227,39 +225,39 @@ function Divider({ colors }: any) {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 10 },
-  closeBtn: { alignSelf: 'flex-end', width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  closeBtnText: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
-  platformBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 100, borderWidth: 1 },
+  hero: { borderBottomWidth: 3, borderBottomColor: '#14110F', paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 10 },
+  closeBtn: { alignSelf: 'flex-end', width: 36, height: 36, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 2.5, borderColor: '#14110F', boxShadow: '2px 2px 0px 0px #14110F', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  closeBtnText: { color: '#14110F', fontSize: 14, fontFamily: 'Prompt_800ExtraBold' },
+  platformBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 100, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   platDot: { width: 6, height: 6, borderRadius: 3 },
   platName: { fontSize: 12, fontFamily: 'Prompt_700Bold' },
-  heroName: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', color: '#fff', letterSpacing: -0.5, textAlign: 'center', lineHeight: 28 },
-  heroPrice: { fontSize: 36, fontFamily: 'Prompt_800ExtraBold', color: '#fff', letterSpacing: -1.5 },
+  heroName: { fontSize: 22, fontFamily: 'Prompt_800ExtraBold', color: '#14110F', letterSpacing: -0.5, textAlign: 'center', lineHeight: 28 },
+  heroPrice: { fontSize: 38, fontFamily: 'Prompt_800ExtraBold', color: '#14110F', letterSpacing: -1.5 },
   scoreWrap: { marginVertical: 4 },
-  riskBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 100, borderWidth: 1 },
+  riskBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 100, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   riskDot: { width: 7, height: 7, borderRadius: 4 },
   riskLabel: { fontSize: 13, fontFamily: 'Prompt_700Bold' },
   content: { gap: 10, paddingTop: 16 },
-  roastCard: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 22, borderWidth: 1, alignItems: 'flex-start' },
+  roastCard: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 22, borderWidth: 2.5, alignItems: 'flex-start', boxShadow: '4px 4px 0px 0px #14110F' },
   roastText: { flex: 1, fontSize: 14, lineHeight: 21, fontStyle: 'italic' },
-  detailCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  detailCard: { borderRadius: 16, borderWidth: 2.5, overflow: 'hidden', boxShadow: '4px 4px 0px 0px #14110F' },
   detailRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 13 },
   detailLabel: { fontSize: 13, flex: 1 },
   detailValue: { fontSize: 14, fontFamily: 'Prompt_600SemiBold', textAlign: 'right', maxWidth: '55%' },
   divider: { height: 1, marginLeft: 16 },
-  notesCard: { borderRadius: 16, borderWidth: 1, padding: 14, gap: 6 },
+  notesCard: { borderRadius: 16, borderWidth: 2.5, padding: 14, gap: 6, boxShadow: '4px 4px 0px 0px #14110F' },
   notesLabel: { fontSize: 11, fontFamily: 'Prompt_600SemiBold', textTransform: 'uppercase', letterSpacing: 0.6 },
   notesText: { fontSize: 14, lineHeight: 20 },
-  urlCard: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, padding: 14 },
+  urlCard: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 2.5, padding: 14, boxShadow: '4px 4px 0px 0px #14110F' },
   urlText: { flex: 1, fontSize: 13 },
   actions: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1 },
-  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16 },
-  avoidBtn: { backgroundColor: '#218B62' },
-  buyBtn: { backgroundColor: '#D94343' },
-  actionBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Prompt_700Bold' },
-  actionBtnSm: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 14, borderRadius: 14, borderWidth: 1 },
+  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16, borderWidth: 2.5, borderColor: '#14110F', boxShadow: '4px 4px 0px 0px #14110F' },
+  avoidBtn: { backgroundColor: '#7AE8B5' },
+  buyBtn: { backgroundColor: '#FF6B4A' },
+  actionBtnText: { color: '#14110F', fontSize: 15, fontFamily: 'Prompt_700Bold' },
+  actionBtnSm: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 14, borderRadius: 14, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   actionBtnSmText: { fontSize: 13, fontFamily: 'Prompt_600SemiBold' },
   notFoundText: { fontSize: 16, marginBottom: 16 },
-  backBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
+  backBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   backBtnText: { fontSize: 14 },
 });

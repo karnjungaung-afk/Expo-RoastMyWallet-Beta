@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, type LayoutChangeEvent } from 'react-native';
+import { View, ScrollView, StyleSheet, TouchableOpacity, Platform, type LayoutChangeEvent } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Rect, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
   segText: { fontSize: 13, fontFamily: 'Prompt_700Bold' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' },
   cell: { flexGrow: 1, flexShrink: 1, flexBasis: 370, minWidth: 0, maxWidth: '100%' },
-  card: { borderRadius: 22, borderWidth: 1, padding: 22, gap: 10 },
+  card: { borderRadius: 22, borderWidth: 2.5, padding: 22, gap: 10, boxShadow: '4px 4px 0px 0px #14110F' },
   cardTitle: { fontSize: 16, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.2 },
   note: { fontSize: 12, lineHeight: 17 },
   scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 },

@@ -1,8 +1,6 @@
 import React, { useState, useRef } from 'react';
-import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Dimensions, Animated,
-} from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -15,23 +13,23 @@ const SLIDES = [
     id: '1',
     title: 'เห็นของอยากได้?\nหยุดก่อนสักแป๊บ',
     sub: 'แค่เพิ่มสินค้าไว้ที่นี่ก่อนกด Order แอพจะช่วยให้คุณตัดสินใจได้ดีขึ้น',
-    grad: ['#FF6B4A', '#FF8C70'] as [string, string],
-    accent: '#F7CE43',
+    grad: ['#FFC62E', '#FF9F43'] as [string, string],
+    accent: '#D6F73C',
     Visual: Visual1,
   },
   {
     id: '2',
     title: 'AI วิเคราะห์ให้\nตรงไปตรงมา',
     sub: 'ระบบคำนวณ Need Score จากคำตอบของคุณ แล้วบอกตรงๆ ว่าซื้อควรไหม',
-    grad: ['#7139D5', '#A77BFF'] as [string, string],
-    accent: '#31B9CE',
+    grad: ['#C9B6FF', '#FF9ECF'] as [string, string],
+    accent: '#D6F73C',
     Visual: Visual2,
   },
   {
     id: '3',
     title: 'รอแล้วค่อยตัดสินใจ\nไม่รีบ ไม่เสียใจ',
     sub: 'หลังจากรอครบเวลา เลือกได้เลย: ซื้อ, ไม่ซื้อ หรือรออีก ส่วนใหญ่จะไม่ซื้อแล้ว',
-    grad: ['#F7CE43', '#F59E0B'] as [string, string],
+    grad: ['#7AE8B5', '#D6F73C'] as [string, string],
     accent: '#FF6B4A',
     Visual: Visual3,
   },
@@ -39,8 +37,8 @@ const SLIDES = [
     id: '4',
     title: 'เห็นเงินที่ประหยัดได้\nทุกบาท ทุกเดือน',
     sub: 'หน้า Insights บอกชัดเจนว่าคุณหยุดใช้เงินไปเท่าไหร่ ตัวเลขพูดแทนทุกอย่าง',
-    grad: ['#31B9CE', '#197F9D'] as [string, string],
-    accent: '#F7CE43',
+    grad: ['#7CD4FF', '#C9B6FF'] as [string, string],
+    accent: '#FFC62E',
     Visual: Visual4,
   },
 ] as const;
@@ -51,11 +49,11 @@ function Visual1({ accent }: { accent: string }) {
   return (
     <Svg width={200} height={180} viewBox="0 0 200 180">
       {/* Phone frame */}
-      <Rect x="60" y="10" width="80" height="140" rx="14" fill="rgba(255,255,255,0.06)" stroke={accent} strokeWidth="1.5" />
+      <Rect x="60" y="10" width="80" height="140" rx="14" fill="#FFFFFF" stroke="#14110F" strokeWidth="4" />
       <Rect x="72" y="24" width="56" height="8" rx="4" fill={accent} opacity="0.5" />
       <Rect x="72" y="40" width="56" height="30" rx="6" fill={accent} opacity="0.15" />
       <Rect x="78" y="46" width="20" height="4" rx="2" fill={accent} opacity="0.6" />
-      <Rect x="78" y="54" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.25)" />
+      <Rect x="78" y="54" width="32" height="3" rx="1.5" fill="#14110F" />
       {/* Shopping bag */}
       <Rect x="72" y="78" width="24" height="20" rx="4" fill={accent} opacity="0.3" stroke={accent} strokeWidth="1.2" />
       <Path d="M76 78 C76 74 84 74 84 78" stroke={accent} strokeWidth="1.5" fill="none" strokeLinecap="round" />
@@ -75,10 +73,10 @@ function Visual2({ accent }: { accent: string }) {
       {bars.map((h, i) => (
         <G key={i}>
           <Rect x={20 + i * 24} y={140 - h} width="16" height={h} rx="5"
-            fill={i === 4 ? accent : 'rgba(255,255,255,0.12)'} />
+            fill={i === 4 ? accent : '#E4D6FF'} />
         </G>
       ))}
-      <Line x1="14" y1="141" x2="186" y2="141" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+      <Line x1="14" y1="141" x2="186" y2="141" stroke="#14110F" strokeWidth="3" />
       {/* Score badge */}
       <Rect x="60" y="20" width="80" height="36" rx="12" fill={accent} opacity="0.2" stroke={accent} strokeWidth="1.5" />
       <SvgText fill={accent} x="100" y="44" fontSize="22" fontWeight="800" textAnchor="middle">78</SvgText>
@@ -90,10 +88,10 @@ function Visual3({ accent }: { accent: string }) {
   return (
     <Svg width={200} height={180} viewBox="0 0 200 180">
       {/* Clock face */}
-      <Circle cx="100" cy="90" r="60" fill="rgba(255,255,255,0.04)" stroke={accent} strokeWidth="1.5" />
+      <Circle cx="100" cy="90" r="60" fill="#FFFFFF" stroke="#14110F" strokeWidth="4" />
       <Circle cx="100" cy="90" r="4" fill={accent} />
       <Path d="M100 90 L100 50" stroke={accent} strokeWidth="2.5" strokeLinecap="round" />
-      <Path d="M100 90 L125 90" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" />
+      <Path d="M100 90 L125 90" stroke="#14110F" strokeWidth="4" strokeLinecap="round" />
       {/* Tick marks */}
       {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg, i) => {
         const r = i % 3 === 0 ? 50 : 54;
@@ -113,7 +111,7 @@ function Visual4({ accent }: { accent: string }) {
   return (
     <Svg width={200} height={180} viewBox="0 0 200 180">
       {/* Wallet */}
-      <Rect x="30" y="60" width="140" height="80" rx="16" fill="rgba(255,255,255,0.06)" stroke={accent} strokeWidth="1.5" />
+      <Rect x="30" y="60" width="140" height="80" rx="16" fill="#FFFFFF" stroke="#14110F" strokeWidth="4" />
       <Rect x="30" y="78" width="140" height="2" fill={accent} opacity="0.3" />
       {/* Coin stack */}
       <Circle cx="150" cy="100" r="16" fill={accent} opacity="0.3" />
@@ -204,13 +202,13 @@ const styles = StyleSheet.create({
   slide: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 32, paddingHorizontal: 32 },
   visual: { width: 200, height: 180 },
   copy: { gap: 14, alignItems: 'center' },
-  title: { fontSize: 30, fontFamily: 'Prompt_800ExtraBold', color: '#fff', textAlign: 'center', letterSpacing: -0.8, lineHeight: 38 },
-  sub: { fontSize: 16, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 24 },
+  title: { fontSize: 32, fontFamily: 'Prompt_800ExtraBold', color: '#14110F', textAlign: 'center', letterSpacing: -0.8, lineHeight: 38 },
+  sub: { fontSize: 16, color: '#3B342F', textAlign: 'center', lineHeight: 24 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingBottom: 16 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
+  dot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2.5, borderColor: '#14110F' },
   footer: { paddingHorizontal: 24, gap: 12 },
-  nextBtn: { borderRadius: 22, paddingVertical: 16, alignItems: 'center' },
-  nextBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Prompt_700Bold' },
+  nextBtn: { borderRadius: 18, paddingVertical: 16, alignItems: 'center', borderWidth: 3, borderColor: '#14110F', boxShadow: '5px 5px 0px 0px #14110F' },
+  nextBtnText: { color: '#14110F', fontSize: 17, fontFamily: 'Prompt_700Bold' },
   skipBtn: { alignItems: 'center', paddingVertical: 8 },
-  skipText: { color: 'rgba(255,255,255,0.35)', fontSize: 14 },
+  skipText: { color: '#14110F', fontSize: 14, textDecorationLine: 'underline' },
 });

@@ -1,13 +1,6 @@
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
-  StyleSheet,
-  type TouchableOpacityProps,
-  type ViewStyle,
-  type TextStyle,
-} from 'react-native';
+import { TouchableOpacity, ActivityIndicator, StyleSheet, type TouchableOpacityProps, type ViewStyle, type TextStyle } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { useTheme } from '@/hooks/useTheme';
 import { spacing, radius, typography, neo, neoShadow, candy } from '@/theme/tokens';
 

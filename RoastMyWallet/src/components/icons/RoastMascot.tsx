@@ -1,65 +1,79 @@
 /**
- * RoastMascot — SVG illustration used in the InterceptRoastModal
- * Anime/mecha-inspired angular flame character
- * No emoji, pure vector art
+ * RoastMascot — "Wally", a cartoon wallet with a flame on its head.
+ * Neobrutalist: thick ink outlines, hard offset shadow, candy fills.
+ * Pure vector art (no emoji, no image assets).
  */
 import React from 'react';
-import Svg, { Path, Rect, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Rect, Circle, G, Ellipse } from 'react-native-svg';
 
 interface RoastMascotProps {
   size?: number;
   mode?: 'roasting' | 'success' | 'neutral';
 }
 
+const INK = '#14110F';
+
 export function RoastMascot({ size = 120, mode = 'roasting' }: RoastMascotProps) {
-  // Colors by mode
-  const flame1 = mode === 'success' ? '#00B8D9' : mode === 'roasting' ? '#E8A030' : '#8B5CF6';
-  const flame2 = mode === 'success' ? '#0088A8' : mode === 'roasting' ? '#C04444' : '#8B5CF6';
-  const body   = '#8B5CF6';
-  const accent = mode === 'roasting' ? '#E8A030' : '#00B8D9';
+  const bodyFill = mode === 'success' ? '#7AE8B5' : mode === 'roasting' ? '#FF6B4A' : '#FFC62E';
+  const flapFill = mode === 'success' ? '#2FBF71' : mode === 'roasting' ? '#FF9F43' : '#FF9F43';
+  const flame = mode === 'success' ? '#7CD4FF' : '#FFC62E';
+  const SW = 4;
 
   return (
     <Svg width={size} height={size} viewBox="0 0 120 120" fill="none">
-      <Defs>
-        <SvgLinearGradient id="flameGrad" x1="60" y1="20" x2="60" y2="80" gradientUnits="userSpaceOnUse">
-          <Stop offset="0" stopColor={flame1} stopOpacity="1" />
-          <Stop offset="1" stopColor={flame2} stopOpacity="0.8" />
-        </SvgLinearGradient>
-        <SvgLinearGradient id="bodyGrad" x1="40" y1="60" x2="80" y2="110" gradientUnits="userSpaceOnUse">
-          <Stop offset="0" stopColor="#2A4F7C" />
-          <Stop offset="1" stopColor={body} />
-        </SvgLinearGradient>
-      </Defs>
+      {/* hard shadow */}
+      <Rect x={20} y={42} width={84} height={66} rx={18} fill={INK} />
 
-      {/* Shield body — mecha armor */}
-      <Path d="M60 20 L85 32 L85 68 C85 82 74 94 60 100 C46 94 35 82 35 68 L35 32 Z"
-        fill="url(#bodyGrad)" />
+      {/* flame hair */}
+      <G>
+        <Path
+          d="M60 6 C66 16 74 18 70 30 L84 26 C82 34 80 38 76 42 L44 42 C40 38 36 32 38 24 L50 30 C46 20 54 14 60 6 Z"
+          fill={flame} stroke={INK} strokeWidth={SW} strokeLinejoin="round"
+        />
+        <Path d="M60 22 C63 27 66 29 64 36 L56 36 C54 30 58 27 60 22 Z" fill="#FFFFFF" stroke={INK} strokeWidth={2.5} strokeLinejoin="round" />
+      </G>
 
-      {/* Armor panels — angular details */}
-      <Path d="M60 26 L80 36 L80 38 L60 28 L40 38 L40 36 Z" fill={accent} opacity="0.4" />
-      <Path d="M42 50 L50 46 L50 70 L42 70 Z" fill="rgba(255,255,255,0.08)" />
-      <Path d="M78 50 L70 46 L70 70 L78 70 Z" fill="rgba(255,255,255,0.08)" />
-      <Path d="M55 54 L65 54 L65 56 L55 56 Z" fill={accent} opacity="0.6" />
-      <Path d="M52 60 L68 60 L68 62 L52 62 Z" fill={accent} opacity="0.4" />
+      {/* wallet body */}
+      <Rect x={16} y={38} width={84} height={66} rx={18} fill={bodyFill} stroke={INK} strokeWidth={SW} />
+      {/* flap */}
+      <Path d="M16 56 C16 44 24 38 34 38 L82 38 C92 38 100 44 100 56 Z" fill={flapFill} stroke={INK} strokeWidth={SW} strokeLinejoin="round" />
+      {/* clasp coin */}
+      <Circle cx={100} cy={78} r={9} fill="#FFC62E" stroke={INK} strokeWidth={3} />
+      <Circle cx={100} cy={78} r={3} fill={INK} />
 
-      {/* Eye visor — horizontal slit like Gundam */}
-      <Rect x="46" y="43" width="28" height="7" rx="3.5" fill={accent} opacity="0.9" />
-      <Rect x="48" y="44.5" width="10" height="4" rx="2" fill={flame1} opacity="0.7" />
-      <Rect x="62" y="44.5" width="10" height="4" rx="2" fill={flame1} opacity="0.7" />
+      {/* cheeks */}
+      <Ellipse cx={30} cy={84} rx={6} ry={4} fill="#FF9ECF" />
+      <Ellipse cx={80} cy={84} rx={6} ry={4} fill="#FF9ECF" />
 
-      {/* Flame halo — behind shield, representing "roast energy" */}
-      <Path d="M60 18 C54 10 48 14 50 22 C45 16 38 22 44 28 C36 24 35 34 42 35 C35 38 38 46 44 44 C38 50 44 58 50 54 C46 62 55 66 58 60 L60 52 L62 60 C65 66 74 62 70 54 C76 58 82 50 76 44 C82 46 85 38 78 35 C85 34 84 24 76 28 C82 22 75 16 70 22 C72 14 66 10 60 18Z"
-        fill="url(#flameGrad)" opacity="0.25" />
-
-      {/* Corner marks — mecha detail */}
-      <Path d="M35 28 L35 32 L39 32" stroke={accent} strokeWidth="1.5" opacity="0.6" />
-      <Path d="M85 28 L85 32 L81 32" stroke={accent} strokeWidth="1.5" opacity="0.6" />
-      <Path d="M35 104 L35 100 L39 100" stroke={accent} strokeWidth="1.5" opacity="0.4" />
-      <Path d="M85 104 L85 100 L81 100" stroke={accent} strokeWidth="1.5" opacity="0.4" />
-
-      {/* Chest emblem */}
-      <Path d="M60 72 L64 78 L60 82 L56 78 Z" fill={accent} opacity="0.8" />
-      <Path d="M60 74 L62.5 78 L60 80.5 L57.5 78 Z" fill="rgba(255,255,255,0.5)" />
+      {mode === 'roasting' && (
+        <G>
+          {/* sunglasses */}
+          <Rect x={24} y={62} width={26} height={16} rx={6} fill={INK} />
+          <Rect x={56} y={62} width={26} height={16} rx={6} fill={INK} />
+          <Path d="M50 68 L56 68" stroke={INK} strokeWidth={4} />
+          <Path d="M28 66 L34 66" stroke="#FFFFFF" strokeWidth={2.5} strokeLinecap="round" />
+          <Path d="M60 66 L66 66" stroke="#FFFFFF" strokeWidth={2.5} strokeLinecap="round" />
+          {/* smirk + tongue */}
+          <Path d="M38 90 C46 98 62 98 70 88" stroke={INK} strokeWidth={3.5} strokeLinecap="round" fill="none" />
+          <Path d="M56 95 C56 102 66 102 66 94" fill="#FF4D6D" stroke={INK} strokeWidth={2.5} strokeLinejoin="round" />
+        </G>
+      )}
+      {mode === 'success' && (
+        <G>
+          <Path d="M28 72 C32 64 42 64 46 72" stroke={INK} strokeWidth={4} strokeLinecap="round" fill="none" />
+          <Path d="M58 72 C62 64 72 64 76 72" stroke={INK} strokeWidth={4} strokeLinecap="round" fill="none" />
+          <Path d="M38 84 C40 98 66 98 68 84 Z" fill="#FFFFFF" stroke={INK} strokeWidth={3.5} strokeLinejoin="round" />
+        </G>
+      )}
+      {mode === 'neutral' && (
+        <G>
+          <Circle cx={38} cy={72} r={5} fill={INK} />
+          <Circle cx={68} cy={72} r={5} fill={INK} />
+          <Circle cx={39.5} cy={70.5} r={1.6} fill="#FFFFFF" />
+          <Circle cx={69.5} cy={70.5} r={1.6} fill="#FFFFFF" />
+          <Path d="M44 90 L62 90" stroke={INK} strokeWidth={3.5} strokeLinecap="round" />
+        </G>
+      )}
     </Svg>
   );
 }

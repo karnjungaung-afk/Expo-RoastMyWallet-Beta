@@ -1,8 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
-import {
-  View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, useWindowDimensions,
-} from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
@@ -343,25 +341,25 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
   hint: { fontSize: 12 },
   error: { fontSize: 12 },
-  input: { minHeight: 52, borderWidth: 1.5, borderRadius: 14, paddingHorizontal: 16, fontSize: 16, outlineStyle: 'none' as any },
-  priceBox: { flexDirection: 'row', alignItems: 'center', minHeight: 60, borderWidth: 1.5, borderRadius: 14, paddingHorizontal: 16, gap: 8 },
+  input: { minHeight: 52, borderWidth: 2.5, borderRadius: 14, paddingHorizontal: 16, fontSize: 16, outlineStyle: 'none' as any, boxShadow: '4px 4px 0px 0px #14110F' },
+  priceBox: { flexDirection: 'row', alignItems: 'center', minHeight: 60, borderWidth: 2.5, borderRadius: 14, paddingHorizontal: 16, gap: 8, boxShadow: '4px 4px 0px 0px #14110F' },
   baht: { fontSize: 24, fontFamily: 'Prompt_700Bold' },
   priceInput: { flex: 1, fontSize: 28, fontFamily: 'Prompt_800ExtraBold', letterSpacing: -0.6, paddingVertical: 10, outlineStyle: 'none' as any },
   bleed: { marginHorizontal: -20 },
   chipRow: { gap: 8, paddingHorizontal: 20 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingVertical: 10, paddingHorizontal: 15, borderRadius: 999, borderWidth: 1.5 },
+  chip: { paddingVertical: 10, paddingHorizontal: 15, borderRadius: 999, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   chipText: { fontSize: 14, fontFamily: 'Prompt_600SemiBold' },
-  linkBox: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 52, borderWidth: 1.5, borderRadius: 14, paddingLeft: 14, paddingRight: 10 },
+  linkBox: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 52, borderWidth: 2.5, borderRadius: 14, paddingLeft: 14, paddingRight: 10, boxShadow: '4px 4px 0px 0px #14110F' },
   linkInput: { flex: 1, fontSize: 15, paddingVertical: 12, outlineStyle: 'none' as any },
   pasteBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999 },
   pasteText: { fontSize: 13, fontFamily: 'Prompt_700Bold' },
-  moreHead: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16, borderRadius: 16, borderWidth: 1 },
+  moreHead: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16, borderRadius: 16, borderWidth: 2.5, boxShadow: '4px 4px 0px 0px #14110F' },
   moreTitle: { fontSize: 14, fontFamily: 'Prompt_700Bold' },
-  moreBody: { padding: 16, borderRadius: 16, borderWidth: 1, gap: 18, marginTop: -8 },
+  moreBody: { padding: 16, borderRadius: 16, borderWidth: 2.5, gap: 18, marginTop: -8, boxShadow: '4px 4px 0px 0px #14110F' },
   q: { fontSize: 14, fontFamily: 'Prompt_600SemiBold', lineHeight: 20 },
   yesNo: { flexDirection: 'row', gap: 8 },
-  yn: { flex: 1, minHeight: 44, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  yn: { flex: 1, minHeight: 44, borderRadius: 12, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center', boxShadow: '4px 4px 0px 0px #14110F' },
   footer: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: 10, borderTopWidth: 1 },
   waitRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
   alert: { borderRadius: 10, padding: 12 },

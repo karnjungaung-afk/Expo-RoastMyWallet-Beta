@@ -1,8 +1,6 @@
 import React, { forwardRef, useState } from 'react';
-import {
-  TextInput, View, Text, TouchableOpacity, StyleSheet,
-  type TextInputProps, type ViewStyle,
-} from 'react-native';
+import { TextInput, View, TouchableOpacity, StyleSheet, type TextInputProps, type ViewStyle } from 'react-native';
+import { Text } from '@/components/ui/AppText';
 import { useTheme } from '@/hooks/useTheme';
 import { spacing, radius, typography, neo, neoShadow } from '@/theme/tokens';
 
