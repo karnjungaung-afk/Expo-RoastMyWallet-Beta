@@ -33,7 +33,7 @@ function ProGate({ colors, isDark, insets }: any) {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <LinearGradient
-        colors={isDark ? ['#0F172A', colors.background] : ['#1E3A8A', colors.background]}
+        colors={isDark ? ['#211C24', colors.background] : ['#F15B50', '#7139D5']}
         style={[styles.gateHeader, { paddingTop: insets.top + 24 }]}
       >
         <View style={styles.gateIconWrap}>
@@ -51,7 +51,7 @@ function ProGate({ colors, isDark, insets }: any) {
           </View>
         ))}
 
-        <LinearGradient colors={['#E8A030', '#C07820']} style={styles.upgradeGrad}>
+        <LinearGradient colors={['#F7CE43', '#F15B50']} style={styles.upgradeGrad}>
           <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85}>
             <FlameIcon size={18} color="#fff" />
             <Text style={styles.upgradeBtnText}>อัพเกรดเป็น Pro</Text>
@@ -145,7 +145,7 @@ function SquadMain({ colors, isDark, insets }: any) {
               style={[styles.squadActionCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}
               onPress={() => setMode('create')}
             >
-              <LinearGradient colors={['#1E3A8A', '#2563EB']} style={styles.squadActionIcon}>
+              <LinearGradient colors={['#7139D5', '#31B9CE']} style={styles.squadActionIcon}>
                 <PlusIcon size={20} color="#fff" />
               </LinearGradient>
               <View style={{ flex: 1 }}>
@@ -159,7 +159,7 @@ function SquadMain({ colors, isDark, insets }: any) {
               style={[styles.squadActionCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}
               onPress={() => setMode('join')}
             >
-              <LinearGradient colors={['#235E3B', '#3A9960']} style={styles.squadActionIcon}>
+              <LinearGradient colors={['#218B62', '#31B9CE']} style={styles.squadActionIcon}>
                 <SquadIcon size={20} color="#fff" />
               </LinearGradient>
               <View style={{ flex: 1 }}>
@@ -221,7 +221,7 @@ function SquadMain({ colors, isDark, insets }: any) {
     <KeyboardAvoidingView style={[styles.root, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0}>
       {/* Header */}
       <LinearGradient
-        colors={isDark ? ['#0F172A', '#1E293B'] : ['#1E3A8A', '#3B82F6']}
+        colors={isDark ? ['#211C24', '#342A38'] : ['#F15B50', '#7139D5']}
         style={[styles.chatHeader, { paddingTop: insets.top + 14 }]}
       >
         <View>
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   gateTitle: { fontSize: 28, fontWeight: '800', color: '#fff', letterSpacing: -0.8 },
   gateSub: { fontSize: 14, color: 'rgba(255,255,255,0.45)', textAlign: 'center' },
   gateContent: { flex: 1, paddingTop: 24, gap: 12 },
-  perkRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 16, borderWidth: 1 },
+  perkRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 22, borderWidth: 1 },
   perkIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   perkText: { flex: 1, fontSize: 14, fontWeight: '500', lineHeight: 20 },
   upgradeGrad: { borderRadius: 16, marginTop: 8 },
