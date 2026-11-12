@@ -21,7 +21,7 @@ export function AuthShell({ title, subtitle, backLabel, onBack, children, footer
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   return (
-    <LinearGradient colors={['#0A1233', '#12266B', '#1E3A8A']} style={styles.root}>
+    <LinearGradient colors={['#F15B50', '#7139D5', '#31B9CE']} style={styles.root}>
       <Backdrop />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   title: { color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginTop: 6, letterSpacing: -0.4 },
   subtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center' },
   card: {
-    borderRadius: 20, padding: 20, gap: 14,
+    borderRadius: 28, padding: 22, gap: 16,
     shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 24, elevation: 12,
   },
   footer: { alignItems: 'center' },
