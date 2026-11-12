@@ -12,7 +12,6 @@ import { formatCurrency } from '@/utils/formatting';
 import type { Purchase, ShoppingPlatform } from '@/types';
 
 // SVG text does not inherit the page font on web.
-const CHART_PALETTE = ['#F15B50', '#F7CE43', '#31B9CE', '#7139D5', '#218B62'];
 const SVG_FONT = Platform.OS === 'web' ? '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' : undefined;
 const MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 const DAYS = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
