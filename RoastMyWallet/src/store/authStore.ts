@@ -29,6 +29,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string, currentPassword?: string) => Promise<void>;
+  updateAvatar: (uri: string, mimeType?: string | null) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -142,6 +143,50 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  updateAvatar: async (uri, mimeType) => {
+    const currentUser = get().user;
+    if (!currentUser) throw new Error('กรุณาเข้าสู่ระบบอีกครั้ง');
+
+    const normalizedMime = mimeType?.toLowerCase();
+    const extension = normalizedMime === 'image/png'
+      ? 'png'
+      : normalizedMime === 'image/webp'
+        ? 'webp'
+        : 'jpg';
+    const filePath = `${currentUser.id}/avatar.${extension}`;
+
+    const response = await fetch(uri);
+    if (!response.ok) throw new Error('อ่านไฟล์รูปภาพไม่สำเร็จ');
+
+    // Supabase Storage expects ArrayBuffer on React Native; Blob is supported on web.
+    const fileBody = Platform.OS === 'web'
+      ? await response.blob()
+      : await response.arrayBuffer();
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, fileBody, {
+        contentType: normalizedMime ?? 'image/jpeg',
+        cacheControl: '3600',
+        upsert: true,
+      });
+    if (uploadError) throw uploadError;
+
+    const { data: publicData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+    const avatarUrl = `${publicData.publicUrl}?v=${Date.now()}`;
+
+    const { data, error: metadataError } = await supabase.auth.updateUser({
+      data: { avatar_url: avatarUrl },
+    });
+    if (metadataError) throw metadataError;
+
+    set({
+      user: data.user ? mapSupabaseUser(data.user) : { ...currentUser, avatarUrl },
+    });
   },
 
   updatePassword: async (newPassword, currentPassword) => {
