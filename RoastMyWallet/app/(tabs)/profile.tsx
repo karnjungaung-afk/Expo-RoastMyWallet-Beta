@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert, Platform, Modal, TextInput, KeyboardAvoidingView, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -21,7 +22,7 @@ export default function ProfileScreen() {
 
   const user    = useAuthStore(selectUser);
   const profile = useAuthStore(selectProfile);
-  const { signOut, updateProfile, updatePassword } = useAuthStore();
+  const { signOut, updateProfile, updatePassword, updateAvatar } = useAuthStore();
   const setSettingsCurrency = useSettingsStore(state => state.setCurrency);
   const { isPro } = useSubscriptionStore();
   const purchases = usePurchaseStore(state => state.purchases);
@@ -33,6 +34,7 @@ export default function ProfileScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState(profile?.displayName ?? '');
   const [saving, setSaving] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
   const [currencyVisible, setCurrencyVisible] = useState(false);
   const [savingCurrency, setSavingCurrency] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -52,6 +54,37 @@ export default function ProfileScreen() {
   const showMessage = (title: string, message: string) => {
     if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
     else Alert.alert(title, message);
+  };
+
+  const chooseAvatar = async () => {
+    if (savingAvatar) return;
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.9,
+        selectionLimit: 1,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+      const asset = result.assets[0];
+      const mimeType = asset.mimeType ?? 'image/jpeg';
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {
+        showMessage('ไฟล์ไม่รองรับ', 'กรุณาเลือกรูป JPG, PNG หรือ WebP');
+        return;
+      }
+      if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
+        showMessage('รูปมีขนาดใหญ่เกินไป', 'กรุณาเลือกรูปที่มีขนาดไม่เกิน 5 MB');
+        return;
+      }
+      setSavingAvatar(true);
+      await updateAvatar(asset.uri, mimeType);
+      showMessage('เปลี่ยนรูปสำเร็จ', 'บันทึกรูปโปรไฟล์ใหม่แล้ว');
+    } catch (error) {
+      showMessage('เปลี่ยนรูปไม่สำเร็จ', error instanceof Error ? error.message : 'กรุณาลองใหม่');
+    } finally {
+      setSavingAvatar(false);
+    }
   };
 
   const currency  = profile?.currency ?? 'THB';
@@ -162,15 +195,34 @@ export default function ProfileScreen() {
         >
           {/* Avatar */}
           <View style={styles.avatarWrap}>
-            <LinearGradient colors={['#F7CE43', '#F15B50']} style={styles.avatar}>
-              <Text style={styles.avatarText}>{initials}</Text>
-            </LinearGradient>
+            <TouchableOpacity
+              style={styles.avatar}
+              onPress={() => { void chooseAvatar(); }}
+              disabled={savingAvatar}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="เปลี่ยนรูปโปรไฟล์"
+            >
+              {user?.avatarUrl ? (
+                <Image key={user.avatarUrl} source={{ uri: user.avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
+              ) : (
+                <LinearGradient colors={['#F7CE43', '#F15B50']} style={styles.avatarFallback}>
+                  <Text style={styles.avatarText}>{initials}</Text>
+                </LinearGradient>
+              )}
+              <View style={styles.avatarEditBadge}>
+                <Text style={styles.avatarEditIcon}>{savingAvatar ? '…' : '✎'}</Text>
+              </View>
+            </TouchableOpacity>
             {isProUser && (
               <View style={styles.proBadge}>
                 <FlameIcon size={10} color="#fff" />
               </View>
             )}
           </View>
+          <TouchableOpacity onPress={() => { void chooseAvatar(); }} disabled={savingAvatar} accessibilityRole="button" style={styles.avatarAction}>
+            <Text style={styles.avatarActionText}>{savingAvatar ? 'กำลังบันทึกรูป…' : 'เปลี่ยนรูปโปรไฟล์'}</Text>
+          </TouchableOpacity>
 
           <Text style={styles.heroName}>{profile?.displayName ?? 'ผู้ใช้ RoastMyWallet'}</Text>
           <Text style={styles.heroEmail}>{user?.email ?? ''}</Text>
@@ -470,6 +522,14 @@ const styles = StyleSheet.create({
   avatarWrap: { position: 'relative', marginBottom: 4 },
   avatar: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
+  avatarWrap: { position: 'relative', marginBottom: 4 },
+  avatar: { width: 88, height: 88, borderRadius: 28, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F15B50', borderWidth: 3, borderColor: 'rgba(255,255,255,0.9)' },
+  avatarFallback: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
+  avatarImage: { width: '100%', height: '100%' },
+  avatarEditBadge: { position: 'absolute', right: 2, bottom: 2, width: 25, height: 25, borderRadius: 13, backgroundColor: '#7139D5', borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  avatarEditIcon: { color: '#fff', fontSize: 13, fontWeight: '800', lineHeight: 16 },
+  avatarAction: { paddingHorizontal: 12, paddingVertical: 5, marginBottom: 2 },
+  avatarActionText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0F172A' },
   heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
   heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
