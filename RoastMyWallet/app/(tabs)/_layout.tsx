@@ -16,12 +16,12 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+          backgroundColor: isDark ? colors.tabBar : '#FFFFFF',
           borderTopColor: colors.border,
-          borderTopWidth: 1,
+          borderTopWidth: 0, borderTopLeftRadius: 22, borderTopRightRadius: 22,
           height: 64 + bottom,
           paddingBottom: bottom,
-          paddingTop: 8,
+          paddingTop: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: isDark ? 0.3 : 0.06,
