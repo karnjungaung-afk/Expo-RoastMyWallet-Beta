@@ -75,9 +75,9 @@ export default function ProfileScreen() {
       // Native ImagePicker base64 is JPEG-encoded by Expo, regardless of
       // the original photo format (for example HEIC). Web uploads keep the
       // original File and therefore validate its actual MIME type.
-      const mimeType = Platform.OS === 'web'
-        ? (asset.mimeType ?? 'image/jpeg')
-        : 'image/jpeg';
+      // Pass the original MIME as a fallback for FileSystem reads.
+      // The store switches to image/jpeg only when ImagePicker Base64 is used.
+      const mimeType = asset.mimeType ?? 'image/jpeg';
       if (Platform.OS === 'web' && !['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {
         showMessage('ไฟล์ไม่รองรับ', 'กรุณาเลือกรูป JPG, PNG หรือ WebP');
         return;
