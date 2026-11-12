@@ -30,7 +30,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string, currentPassword?: string) => Promise<void>;
-  updateAvatar: (uri: string, mimeType?: string | null) => Promise<void>;
+  updateAvatar: (uri: string, mimeType?: string | null, pickedFile?: Blob | null) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -146,7 +146,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  updateAvatar: async (uri, mimeType) => {
+  updateAvatar: async (uri, mimeType, pickedFile) => {
     const currentUser = get().user;
     if (!currentUser) throw new Error('กรุณาเข้าสู่ระบบอีกครั้ง');
 
@@ -163,19 +163,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // of fetch(), which is unreliable for Android content:// and file:// URIs.
     let fileBody: Blob | ArrayBuffer;
     if (Platform.OS === 'web') {
-      const response = await fetch(uri);
-      if (!response.ok) {
-        throw new Error(`อ่านไฟล์รูปภาพไม่สำเร็จ (HTTP ${response.status})`);
+      // ImagePicker exposes the original browser File on web. Prefer it over
+      // fetching a blob: URI, which can fail after the picker closes.
+      if (pickedFile) {
+        fileBody = pickedFile;
+      } else {
+        try {
+          const response = await fetch(uri);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          fileBody = await response.blob();
+        } catch (error) {
+          const detail = error instanceof Error ? error.message : String(error);
+          throw new Error(`อ่านไฟล์รูปภาพจากเบราว์เซอร์ไม่สำเร็จ: ${detail}`);
+        }
       }
-      fileBody = await response.blob();
     } else {
-      const localFile = new File(uri);
-      if (!localFile.exists) {
-        throw new Error('ไม่พบไฟล์รูปภาพในเครื่อง กรุณาเลือกรูปอีกครั้ง');
-      }
-      fileBody = await localFile.arrayBuffer();
-      if (fileBody.byteLength === 0) {
-        throw new Error('ไฟล์รูปภาพว่างเปล่า กรุณาเลือกรูปอื่น');
+      try {
+        const localFile = new File(uri);
+        if (!localFile.exists) {
+          throw new Error('ไม่พบไฟล์รูปภาพในเครื่อง กรุณาเลือกรูปอีกครั้ง');
+        }
+        fileBody = await localFile.arrayBuffer();
+        if (fileBody.byteLength === 0) {
+          throw new Error('ไฟล์รูปภาพว่างเปล่า กรุณาเลือกรูปอื่น');
+        }
+      } catch (error) {
+        if (error instanceof Error && (
+          error.message.includes('ไม่พบไฟล์') || error.message.includes('ว่างเปล่า')
+        )) throw error;
+        const detail = error instanceof Error ? error.message : String(error);
+        throw new Error(`อ่านไฟล์รูปภาพจากมือถือไม่สำเร็จ: ${detail}`);
       }
     }
 
