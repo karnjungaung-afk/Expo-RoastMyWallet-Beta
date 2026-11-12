@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import type { User, UserProfile } from '@/types';
 import { supabase } from '@/services/supabase';
 import { File } from 'expo-file-system';
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 
 // ─── PRIVATE HELPERS (module-scoped, not part of store state) ─────────────────
 
@@ -36,6 +37,34 @@ function decodeBase64ToArrayBuffer(value: string): ArrayBuffer {
 
   if (output.length < 4) throw new Error('ไฟล์รูปภาพว่างเปล่าหรือไม่สมบูรณ์');
   return output.buffer;
+}
+
+async function readAvatarUriAsBase64(uri: string): Promise<string> {
+  // First try the modern File API for normal file:// URIs.
+  try {
+    const value = await new File(uri).base64();
+    if (value) return value;
+  } catch (error) {
+    console.warn('[AuthStore] Modern avatar file read failed; trying Android URI copy:', error);
+  }
+
+  // Android gallery providers may return content:// URIs. FileSystem.copyAsync
+  // supports content:// sources, while readAsStringAsync reads the copied
+  // file:// URI from the app cache.
+  const cacheDirectory = LegacyFileSystem.cacheDirectory;
+  if (!cacheDirectory) throw new Error('ไม่พบพื้นที่จัดเก็บชั่วคราวสำหรับอ่านรูปภาพ');
+
+  const temporaryUri = `${cacheDirectory}avatar-import-${Date.now()}.jpg`;
+  try {
+    await LegacyFileSystem.copyAsync({ from: uri, to: temporaryUri });
+    const value = await LegacyFileSystem.readAsStringAsync(temporaryUri, {
+      encoding: LegacyFileSystem.EncodingType.Base64,
+    });
+    if (!value) throw new Error('ไฟล์รูปภาพไม่มีข้อมูล');
+    return value;
+  } finally {
+    await LegacyFileSystem.deleteAsync(temporaryUri, { idempotent: true }).catch(() => undefined);
+  }
 }
 
 async function loadProfileForUser(userId: string): Promise<UserProfile | null> {
@@ -202,12 +231,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         uploadMime = 'image/jpeg';
       } else {
         try {
-          const localFile = new File(uri);
-          const localBase64 = await localFile.base64();
+          const localBase64 = await readAvatarUriAsBase64(uri);
           fileBody = decodeBase64ToArrayBuffer(localBase64);
         } catch (readError) {
           console.error('[AuthStore] Avatar URI read failed:', readError);
-          throw new Error('มือถืออ่านรูปจากแกลเลอรีไม่ได้ กรุณาลองเลือกรูปที่บันทึกไว้ในเครื่องอีกครั้ง');
+          throw new Error('อ่านไฟล์รูปภาพไม่สำเร็จ กรุณาลองเลือกรูปจากแกลเลอรีอีกครั้ง');
         }
       }
     } else if (base64) {
