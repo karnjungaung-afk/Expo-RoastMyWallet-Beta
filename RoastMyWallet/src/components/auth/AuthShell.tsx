@@ -72,7 +72,7 @@ function Backdrop() {
   );
 }
 
-const HALFTONE = Array.from({ length: 260 }, (_, i) => ({ x: 8 + (i % 26) * 15, y: 8 + Math.floor(i / 26) * 15, r: 1.1 + ((i * 7) % 5) * 0.28 }));
+const HALFTONE = Array.from({ length: 800 }, (_, i) => ({ x: 8 + (i % 20) * 20, y: 8 + Math.floor(i / 20) * 20, r: 0.9 + ((i * 7) % 5) * 0.22 }));
 
 function PopArtBackdrop() {
   return (
