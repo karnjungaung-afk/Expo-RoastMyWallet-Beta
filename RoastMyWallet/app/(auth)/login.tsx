@@ -50,9 +50,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <AuthShell
-      title="จัดการการเงินให้เป็นเรื่องง่าย"
-      subtitle="หยุดคิดก่อนซื้อ แล้วเก็บเงินได้มากขึ้น"
+    <AuthShell variant="popart" title="จัดการการเงินให้เป็นเรื่องง่าย" subtitle="หยุดคิดก่อนซื้อ แล้วเก็บเงินได้มากขึ้น"
       footer={
         <Text style={styles.footerText}>
           ยังไม่มีบัญชี?{' '}
@@ -61,49 +59,23 @@ export default function LoginScreen() {
       }
     >
       <AuthTabs active="login" />
-
       <Animated.View style={{ gap: 14, transform: [{ translateX: shakeAnim }] }}>
-        <AuthField
-          label="อีเมล"
-          icon={<MailIcon size={20} color={colors.textMuted} />}
-          value={email}
+        <AuthField label="อีเมล" icon={<MailIcon size={20} color={colors.textMuted} />} value={email}
           onChangeText={(t: string) => { setEmail(t); setErrors(e => ({ ...e, email: undefined })); }}
-          placeholder="example@email.com"
-          error={errors.email}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          returnKeyType="next"
-          onSubmitEditing={() => passwordRef.current?.focus()}
-        />
-        <AuthField
-          ref={passwordRef}
-          label="รหัสผ่าน"
-          icon={<LockIcon size={20} color={colors.textMuted} />}
-          value={password}
-          onChangeText={(t: string) => { setPassword(t); setErrors(e => ({ ...e, password: undefined })); }}
-          placeholder="กรอกรหัสผ่าน"
-          error={errors.password}
-          password
-          autoComplete="current-password"
-          returnKeyType="done"
-          onSubmitEditing={handleLogin}
-        />
-
-        <TouchableOpacity
-          style={[styles.cta, { backgroundColor: colors.primary }, isLoading && { opacity: 0.7 }]}
-          onPress={handleLogin}
-          disabled={isLoading}
-          activeOpacity={0.85}
-          accessibilityRole="button"
-        >
+          placeholder="example@email.com" error={errors.email} keyboardType="email-address"
+          autoCapitalize="none" autoComplete="email" returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()} />
+        <AuthField ref={passwordRef} label="รหัสผ่าน" icon={<LockIcon size={20} color={colors.textMuted} />}
+          value={password} onChangeText={(t: string) => { setPassword(t); setErrors(e => ({ ...e, password: undefined })); }}
+          placeholder="กรอกรหัสผ่าน" error={errors.password} password autoComplete="current-password"
+          returnKeyType="done" onSubmitEditing={handleLogin} />
+        <TouchableOpacity style={[styles.cta, { backgroundColor: colors.primary }, isLoading && { opacity: 0.7 }]}
+          onPress={handleLogin} disabled={isLoading} activeOpacity={0.85} accessibilityRole="button">
           <Text style={styles.ctaText}>{isLoading ? 'กำลังเข้าสู่ระบบ…' : 'เข้าสู่ระบบ'}</Text>
         </TouchableOpacity>
-
         <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} style={styles.forgot} accessibilityRole="link">
           <Text style={[styles.forgotText, { color: colors.primary }]}>ลืมรหัสผ่าน?</Text>
         </TouchableOpacity>
-
         <SocialAuthButtons />
       </Animated.View>
     </AuthShell>
@@ -115,6 +87,6 @@ const styles = StyleSheet.create({
   ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   forgot: { alignSelf: 'center', paddingVertical: 2 },
   forgotText: { fontSize: 13, fontWeight: '600' },
-  footerText: { color: 'rgba(255,255,255,0.72)', fontSize: 14 },
-  footerLink: { color: '#93C5FD', fontWeight: '700' },
+  footerText: { color: 'rgba(23,23,23,0.78)', fontSize: 14 },
+  footerLink: { color: '#1D4ED8', fontWeight: '700' },
 });
