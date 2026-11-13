@@ -21,7 +21,7 @@ Most of the time, they don't.
 | Navigation | Expo Router (file-based) |
 | State | Zustand (feature-scoped stores) |
 | Backend | Supabase (Auth, PostgreSQL, Edge Functions, Realtime) |
-| AI | Anthropic Claude (server-side only, via Edge Function) |
+| AI | Google Gemini (server-side only, via Edge Function) |
 | Subscriptions | RevenueCat (abstracted behind `ISubscriptionService`) |
 | Notifications | Expo Notifications |
 
@@ -48,7 +48,7 @@ The `calculateNeedScore()` function in `src/utils/scoring.ts` is fully determini
 `ISubscriptionService` in `src/features/subscription/SubscriptionService.ts` is the only interface the app knows about. `RevenueCatSubscriptionService` checks the `pro` entitlement and loads prices from the current RevenueCat Offering. Real purchases require valid public SDK keys, configured App Store/Google Play products and RevenueCat entitlement/Offering setup. Do not grant Pro from client profile data or mock results. UI components never call RevenueCat directly.
 
 ### 3. API keys never leave the server
-The mobile app **never** calls any AI API directly. All AI requests go through `supabase/functions/analyze-purchase/index.ts`, which runs on Supabase's server. The AI API key is a Supabase secret (`supabase secrets set AI_API_KEY=...`), never in client code or `.env` files committed to git.
+The mobile app **never** calls any AI API directly. All AI requests go through `supabase/functions/analyze-purchase/index.ts`, which runs on Supabase's server. The Gemini API key is a Supabase secret (`supabase secrets set GEMINI_API_KEY=...`). Optional model settings are `GEMINI_MODEL` and `GEMINI_FALLBACK_MODELS`, never in client code or `.env` files committed to git.
 
 ### 4. Interception is platform-realistic
 `src/features/intercept/` has separate implementations for Android, iOS, and Web, behind a common `IInterceptService` interface. Each file documents exactly what's possible on that platform (and what isn't). No fake capabilities.
@@ -157,7 +157,11 @@ supabase db push
 supabase functions deploy analyze-purchase
 
 # Set the AI API key (server-side only)
-supabase secrets set AI_API_KEY=your-anthropic-key
+supabase secrets set GEMINI_API_KEY=your-google-ai-studio-key
+
+# Optional: override the model and fallback order
+supabase secrets set GEMINI_MODEL=gemini-3.8-flash
+supabase secrets set GEMINI_FALLBACK_MODELS=gemini-3.5-flash-lite,gemini-3.6-flash
 ```
 
 ### 4. Run the app

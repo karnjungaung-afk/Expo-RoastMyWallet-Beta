@@ -129,6 +129,10 @@ serve(async (req) => {
     // Gemini key is stored only in Supabase Edge Function secrets.
     const aiKey = Deno.env.get('GEMINI_API_KEY') ?? '';
     const aiModel = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.8-flash';
+    // Allow operators to add/remove fallback models without changing code.
+    // Keep the current fast models as defaults for newly configured projects.
+    const configuredFallbacks = (Deno.env.get('GEMINI_FALLBACK_MODELS') ?? 'gemini-3.5-flash-lite,gemini-3.6-flash')
+      .split(',').map((model) => model.trim()).filter(Boolean);
 
     if (!aiKey) {
       console.error('[analyze-purchase] Missing GEMINI_API_KEY secret');
@@ -137,7 +141,7 @@ serve(async (req) => {
 
     // Gemini can temporarily return 503 UNAVAILABLE during demand spikes.
     // Retry transient provider errors, then fall back to the previously used model.
-    const aiModels = [...new Set([aiModel, 'gemini-3.6-flash'])];
+    const aiModels = [...new Set([aiModel, ...configuredFallbacks])];
     const deadline = Date.now() + AI_TIMEOUT_MS;
     let aiResponse: Response | null = null;
     let lastProviderError = '';
@@ -211,8 +215,9 @@ serve(async (req) => {
           if (![408, 429, 500, 502, 503, 504].includes(status)) break;
         }
 
-        if (attempt === 0 && Date.now() + 500 < deadline) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
+        if (attempt === 0 && Date.now() + 750 < deadline) {
+          // Brief backoff helps recover from transient Gemini capacity spikes.
+          await new Promise((resolve) => setTimeout(resolve, 750));
         }
       }
 
@@ -225,7 +230,14 @@ serve(async (req) => {
         modelsTried: aiModels,
         lastProviderError: lastProviderError.slice(0, 500),
       });
-      return jsonError('AI service temporarily unavailable', 503);
+      return new Response(JSON.stringify({
+        error: 'AI service temporarily unavailable',
+        code: 'AI_PROVIDER_UNAVAILABLE',
+        retryable: true,
+      }), {
+        status: 503,
+        headers: { ...CORS, 'Content-Type': 'application/json', 'Retry-After': '3' },
+      });
     }
 
     const aiData = await aiResponse.json();
