@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Rect, Line, Circle, Text as SvgText } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Rect, Line, Path, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '@/hooks/useTheme';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { useAuthStore, selectProfile } from '@/store/authStore';
@@ -104,17 +103,17 @@ export default function InsightsScreen() {
   }, [purchases, months]);
 
   const empty = purchases.length === 0 && loadingState !== 'loading';
-  const tier = d.score === null ? null : d.score >= 70 ? { t: 'ยอดเยี่ยม', c: colors.success } : d.score >= 50 ? { t: 'ดี', c: colors.primary } : d.score >= 30 ? { t: 'พอใช้', c: colors.warning } : { t: 'ต้องระวัง', c: colors.danger };
+  const tier = d.score === null ? null : d.score >= 70 ? { t: 'ยอดเยี่ยม', c: colors.success } : d.score >= 50 ? { t: 'ดี', c: colors.blockBlue } : d.score >= 30 ? { t: 'พอใช้', c: colors.warning } : { t: 'ต้องระวัง', c: colors.danger };
 
   const peakDay = d.dayCount.some(n => n > 0) ? d.dayCount.indexOf(Math.max(...d.dayCount)) : -1;
   const peakSlot = d.slotCount.some(n => n > 0) ? d.slotCount.indexOf(Math.max(...d.slotCount)) : -1;
   const slotTotal = d.slotCount.reduce((a, b) => a + b, 0) || 1;
 
-  const card = [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }];
+  const card = [styles.card, { backgroundColor: colors.surface }];
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 96, alignItems: 'center' }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28, alignItems: 'center' }}>
         <View style={[styles.page, { paddingTop: insets.top + 20 }]}>
           {/* Header */}
           <View style={styles.header}>
@@ -130,7 +129,7 @@ export default function InsightsScreen() {
               {([3, 6] as const).map(v => (
                 <TouchableOpacity key={v} onPress={() => setMonths(v)} accessibilityRole="tab" accessibilityState={{ selected: months === v }}
                   style={[styles.segBtn, months === v && { backgroundColor: colors.primary }]}>
-                  <Text style={[styles.segText, { color: months === v ? '#fff' : colors.textSecondary }]}>{v} เดือน</Text>
+                  <Text style={[styles.segText, { color: months === v ? colors.primaryText : colors.textSecondary }]}>{v} เดือน</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -138,7 +137,7 @@ export default function InsightsScreen() {
 
           {empty ? (
             <View style={[...card, styles.emptyCard]}>
-              <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}><ChartIcon size={30} color={colors.primary} /></View>
+              <View style={[styles.emptyIcon, { backgroundColor: colors.blockYellow }]}><ChartIcon size={30} color={colors.onBlockLight} /></View>
               <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>ยังไม่มีข้อมูลให้วิเคราะห์</Text>
               <Text style={[styles.note, { color: colors.textMuted, textAlign: 'center' }]}>เพิ่มรายการที่อยากซื้อสัก 2–3 รายการ แล้วกลับมาดูรูปแบบของคุณที่นี่</Text>
             </View>
@@ -149,7 +148,7 @@ export default function InsightsScreen() {
                 <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>คะแนนวินัยการเงิน</Text>
                 <Text style={[styles.note, { color: colors.textMuted }]}>สัดส่วนรายการที่คุณเลือกไม่ซื้อ เมื่อเทียบกับที่ตัดสินใจแล้ว</Text>
                 <View style={styles.scoreRow}>
-                  <Gauge value={d.score} color={tier?.c ?? colors.border} track={colors.skeleton} text={colors.textPrimary} />
+                  <Gauge value={d.score} colors={colors} />
                   <View style={{ flex: 1, gap: 8, minWidth: 0 }}>
                     {tier ? <View style={[styles.tier, { backgroundColor: tier.c + '1F' }]}><Text style={[styles.tierText, { color: tier.c }]}>{tier.t}</Text></View> : <Text style={[styles.note, { color: colors.textMuted }]}>ยังไม่มีรายการที่ตัดสินใจ</Text>}
                     {d.delta !== null && (
@@ -168,8 +167,8 @@ export default function InsightsScreen() {
                 <Text style={[styles.note, { color: colors.textMuted }]}>มูลค่ารายเดือนของรายการที่ตัดสินใจแล้ว</Text>
                 <PairBars series={d.series} colors={colors} />
                 <View style={styles.legend}>
-                  <Legend color={colors.primary} label="เลี่ยงได้" text={colors.textSecondary} />
-                  <Legend color={colors.warning} label="ซื้อจริง" text={colors.textSecondary} />
+                  <Legend color={colors.blockPurple} label="เลี่ยงได้" text={colors.textSecondary} />
+                  <Legend color={colors.blockYellow} label="ซื้อจริง" text={colors.textSecondary} />
                 </View>
               </View>
 
@@ -180,13 +179,13 @@ export default function InsightsScreen() {
                 <DayBars counts={d.dayCount} peak={peakDay} colors={colors} />
                 <View style={styles.slotBar}>
                   {SLOTS.map((s, i) => (
-                    <View key={s.key} style={{ flex: Math.max(d.slotCount[i], 0.0001), backgroundColor: i === peakSlot ? colors.primary : colors.primarySubtle, height: 10 }} />
+                    <View key={s.key} style={{ flex: Math.max(d.slotCount[i], 0.0001), backgroundColor: i === peakSlot ? colors.blockPurple : colors.mechaSubtle, height: 14, borderRadius: 7 }} />
                   ))}
                 </View>
                 <View style={styles.slotLegend}>
                   {SLOTS.map((s, i) => (
                     <View key={s.key} style={{ flex: 1, alignItems: 'center' }}>
-                      <Text style={[styles.slotLabel, { color: i === peakSlot ? colors.primary : colors.textSecondary, fontWeight: i === peakSlot ? '800' : '600' }]}>{s.label}</Text>
+                      <Text style={[styles.slotLabel, { color: i === peakSlot ? colors.textPrimary : colors.textSecondary, fontWeight: i === peakSlot ? '800' : '600' }]}>{s.label}</Text>
                       <Text style={[styles.slotPct, { color: colors.textMuted }]}>{Math.round((d.slotCount[i] / slotTotal) * 100)}%</Text>
                     </View>
                   ))}
@@ -215,7 +214,7 @@ export default function InsightsScreen() {
                             <Text style={[styles.platMeta, { color: colors.textMuted }]}>{v.count} รายการ · {formatCurrency(v.sum, currency, { compact: true })}</Text>
                           </View>
                           <View style={[styles.platTrack, { backgroundColor: colors.skeleton }]}>
-                            <View style={[styles.platFill, { width: `${(v.count / top) * 100}%`, backgroundColor: colors.primary }]} />
+                            <View style={[styles.platFill, { width: `${(v.count / top) * 100}%`, backgroundColor: colors.blockPurple }]} />
                           </View>
                         </View>
                       </View>
@@ -232,7 +231,7 @@ export default function InsightsScreen() {
                   <View style={{ gap: 10, marginTop: 4 }}>
                     {d.topAvoided.map((p, i) => (
                       <View key={p.id} style={[styles.winRow, { backgroundColor: colors.backgroundSubtle }]}>
-                        <View style={[styles.rank, { backgroundColor: i === 0 ? '#F59E0B' : colors.border }]}><Text style={[styles.rankText, { color: i === 0 ? '#111827' : colors.textSecondary }]}>{i + 1}</Text></View>
+                        <View style={[styles.rank, { backgroundColor: i === 0 ? colors.blockYellow : colors.border }]}><Text style={[styles.rankText, { color: i === 0 ? colors.onBlockLight : colors.textSecondary }]}>{i + 1}</Text></View>
                         <Text style={[styles.winName, { color: colors.textPrimary }]} numberOfLines={1}>{p.productName}</Text>
                         <Text style={[styles.winPrice, { color: colors.success }]}>{formatCurrency(p.price, currency)}</Text>
                       </View>
@@ -242,18 +241,18 @@ export default function InsightsScreen() {
               )}
 
               {/* 6. Impulse takeaway */}
-              <LinearGradient colors={['#F15B50', '#7139D5']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.tip, styles.cell]}>
-                <FlameIcon size={22} color="#FCD34D" />
-                <Text style={styles.tipTitle}>สรุปสำหรับคุณ</Text>
-                <Text style={styles.tipText}>
+              <View style={[styles.tip, styles.cell, { backgroundColor: colors.blockGreen }]}>
+                <FlameIcon size={24} color={colors.blockYellow} />
+                <Text style={[styles.tipTitle, { color: colors.onBlockDark }]}>สรุปสำหรับคุณ</Text>
+                <Text style={[styles.tipText, { color: colors.onBlockDark }]}>
                   {d.boughtN === 0 && d.avoidedN > 0
                     ? `ช่วง ${months} เดือนนี้คุณไม่ได้ซื้อรายการที่บันทึกไว้เลย และเก็บเงินไว้ได้ ${formatCurrency(d.avoidedSum, currency)}`
                     : d.decided === 0
                     ? 'ยังไม่มีรายการที่ตัดสินใจ ลองรอให้ครบเวลาแล้วเลือกซื้อหรือไม่ซื้อ ข้อมูลจะเริ่มมีความหมาย'
                     : `คุณซื้อ ${d.boughtN} รายการ มูลค่า ${formatCurrency(d.boughtSum, currency)} และเลี่ยงไว้ ${d.avoidedN} รายการ มูลค่า ${formatCurrency(d.avoidedSum, currency)}`}
                 </Text>
-                <View style={styles.tipPill}><ShieldIcon size={13} color="#BBF7D0" /><Text style={styles.tipPillText}>ยิ่งรอ ยิ่งตัดสินใจได้ดี</Text></View>
-              </LinearGradient>
+                <View style={styles.tipPill}><ShieldIcon size={13} color={colors.onBlockDark} /><Text style={[styles.tipPillText, { color: colors.onBlockDark }]}>ยิ่งรอ ยิ่งตัดสินใจได้ดี</Text></View>
+              </View>
             </View>
           )}
         </View>
@@ -264,16 +263,32 @@ export default function InsightsScreen() {
 
 // ── Charts (drawn at the measured container width) ───────────────────────────
 
-function Gauge({ value, color, track, text }: { value: number | null; color: string; track: string; text: string }) {
-  const R = 46, C = 2 * Math.PI * R, pct = value ?? 0;
+function Gauge({ value, colors }: { value: number | null; colors: any }) {
+  // Five chunky pill segments (20 points each), like the health-score ring in the reference.
+  const SIZE = 124, R = 48, SW = 14, SEG = 5, GAP = 16, SPAN = 360 / SEG - GAP;
+  const c = SIZE / 2;
+  const segColors = [colors.blockYellow, colors.blockGreen, colors.blockPink, colors.blockSky, colors.blockPurple];
+  const pt = (deg: number) => {
+    const r = ((deg - 90) * Math.PI) / 180;
+    return `${(c + R * Math.cos(r)).toFixed(2)} ${(c + R * Math.sin(r)).toFixed(2)}`;
+  };
+  const arc = (from: number, to: number) => `M ${pt(from)} A ${R} ${R} 0 ${to - from > 180 ? 1 : 0} 1 ${pt(to)}`;
+  const pct = value ?? 0;
   return (
-    <Svg width={116} height={116} viewBox="0 0 116 116">
-      <Circle cx="58" cy="58" r={R} stroke={track} strokeWidth="11" fill="none" />
-      {value !== null && (
-        <Circle cx="58" cy="58" r={R} stroke={color} strokeWidth="11" fill="none" strokeLinecap="round"
-          strokeDasharray={`${(pct / 100) * C} ${C}`} transform="rotate(-90 58 58)" />
-      )}
-      <SvgText x="58" y="64" fontSize="26" fontWeight="800" fontFamily={SVG_FONT} fill={text} textAnchor="middle">{value === null ? '–' : value}</SvgText>
+    <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
+      {Array.from({ length: SEG }, (_, i) => {
+        const start = i * (360 / SEG) + GAP / 2;
+        const frac = Math.max(0, Math.min(1, (pct - i * 20) / 20));
+        return (
+          <React.Fragment key={i}>
+            <Path d={arc(start, start + SPAN)} stroke={segColors[i]} strokeOpacity={0.28} strokeWidth={SW} strokeLinecap="round" fill="none" />
+            {value !== null && frac > 0 && (
+              <Path d={arc(start, start + SPAN * frac)} stroke={segColors[i]} strokeWidth={SW} strokeLinecap="round" fill="none" />
+            )}
+          </React.Fragment>
+        );
+      })}
+      <SvgText x={c} y={c + 11} fontSize="34" fontWeight="900" fontFamily={SVG_FONT} fill={colors.textPrimary} textAnchor="middle">{value === null ? '–' : value}</SvgText>
     </Svg>
   );
 }
@@ -294,8 +309,8 @@ function PairBars({ series, colors }: { series: { label: string; avoided: number
             const cx = slot * i + slot / 2;
             return (
               <React.Fragment key={s.label + i}>
-                <Rect x={cx - bw - 2} y={H - padB - h(s.avoided)} width={bw} height={Math.max(h(s.avoided), s.avoided > 0 ? 3 : 0)} rx={4} fill={colors.primary} />
-                <Rect x={cx + 2} y={H - padB - h(s.bought)} width={bw} height={Math.max(h(s.bought), s.bought > 0 ? 3 : 0)} rx={4} fill={colors.warning} />
+                <Rect x={cx - bw - 2} y={H - padB - h(s.avoided)} width={bw} height={Math.max(h(s.avoided), s.avoided > 0 ? 3 : 0)} rx={Math.min(bw / 2, 8)} fill={colors.blockPurple} />
+                <Rect x={cx + 2} y={H - padB - h(s.bought)} width={bw} height={Math.max(h(s.bought), s.bought > 0 ? 3 : 0)} rx={Math.min(bw / 2, 8)} fill={colors.blockYellow} />
                 <SvgText x={cx} y={H - 6} fontSize="10" fontFamily={SVG_FONT} fill={colors.textMuted} textAnchor="middle">{s.label}</SvgText>
               </React.Fragment>
             );
@@ -313,9 +328,9 @@ function DayBars({ counts, peak, colors }: { counts: number[]; peak: number; col
       {counts.map((n, i) => (
         <View key={i} style={styles.dayCol}>
           <View style={[styles.dayTrack, { backgroundColor: colors.skeleton }]}>
-            <View style={{ height: `${(n / max) * 100}%`, minHeight: n > 0 ? 4 : 0, backgroundColor: i === peak ? colors.primary : colors.primarySubtle, borderRadius: 6 }} />
+            <View style={{ height: `${(n / max) * 100}%`, minHeight: n > 0 ? 4 : 0, backgroundColor: i === peak ? colors.blockPurple : colors.mechaLine, borderRadius: 10 }} />
           </View>
-          <Text style={[styles.dayLabel, { color: i === peak ? colors.primary : colors.textMuted, fontWeight: i === peak ? '800' : '500' }]}>{DAYS[i]}</Text>
+          <Text style={[styles.dayLabel, { color: i === peak ? colors.textPrimary : colors.textMuted, fontWeight: i === peak ? '900' : '500' }]}>{DAYS[i]}</Text>
         </View>
       ))}
     </View>
@@ -330,15 +345,15 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   page: { width: '100%', maxWidth: 1280, paddingHorizontal: 20, gap: 20 },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' },
-  title: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
+  title: { fontSize: 40, lineHeight: 44, fontWeight: '900', letterSpacing: -1.2 },
   subtitle: { fontSize: 13, lineHeight: 19, marginTop: 4 },
-  seg: { flexDirection: 'row', borderRadius: 13, padding: 4 },
-  segBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  seg: { flexDirection: 'row', borderRadius: 999, padding: 4 },
+  segBtn: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 999 },
   segText: { fontSize: 13, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' },
   cell: { flexGrow: 1, flexShrink: 1, flexBasis: 370, minWidth: 0, maxWidth: '100%' },
-  card: { borderRadius: 22, borderWidth: 1, padding: 22, gap: 10 },
-  cardTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
+  card: { borderRadius: 28, padding: 22, gap: 10, shadowColor: '#6B4E2B', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 2 },
+  cardTitle: { fontSize: 17, fontWeight: '900', letterSpacing: -0.3 },
   note: { fontSize: 12, lineHeight: 17 },
   scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 },
   tier: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
@@ -349,30 +364,30 @@ const styles = StyleSheet.create({
   legendDot: { width: 9, height: 9, borderRadius: 5 },
   dayRow: { flexDirection: 'row', gap: 6, marginTop: 8 },
   dayCol: { flex: 1, alignItems: 'center', gap: 6 },
-  dayTrack: { width: '100%', height: 70, borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden' },
+  dayTrack: { width: '100%', height: 70, borderRadius: 10, justifyContent: 'flex-end', overflow: 'hidden' },
   dayLabel: { fontSize: 11 },
-  slotBar: { flexDirection: 'row', borderRadius: 6, overflow: 'hidden', marginTop: 10, gap: 2 },
+  slotBar: { flexDirection: 'row', borderRadius: 7, overflow: 'hidden', marginTop: 10, gap: 2 },
   slotLegend: { flexDirection: 'row', marginTop: 2 },
   slotLabel: { fontSize: 12 },
   slotPct: { fontSize: 11 },
-  callout: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 12, borderRadius: 12, marginTop: 8 },
+  callout: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 14, borderRadius: 20, marginTop: 8 },
   calloutText: { flex: 1, fontSize: 13, lineHeight: 19, fontWeight: '600' },
   platRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   platTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 },
   platName: { flexShrink: 1, fontSize: 14, fontWeight: '700' },
   platMeta: { fontSize: 11 },
-  platTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  platFill: { height: 6, borderRadius: 3 },
-  winRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 14 },
+  platTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
+  platFill: { height: 8, borderRadius: 4 },
+  winRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 20 },
   rank: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   rankText: { fontSize: 12, fontWeight: '800' },
   winName: { flex: 1, fontSize: 14, fontWeight: '600' },
   winPrice: { fontSize: 14, fontWeight: '800' },
-  tip: { borderRadius: 24, padding: 24, gap: 11, justifyContent: 'center' },
-  tipTitle: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  tipText: { color: 'rgba(255,255,255,0.88)', fontSize: 14, lineHeight: 21 },
-  tipPill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.16)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, marginTop: 4 },
-  tipPillText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  tip: { borderRadius: 28, padding: 24, gap: 11, justifyContent: 'center' },
+  tipTitle: { fontSize: 18, fontWeight: '900' },
+  tipText: { fontSize: 14, lineHeight: 21, opacity: 0.92 },
+  tipPill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginTop: 4 },
+  tipPillText: { fontSize: 12, fontWeight: '700' },
   emptyCard: { alignItems: 'center', padding: 32, gap: 10 },
-  emptyIcon: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  emptyIcon: { width: 68, height: 68, borderRadius: 34, alignItems: 'center', justifyContent: 'center' },
 });

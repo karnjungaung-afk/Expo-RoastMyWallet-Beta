@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   cta: { minHeight: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
   ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   footerText: { color: 'rgba(255,255,255,0.72)', fontSize: 14 },
-  footerLink: { color: '#93C5FD', fontWeight: '700' },
+  footerLink: { color: '#FFF3DC', fontWeight: '700' },
   confirmWrap: { alignItems: 'center', gap: 14, paddingVertical: 12 },
   confirmIcon: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   confirmTitle: { fontSize: 22, fontWeight: '800', textAlign: 'center' },

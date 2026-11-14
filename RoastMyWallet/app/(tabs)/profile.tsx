@@ -195,11 +195,11 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 80, alignItems: 'center' }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28, alignItems: 'center' }}>
 
         {/* ── Hero header ─────────────────────────────────── */}
         <LinearGradient
-          colors={isDark ? ['#342A38', '#211C24'] : ['#F15B50', '#7139D5']}
+          colors={isDark ? ['#342A38', '#211C24'] : ['#7C62D8', '#6A50CC']}
           style={[styles.hero, { paddingTop: insets.top + 20 }]}
         >
           {/* Avatar */}
@@ -215,7 +215,7 @@ export default function ProfileScreen() {
               {user?.avatarUrl ? (
                 <Image key={user.avatarUrl} source={{ uri: user.avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
               ) : (
-                <LinearGradient colors={['#F7CE43', '#F15B50']} style={styles.avatarFallback}>
+                <LinearGradient colors={['#F7C548', '#F0603A']} style={styles.avatarFallback}>
                   <Text style={styles.avatarText}>{initials}</Text>
                 </LinearGradient>
               )}
@@ -238,18 +238,18 @@ export default function ProfileScreen() {
 
           {/* Stats row */}
           <View style={styles.heroStats}>
-            <HeroStat value={formatCurrency(avoided, currency, { compact: true })} label="ประหยัดได้" accent="#E8A030" />
+            <HeroStat value={formatCurrency(avoided, currency, { compact: true })} label="ประหยัดได้" accent="#F7C548" />
             <View style={styles.heroStatDiv} />
-            <HeroStat value={String(avoidedCount)} label="ไม่ซื้อแล้ว" accent="#52B57D" />
+            <HeroStat value={String(avoidedCount)} label="ไม่ซื้อแล้ว" accent="#BDF2D3" />
             <View style={styles.heroStatDiv} />
-            <HeroStat value={String(purchases.filter(p => p.status === 'waiting').length)} label="กำลังรอ" accent="#BFDBFE" />
+            <HeroStat value={String(purchases.filter(p => p.status === 'waiting').length)} label="กำลังรอ" accent="#FFF3DC" />
           </View>
         </LinearGradient>
 
         <View style={[styles.content, { paddingHorizontal: 16 }]}>
           {/* ── Subscription ────────────────────────────────── */}
           {isProUser ? (
-            <View style={[styles.proCard, { borderColor: '#E8A030' + '30', backgroundColor: isDark ? '#1A1A0D' : '#FFFBF0' }]}>
+            <View style={[styles.proCard, { borderColor: '#E8A030' + '30', backgroundColor: colors.warningSubtle }]}>
               <FlameIcon size={22} color="#E8A030" />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.proTitle, { color: colors.textPrimary }]}>RoastMyWallet Pro</Text>
@@ -260,14 +260,14 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            <LinearGradient colors={['#7139D5', '#31B9CE']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <LinearGradient colors={['#F7C548', '#F7C548']} style={styles.upgradeCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.upgradeTitle}>อัพเกรดเป็น Pro</Text>
                 <Text style={styles.upgradeSub}>ปลดล็อค AI roast, Squad, Insights ขั้นสูง และอีกมาก</Text>
               </View>
               <TouchableOpacity style={styles.upgradeBtn} onPress={showProInfo} accessibilityRole="button">
                 <Text style={styles.upgradeBtnText}>ดูแผน</Text>
-                <ArrowRightIcon size={14} color="#1E3A8A" />
+                <ArrowRightIcon size={14} color="#FFFBF3" />
               </TouchableOpacity>
             </LinearGradient>
           )}
@@ -300,7 +300,7 @@ export default function ProfileScreen() {
 
           {/* ── Sign out / delete ────────────────────────────── */}
           <TouchableOpacity
-            style={[styles.logoutBtn, { borderColor: colors.danger, backgroundColor: isDark ? colors.surface : '#FFFFFF' }]}
+            style={[styles.logoutBtn, { borderColor: colors.danger, backgroundColor: colors.surface }]}
             onPress={handleSignOut}
             accessibilityRole="button"
             accessibilityLabel="ออกจากระบบ"
@@ -322,7 +322,7 @@ export default function ProfileScreen() {
       <Modal visible={editVisible} transparent animationType="fade" onRequestClose={() => setEditVisible(false)}>
         <View style={styles.modalBackdrop}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
-            <View style={[styles.modalCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
+            <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>แก้ไขโปรไฟล์</Text>
               <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>ชื่อที่แสดง</Text>
               <TextInput
@@ -352,7 +352,7 @@ export default function ProfileScreen() {
       <Modal visible={passwordVisible} transparent animationType="fade" onRequestClose={() => { if (!savingPassword) setPasswordVisible(false); }}>
         <View style={styles.modalBackdrop}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}>
-            <View style={[styles.modalCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
+            <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.passwordModalIcon}><ShieldIcon size={22} color={colors.primary} /></View>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>เปลี่ยนรหัสผ่าน</Text>
               <Text style={[styles.passwordHint, { color: colors.textMuted }]}>หากบัญชีนี้ใช้รหัสผ่านอีเมล ให้กรอกรหัสผ่านปัจจุบันด้วย ส่วนบัญชี Google หรือ Apple ที่ยังไม่มีรหัสผ่านสามารถเว้นช่องนี้ได้</Text>
@@ -412,7 +412,7 @@ export default function ProfileScreen() {
 
       <Modal visible={currencyVisible} transparent animationType="fade" onRequestClose={() => setCurrencyVisible(false)}>
         <View style={styles.modalBackdrop}>
-          <View style={[styles.currencyModal, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: colors.border }]}>
+          <View style={[styles.currencyModal, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.currencyHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>สกุลเงิน</Text>
@@ -434,7 +434,7 @@ export default function ProfileScreen() {
                     accessibilityRole="button"
                     accessibilityState={{ selected, disabled: savingCurrency }}
                   >
-                    <View style={[styles.currencyCode, { backgroundColor: isDark ? '#20334A' : '#EAF2FC' }]}>
+                    <View style={[styles.currencyCode, { backgroundColor: colors.backgroundSubtle }]}>
                       <Text style={[styles.currencyCodeText, { color: colors.primary }]}>{item.code}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
@@ -468,11 +468,11 @@ function HeroStat({ value, label, accent }: { value: string; label: string; acce
   );
 }
 
-function SettingsGroup({ title, children, colors, isDark }: any) {
+function SettingsGroup({ title, children, colors }: any) {
   return (
     <View style={styles.group}>
       {title ? <Text style={[styles.groupTitle, { color: colors.textMuted }]}>{title}</Text> : null}
-      <View style={[styles.groupCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
+      <View style={[styles.groupCard, { backgroundColor: colors.surface, borderColor: colors.border, shadowColor: '#6B4E2B', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.07, shadowRadius: 12, elevation: 2 }]}>
         {children}
       </View>
     </View>
@@ -527,7 +527,7 @@ const CURRENCY_OPTIONS: { code: Currency; name: string; symbol: string }[] = [
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900 },
+  hero: { paddingHorizontal: 20, paddingBottom: 30, alignItems: 'center', gap: 8, width: '100%', maxWidth: 900, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
   avatarText: { fontSize: 28, fontWeight: '800', color: '#fff' },
   avatarWrap: { position: 'relative', marginBottom: 4 },
   avatar: { width: 88, height: 88, borderRadius: 28, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F15B50', borderWidth: 3, borderColor: 'rgba(255,255,255,0.9)' },
@@ -538,26 +538,26 @@ const styles = StyleSheet.create({
   avatarAction: { paddingHorizontal: 12, paddingVertical: 5, marginBottom: 2 },
   avatarActionText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   proBadge: { position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E8A030', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0F172A' },
-  heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
-  heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.4)' },
-  heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  heroName: { fontSize: 26, fontWeight: '900', color: '#fff', letterSpacing: -0.8 },
+  heroEmail: { fontSize: 13, color: 'rgba(255,255,255,0.75)' },
+  heroStats: { flexDirection: 'row', marginTop: 12, width: '100%', maxWidth: 520, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 24, overflow: 'hidden', borderWidth: 0, borderColor: 'rgba(255,255,255,0.1)' },
   heroStatItem: { flex: 1, alignItems: 'center', paddingVertical: 12 },
-  heroStatValue: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
-  heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
+  heroStatValue: { fontSize: 22, fontWeight: '900', letterSpacing: -0.8 },
+  heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 2, fontWeight: '600' },
   heroStatDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 10 },
   content: { gap: 14, paddingTop: 18, paddingHorizontal: 18, width: '100%', maxWidth: 760, alignSelf: 'center' },
-  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 22, padding: 20, borderWidth: 1 },
+  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 28, padding: 20, borderWidth: 1 },
   proTitle: { fontSize: 15, fontWeight: '700' },
   proSub: { fontSize: 12, marginTop: 2 },
   proManage: { fontSize: 13, fontWeight: '600' },
-  upgradeCard: { borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  upgradeTitle: { fontSize: 16, fontWeight: '800', color: '#fff' },
-  upgradeSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 3, lineHeight: 17 },
-  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  upgradeBtnText: { color: '#1E3A8A', fontSize: 13, fontWeight: '700' },
+  upgradeCard: { borderRadius: 28, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  upgradeTitle: { fontSize: 18, fontWeight: '900', color: '#16130F' },
+  upgradeSub: { fontSize: 12, color: '#16130F', opacity: 0.75, marginTop: 3, lineHeight: 17 },
+  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#16130F', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999 },
+  upgradeBtnText: { color: '#FFFBF3', fontSize: 13, fontWeight: '800' },
   group: { gap: 6 },
-  groupTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', paddingLeft: 4 },
-  groupCard: { borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
+  groupTitle: { fontSize: 14, fontWeight: '900', paddingLeft: 6 },
+  groupCard: { borderRadius: 28, borderWidth: 0, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12, minHeight: 52 },
   rowIcon: {},
   rowLabel: { fontSize: 15 },
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rowValue: { fontSize: 13 },
   divider: { height: 1, marginLeft: 16 },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, borderRadius: 14, borderWidth: 1.5 },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, borderRadius: 999, borderWidth: 2 },
   logoutText: { fontSize: 15, fontWeight: '700' },
   deleteLink: { alignSelf: 'center', paddingVertical: 8 },
   deleteText: { fontSize: 13, textDecorationLine: 'underline' },
@@ -574,8 +574,8 @@ const styles = StyleSheet.create({
   version: { textAlign: 'center', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', paddingVertical: 8 },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(8,22,40,0.62)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalKeyboard: { width: '100%' },
-  modalCard: { borderRadius: 20, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 480 },
-  currencyModal: { borderRadius: 22, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 460, maxHeight: '85%' },
+  modalCard: { borderRadius: 28, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 480 },
+  currencyModal: { borderRadius: 28, padding: 20, borderWidth: 1, gap: 12, width: '100%', maxWidth: 460, maxHeight: '85%' },
   currencyHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   closeButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
   currencyList: { maxHeight: 390 },
@@ -588,11 +588,11 @@ const styles = StyleSheet.create({
   passwordModalIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: 'rgba(69,137,218,0.14)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   passwordHint: { fontSize: 12, lineHeight: 18, marginBottom: 14 },
   passwordVisibility: { alignSelf: 'flex-end', paddingVertical: 6, paddingHorizontal: 2, marginBottom: 8 },
-  modalTitle: { fontSize: 19, fontWeight: '800' },
+  modalTitle: { fontSize: 20, fontWeight: '900' },
   modalLabel: { fontSize: 13 },
-  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
+  modalInput: { borderWidth: 1.5, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 6 },
-  modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 },
-  modalSave: { backgroundColor: '#F15B50', paddingHorizontal: 18, paddingVertical: 11, borderRadius: 10 },
+  modalCancel: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 999 },
+  modalSave: { backgroundColor: '#16130F', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999 },
   modalSaveText: { color: '#fff', fontWeight: '700' },
 });

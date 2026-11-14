@@ -24,7 +24,7 @@ export default function PurchaseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { purchases, updatePurchaseStatus, extendWaiting, loadPurchases, loadingState } = usePurchaseStore();
 
   const purchase = purchases.find(p => p.id === id);
@@ -78,15 +78,13 @@ export default function PurchaseDetailScreen() {
     catch { Alert.alert('เกิดข้อผิดพลาด', 'กรุณาลองใหม่'); }
   };
 
-  const gradColors: [string, string] = risk === 'high'
-    ? ['#3A1010', '#1A0808']
-    : risk === 'low'
-    ? ['#0D2D1A', '#071610']
-    : ['#0F172A', '#070D1A'];
+  // Hero is a flat colour block keyed to the risk level.
+  const heroBg = risk === 'high' ? colors.blockOrange : risk === 'low' ? colors.blockGreen : colors.blockPurple;
+  const gradColors: [string, string] = [heroBg, heroBg];
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}>
 
         {/* Hero */}
         <LinearGradient colors={gradColors} style={[styles.hero, { paddingTop: insets.top + 12 }]}>
@@ -107,8 +105,8 @@ export default function PurchaseDetailScreen() {
 
           {/* Score ring */}
           {purchase.needScore !== null && (
-            <View style={styles.scoreWrap}>
-              <NeedScoreRing score={purchase.needScore} risk={risk} size={90} strokeWidth={7} />
+            <View style={[styles.scoreWrap, { backgroundColor: colors.surface }]}>
+              <NeedScoreRing score={purchase.needScore} risk={risk} size={104} strokeWidth={13} />
             </View>
           )}
 
@@ -123,14 +121,14 @@ export default function PurchaseDetailScreen() {
 
           {/* AI Roast */}
           {purchase.aiRoast && (
-            <View style={[styles.roastCard, { backgroundColor: isDark ? '#1E293B' : '#F4F6F9', borderColor: isDark ? '#1E2A3A' : '#E0E8F0' }]}>
+            <View style={[styles.roastCard, { backgroundColor: colors.backgroundSubtle, borderColor: colors.border }]}>
               <FlameIcon size={16} color="#E8A030" />
               <Text style={[styles.roastText, { color: colors.textPrimary }]}>{purchase.aiRoast}</Text>
             </View>
           )}
 
           {/* Details */}
-          <View style={[styles.detailCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}>
+          <View style={[styles.detailCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <DetailRow icon={<WalletIcon size={16} color={colors.textSecondary} />} label="หมวดหมู่" value={formatCategoryName(purchase.category)} colors={colors} />
             {purchase.platform && purchase.platform !== 'unknown' && (
               <><Divider colors={colors} /><DetailRow icon={<ShieldIcon size={16} color={colors.textSecondary} />} label="แพลตฟอร์ม" value={formatPlatformName(purchase.platform)} colors={colors} /></>
@@ -149,7 +147,7 @@ export default function PurchaseDetailScreen() {
 
           {/* Notes */}
           {purchase.notes && (
-            <View style={[styles.notesCard, { backgroundColor: isDark ? '#1E293B' : '#FAFAFA', borderColor: colors.border }]}>
+            <View style={[styles.notesCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={[styles.notesLabel, { color: colors.textMuted }]}>บันทึกเพิ่มเติม</Text>
               <Text style={[styles.notesText, { color: colors.textPrimary }]}>{purchase.notes}</Text>
             </View>
@@ -158,7 +156,7 @@ export default function PurchaseDetailScreen() {
           {/* URL */}
           {purchase.url && (
             <TouchableOpacity
-              style={[styles.urlCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}
+              style={[styles.urlCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={() => Linking.openURL(purchase.url!)}
             >
               <Text style={[styles.urlText, { color: colors.primary }]} numberOfLines={1}>{purchase.url}</Text>
@@ -170,7 +168,7 @@ export default function PurchaseDetailScreen() {
 
       {/* Action buttons */}
       {isWaiting && (
-        <View style={[styles.actions, { paddingBottom: insets.bottom + 16, backgroundColor: isDark ? '#0F172A' : '#fff', borderTopColor: colors.border }]}>
+        <View style={[styles.actions, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background }]}>
           {isReady ? (
             <>
               <TouchableOpacity
@@ -191,14 +189,14 @@ export default function PurchaseDetailScreen() {
           ) : (
             <>
               <TouchableOpacity
-                style={[styles.actionBtnSm, { backgroundColor: isDark ? '#1E2A3A' : '#F4F6F9', borderColor: colors.border }]}
+                style={[styles.actionBtnSm, { backgroundColor: colors.backgroundSubtle, borderColor: colors.border }]}
                 onPress={handleExtend}
               >
                 <ClockIcon size={16} color={colors.textSecondary} />
                 <Text style={[styles.actionBtnSmText, { color: colors.textSecondary }]}>รอเพิ่มอีก 24 ชม.</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.actionBtnSm, { backgroundColor: '#D46060' + '15', borderColor: '#D46060' + '30' }]}
+                style={[styles.actionBtnSm, { backgroundColor: colors.dangerSubtle, borderColor: 'transparent' }]}
                 onPress={() => decide('avoided')}
               >
                 <CheckIcon size={16} color="#D46060" />
@@ -227,38 +225,38 @@ function Divider({ colors }: any) {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  hero: { paddingHorizontal: 20, paddingBottom: 28, alignItems: 'center', gap: 10 },
-  closeBtn: { alignSelf: 'flex-end', width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  closeBtnText: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
+  hero: { paddingHorizontal: 20, paddingBottom: 32, alignItems: 'center', gap: 10, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, overflow: 'hidden' },
+  closeBtn: { alignSelf: 'flex-end', width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  closeBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   platformBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 100, borderWidth: 1 },
   platDot: { width: 6, height: 6, borderRadius: 3 },
   platName: { fontSize: 12, fontWeight: '700' },
-  heroName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.5, textAlign: 'center', lineHeight: 28 },
-  heroPrice: { fontSize: 36, fontWeight: '800', color: '#fff', letterSpacing: -1.5 },
-  scoreWrap: { marginVertical: 4 },
+  heroName: { fontSize: 24, fontWeight: '900', color: '#fff', letterSpacing: -0.5, textAlign: 'center', lineHeight: 28 },
+  heroPrice: { fontSize: 44, fontWeight: '900', color: '#fff', letterSpacing: -2 },
+  scoreWrap: { marginVertical: 6, padding: 14, paddingBottom: 6, borderRadius: 32 },
   riskBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 100, borderWidth: 1 },
   riskDot: { width: 7, height: 7, borderRadius: 4 },
   riskLabel: { fontSize: 13, fontWeight: '700' },
   content: { gap: 10, paddingTop: 16 },
-  roastCard: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 22, borderWidth: 1, alignItems: 'flex-start' },
+  roastCard: { flexDirection: 'row', gap: 10, padding: 16, borderRadius: 28, borderWidth: 0, alignItems: 'flex-start' },
   roastText: { flex: 1, fontSize: 14, lineHeight: 21, fontStyle: 'italic' },
-  detailCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  detailCard: { borderRadius: 28, borderWidth: 0, overflow: 'hidden' },
   detailRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 13 },
   detailLabel: { fontSize: 13, flex: 1 },
   detailValue: { fontSize: 14, fontWeight: '600', textAlign: 'right', maxWidth: '55%' },
   divider: { height: 1, marginLeft: 16 },
-  notesCard: { borderRadius: 16, borderWidth: 1, padding: 14, gap: 6 },
+  notesCard: { borderRadius: 28, borderWidth: 0, padding: 18, gap: 6 },
   notesLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6 },
   notesText: { fontSize: 14, lineHeight: 20 },
-  urlCard: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, padding: 14 },
+  urlCard: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 999, borderWidth: 0, paddingHorizontal: 20, paddingVertical: 14 },
   urlText: { flex: 1, fontSize: 13 },
-  actions: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1 },
-  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16 },
+  actions: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingTop: 12 },
+  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 17, borderRadius: 999 },
   avoidBtn: { backgroundColor: '#218B62' },
   buyBtn: { backgroundColor: '#D94343' },
-  actionBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  actionBtnSm: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 14, borderRadius: 14, borderWidth: 1 },
-  actionBtnSmText: { fontSize: 13, fontWeight: '600' },
+  actionBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  actionBtnSm: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 15, borderRadius: 999, borderWidth: 0 },
+  actionBtnSmText: { fontSize: 13, fontWeight: '800' },
   notFoundText: { fontSize: 16, marginBottom: 16 },
   backBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
   backBtnText: { fontSize: 14 },

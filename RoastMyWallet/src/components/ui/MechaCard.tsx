@@ -15,25 +15,19 @@ interface MechaCardProps {
 }
 
 export function MechaCard({
-  children, accent = 'primary', showAccentLine = true,
-  showCornerMark = false, style, padding = spacing[4],
+  children, accent = 'primary', showAccentLine: _showAccentLine = true,
+  showCornerMark: _showCornerMark = false, style, padding = spacing[4],
 }: MechaCardProps) {
   const { colors } = useTheme();
   const accentColors: Record<AccentColor, string> = {
     primary: colors.primary, success: colors.success,
     warning: colors.warning, danger: colors.danger, muted: colors.border,
   };
-  const accentColor = accentColors[accent];
+  void accentColors[accent];
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }, style]}>
-      {showAccentLine && <View style={[styles.accentLine, { backgroundColor: accentColor }]} />}
-      {showCornerMark && (
-        <View
-          style={[styles.cornerMark, { borderColor: accentColor }]}
-          pointerEvents="none"
-        />
-      )}
+    <View style={[styles.container, { backgroundColor: colors.surface }, style]}>
+      {/* `accent` / `showAccentLine` / `showCornerMark` kept for API compatibility; the new look uses plain rounded surfaces. */}
       <View style={[styles.content, { padding }]}>{children}</View>
     </View>
   );
@@ -44,7 +38,7 @@ export function MechaCard({
 export function SectionCard({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   const { colors } = useTheme();
   return (
-    <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }, style]}>
+    <View style={[styles.sectionCard, { backgroundColor: colors.surface }, style]}>
       {children}
     </View>
   );
@@ -64,7 +58,7 @@ interface StatCardProps {
 export function StatCard({ label, value, unit, valueColor, style }: StatCardProps) {
   const { colors } = useTheme();
   return (
-    <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }, style]}>
+    <View style={[styles.statCard, { backgroundColor: colors.surfaceRaised }, style]}>
       <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label}</Text>
       <Text style={[styles.statValue, { color: valueColor ?? colors.textPrimary }]}>{value}</Text>
       {unit != null && (
@@ -76,24 +70,16 @@ export function StatCard({ label, value, unit, valueColor, style }: StatCardProp
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row', borderRadius: 22, borderWidth: 1, overflow: 'hidden', shadowColor: '#A45B3C', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.07, shadowRadius: 14, elevation: 2,
-  },
-  accentLine: { width: 2 },
-  cornerMark: {
-    position: 'absolute', top: 8, right: 8, width: 10, height: 10,
-    borderTopWidth: 1.5, borderRightWidth: 1.5, borderRadius: 0,
+    flexDirection: 'row', borderRadius: radius['2xl'], overflow: 'hidden',
+    shadowColor: '#6B4E2B', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 2,
   },
   content: { flex: 1 },
-  sectionCard: { borderRadius: 22, borderWidth: 1, overflow: 'hidden' },
+  sectionCard: { borderRadius: radius['2xl'], overflow: 'hidden' },
   statCard: {
-    borderRadius: 18, borderWidth: 1, padding: spacing[4], gap: spacing[1],
+    borderRadius: radius.xl, padding: spacing[4], gap: spacing[1],
+    shadowColor: '#6B4E2B', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 1,
   },
-  statLabel: {
-    fontSize: typography.size.xs, fontFamily: 'Courier New',
-    letterSpacing: 0.5, textTransform: 'uppercase',
-  },
-  statValue: {
-    fontSize: typography.size.xl, fontWeight: typography.weight.bold, letterSpacing: -0.5,
-  },
+  statLabel: { fontSize: typography.size.xs, fontWeight: typography.weight.bold, letterSpacing: 0.4 },
+  statValue: { fontSize: typography.size['2xl'], fontWeight: typography.weight.black, letterSpacing: typography.tracking.tight },
   statUnit: { fontSize: typography.size.xs },
 });

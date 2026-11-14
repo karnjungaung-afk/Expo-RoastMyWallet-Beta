@@ -33,4 +33,4 @@ export const lightTheme = buildTheme('light');
 export const darkTheme = buildTheme('dark');
 
 export { lightColors, darkColors, typography, spacing, radius, shadows, zIndex, layout, animation };
-export { palette } from './tokens';
+export { palette, blockPalette } from './tokens';

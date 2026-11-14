@@ -1,11 +1,11 @@
 /**
  * RoastMyWallet Design Token System
  *
- * Philosophy:
- * - Warm off-white base with deep navy primary
- * - Mecha texture via thin lines and corner marks, NOT heavy decorations
- * - Color = semantic meaning, not decoration
- * - Typography carries hierarchy, not size alone
+ * Visual language ("Playful Block"):
+ * - Warm cream canvas, near-black ink for primary actions and navigation
+ * - Saturated colour-block cards (purple / green / yellow / orange / pink / blue)
+ * - Very round shapes: 28px cards, pill buttons, floating pill tab bar
+ * - Big, heavy numbers and headings carry the hierarchy
  */
 
 // ─── RAW PALETTE ─────────────────────────────────────────────────────────────
@@ -88,6 +88,9 @@ export interface ThemeColors {
   primaryActive: string;
   primarySubtle: string;
   primaryText: string;
+  /** Brand coral. Use for emphasis (roast, warnings-in-brand), not for buttons. */
+  accent: string;
+  accentSubtle: string;
   mecha: string;
   mechaSubtle: string;
   mechaLine: string;
@@ -109,88 +112,117 @@ export interface ThemeColors {
   tabActive: string;
   tabInactive: string;
   tabBar: string;
+  tabBarActiveBg: string;
+  tabBarActiveIcon: string;
+  tabBarIdleIcon: string;
   skeleton: string;
   shimmer: string;
   scrim: string;
   inputBackground: string;
+  // Colour blocks (card fills). Always pair with the matching `onBlock*` text colour.
+  blockPurple: string;
+  blockGreen: string;
+  blockYellow: string;
+  blockOrange: string;
+  blockBlue: string;
+  blockPink: string;
+  blockSky: string;
+  onBlockDark: string;   // text on purple / green / orange / blue
+  onBlockLight: string;  // text on yellow / pink / sky
 }
 
 // ─── LIGHT COLORS ─────────────────────────────────────────────────────────────
 
 export const lightColors: ThemeColors = {
-  background: '#FFF9F1',
-  backgroundSubtle: '#FFF0E1',
-  surface: '#FFFFFF',
+  background: '#F5EDE0',
+  backgroundSubtle: '#EDE3D1',
+  surface: '#FFFCF6',
   surfaceRaised: '#FFFFFF',
-  surfaceOverlay: 'rgba(255,249,241,0.97)',
-  textPrimary: '#292321',
-  textSecondary: '#6F625D',
-  textMuted: '#A99B94',
-  textDisabled: '#D8CDC6',
-  textInverse: '#FFFFFF',
-  textLink: '#7139D5',
-  border: '#F0DED1',
-  borderSubtle: '#F8EDE4',
-  borderStrong: '#E2C6B5',
-  divider: '#F3E5DA',
-  primary: '#F15B50',
-  primaryHover: '#DF493F',
-  primaryActive: '#C83C34',
-  primarySubtle: '#FFE3DE',
-  primaryText: '#FFFFFF',
-  mecha: '#7139D5',
-  mechaSubtle: '#EEE5FF',
-  mechaLine: '#D8C5FF',
-  success: '#218B62',
-  successSubtle: '#DDF5E8',
-  successText: '#176B4A',
+  surfaceOverlay: 'rgba(245,237,224,0.97)',
+  textPrimary: '#16130F',
+  textSecondary: '#5E5649',
+  textMuted: '#9A9082',
+  textDisabled: '#CFC6B8',
+  textInverse: '#FFFBF3',
+  textLink: '#6F4FD0',
+  border: '#E6DAC6',
+  borderSubtle: '#EFE5D4',
+  borderStrong: '#CFC0A6',
+  divider: '#E9DECB',
+  primary: '#16130F',
+  primaryHover: '#2A251F',
+  primaryActive: '#000000',
+  primarySubtle: '#FFEDB8',
+  primaryText: '#FFFBF3',
+  accent: '#F15B50',
+  accentSubtle: '#FFE0DA',
+  mecha: '#7C62D8',
+  mechaSubtle: '#E9E1FB',
+  mechaLine: '#CFC0F2',
+  success: '#2F8A5F',
+  successSubtle: '#DCF2E4',
+  successText: '#1E6B47',
   warning: '#D68A13',
   warningSubtle: '#FFF0C9',
   warningText: '#98600A',
   danger: '#D94343',
   dangerSubtle: '#FFE1DF',
   dangerText: '#AD2929',
-  riskHigh: '#D94343',
+  riskHigh: '#E5484D',
   riskHighSubtle: '#FFE1DF',
-  riskMedium: '#D68A13',
+  riskMedium: '#E39A1B',
   riskMediumSubtle: '#FFF0C9',
-  riskLow: '#218B62',
-  riskLowSubtle: '#DDF5E8',
-  tabActive: '#F15B50',
-  tabInactive: '#A99B94',
-  tabBar: '#FFFFFF',
-  skeleton: '#F1E5DC',
-  shimmer: '#FFF8F2',
-  scrim: 'rgba(41,35,33,0.48)',
-  inputBackground: '#FFFAF6',
+  riskLow: '#2F8A5F',
+  riskLowSubtle: '#DCF2E4',
+  tabActive: '#16130F',
+  tabInactive: '#9A9082',
+  tabBar: '#16130F',
+  tabBarActiveBg: '#FFFBF3',
+  tabBarActiveIcon: '#16130F',
+  tabBarIdleIcon: '#FFFBF3',
+  skeleton: '#EBE0CC',
+  shimmer: '#F8F1E4',
+  scrim: 'rgba(22,19,15,0.52)',
+  inputBackground: '#FFFCF6',
+  blockPurple: '#7C62D8',
+  blockGreen: '#3F6B50',
+  blockYellow: '#F7C548',
+  blockOrange: '#F0603A',
+  blockBlue: '#5D6BAA',
+  blockPink: '#F6BCD8',
+  blockSky: '#9CC3EC',
+  onBlockDark: '#FFFBF3',
+  onBlockLight: '#16130F',
 };
 
 // ─── DARK COLORS ──────────────────────────────────────────────────────────────
 
 export const darkColors: ThemeColors = {
-  background: '#211C24',
-  backgroundSubtle: '#2B2330',
-  surface: '#342A38',
-  surfaceRaised: '#403247',
-  surfaceOverlay: 'rgba(33,28,36,0.97)',
-  textPrimary: '#FFF8F0',
-  textSecondary: '#D3C2D1',
-  textMuted: '#A28FA2',
-  textDisabled: '#66586A',
-  textInverse: '#211C24',
-  textLink: '#D6B7FF',
-  border: '#514052',
-  borderSubtle: '#403247',
-  borderStrong: '#70576C',
-  divider: '#49394A',
-  primary: '#FF786B',
-  primaryHover: '#FF8B7F',
-  primaryActive: '#E85D52',
-  primarySubtle: '#56323A',
-  primaryText: '#211C24',
-  mecha: '#B78BFF',
-  mechaSubtle: '#443456',
-  mechaLine: '#624B7A',
+  background: '#17141A',
+  backgroundSubtle: '#1F1B24',
+  surface: '#241F2A',
+  surfaceRaised: '#2E2836',
+  surfaceOverlay: 'rgba(23,20,26,0.97)',
+  textPrimary: '#FFF8EE',
+  textSecondary: '#D3C7D6',
+  textMuted: '#A094A5',
+  textDisabled: '#5F5465',
+  textInverse: '#17141A',
+  textLink: '#CDB8FF',
+  border: '#3A3342',
+  borderSubtle: '#2E2836',
+  borderStrong: '#564C60',
+  divider: '#342D3C',
+  primary: '#FFF3DC',
+  primaryHover: '#FFFFFF',
+  primaryActive: '#EBDDBF',
+  primarySubtle: '#4A3D1E',
+  primaryText: '#17141A',
+  accent: '#FF786B',
+  accentSubtle: '#56323A',
+  mecha: '#A48BF0',
+  mechaSubtle: '#3A3053',
+  mechaLine: '#54467A',
   success: '#67D5A0',
   successSubtle: '#254C3B',
   successText: '#9AE7BD',
@@ -206,13 +238,25 @@ export const darkColors: ThemeColors = {
   riskMediumSubtle: '#594627',
   riskLow: '#67D5A0',
   riskLowSubtle: '#254C3B',
-  tabActive: '#FF786B',
-  tabInactive: '#A28FA2',
-  tabBar: '#342A38',
-  skeleton: '#403247',
-  shimmer: '#49394A',
+  tabActive: '#FFF3DC',
+  tabInactive: '#A094A5',
+  tabBar: '#2E2836',
+  tabBarActiveBg: '#FFF3DC',
+  tabBarActiveIcon: '#17141A',
+  tabBarIdleIcon: '#FFF8EE',
+  skeleton: '#2E2836',
+  shimmer: '#3A3342',
   scrim: 'rgba(0,0,0,0.68)',
-  inputBackground: '#2B2330',
+  inputBackground: '#1F1B24',
+  blockPurple: '#8B73E6',
+  blockGreen: '#4C8061',
+  blockYellow: '#F2C14E',
+  blockOrange: '#F2694A',
+  blockBlue: '#6F7DBE',
+  blockPink: '#E7A9C9',
+  blockSky: '#8DB4DF',
+  onBlockDark: '#FFFBF3',
+  onBlockLight: '#16130F',
 };
 
 // ─── TYPOGRAPHY ───────────────────────────────────────────────────────────────
@@ -221,14 +265,14 @@ export const typography = {
   fontFamily: { sans: undefined as string | undefined, mono: 'Courier New' },
   size: {
     '2xs': 10, xs: 11, sm: 12, base: 14, md: 16,
-    lg: 18, xl: 22, '2xl': 28, '3xl': 36, '4xl': 48,
+    lg: 18, xl: 22, '2xl': 28, '3xl': 36, '4xl': 48, '5xl': 64,
   },
   weight: {
     regular: '400' as const, medium: '500' as const,
-    semibold: '600' as const, bold: '700' as const,
+    semibold: '600' as const, bold: '700' as const, black: '900' as const,
   },
-  lineHeight: { tight: 1.2, snug: 1.35, normal: 1.5, relaxed: 1.65 },
-  tracking: { tight: -0.5, normal: 0, wide: 0.3, wider: 0.6, widest: 1.0 },
+  lineHeight: { tight: 1.1, snug: 1.3, normal: 1.5, relaxed: 1.65 },
+  tracking: { tighter: -1.2, tight: -0.5, normal: 0, wide: 0.3, wider: 0.6, widest: 1.0 },
 } as const;
 
 // ─── SPACING ─────────────────────────────────────────────────────────────────
@@ -242,16 +286,18 @@ export const spacing = {
 // ─── BORDER RADIUS ────────────────────────────────────────────────────────────
 
 export const radius = {
-  none: 0, xs: 4, sm: 8, md: 12, lg: 16, xl: 20, '2xl': 26, full: 9999,
+  none: 0, xs: 6, sm: 12, md: 16, lg: 20, xl: 24, '2xl': 28, '3xl': 36, full: 9999,
 } as const;
 
 // ─── SHADOWS ─────────────────────────────────────────────────────────────────
+// Warm, soft and low. Depth mostly comes from colour blocks, not shadows.
 
 export const shadows = {
   none: { shadowColor: 'transparent', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0, shadowRadius: 0, elevation: 0 },
-  subtle: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
-  sm: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
-  md: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4 },
+  subtle: { shadowColor: '#6B4E2B', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 1 },
+  sm: { shadowColor: '#6B4E2B', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 },
+  md: { shadowColor: '#6B4E2B', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 18, elevation: 5 },
+  float: { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.22, shadowRadius: 20, elevation: 10 },
 } as const;
 
 export const zIndex = { base: 0, raised: 1, dropdown: 10, sticky: 20, overlay: 30, modal: 40, toast: 50 } as const;
@@ -259,7 +305,7 @@ export const zIndex = { base: 0, raised: 1, dropdown: 10, sticky: 20, overlay: 3
 export const layout = {
   contentMaxWidth: 520, sidebarWidth: 248,
   tabBarHeight: 64, headerHeight: 56, touchTargetMin: 44,
-  screenPaddingH: spacing[6], screenPaddingV: spacing[6],
+  screenPaddingH: spacing[5], screenPaddingV: spacing[6],
   cardPadding: spacing[5], cardGap: spacing[4],
 } as const;
 
@@ -268,6 +314,19 @@ export const animation = {
   easing: {
     easeOut: [0.0, 0.0, 0.2, 1.0] as [number, number, number, number],
     easeInOut: [0.4, 0.0, 0.2, 1.0] as [number, number, number, number],
-    spring: { damping: 20, stiffness: 180 },
+    spring: { damping: 18, stiffness: 200 },
   },
 } as const;
+
+/** Rotating palette for category / list accents. Order matters: keeps neighbours distinct. */
+export function blockPalette(c: ThemeColors) {
+  return [
+    { bg: c.blockPurple, fg: c.onBlockDark },
+    { bg: c.blockYellow, fg: c.onBlockLight },
+    { bg: c.blockOrange, fg: c.onBlockDark },
+    { bg: c.blockGreen, fg: c.onBlockDark },
+    { bg: c.blockPink, fg: c.onBlockLight },
+    { bg: c.blockBlue, fg: c.onBlockDark },
+    { bg: c.blockSky, fg: c.onBlockLight },
+  ] as const;
+}

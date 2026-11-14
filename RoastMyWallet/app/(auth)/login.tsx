@@ -87,6 +87,11 @@ const styles = StyleSheet.create({
   ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   forgot: { alignSelf: 'center', paddingVertical: 2 },
   forgotText: { fontSize: 13, fontWeight: '600' },
+<<<<<<< HEAD
   footerText: { color: 'rgba(23,23,23,0.78)', fontSize: 14 },
   footerLink: { color: '#1D4ED8', fontWeight: '700' },
+=======
+  footerText: { color: 'rgba(255,255,255,0.72)', fontSize: 14 },
+  footerLink: { color: '#FFF3DC', fontWeight: '700' },
+>>>>>>> feat(ui): redesign to playful colour-block style (cream + ink, block cards, pill buttons, floating tab bar)
 });

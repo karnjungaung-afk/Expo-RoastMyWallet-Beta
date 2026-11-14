@@ -115,11 +115,11 @@ export function SelectTrigger({
 const styles = StyleSheet.create({
   container: { gap: spacing[1.5] },
   labelRow: { flexDirection: 'row', alignItems: 'center' },
-  label: { fontSize: typography.size.sm, fontWeight: typography.weight.medium },
+  label: { fontSize: typography.size.sm, fontWeight: typography.weight.bold },
   required: { fontSize: typography.size.sm },
   inputWrapper: {
-    flexDirection: 'row', alignItems: 'center', borderWidth: 1,
-    borderRadius: radius.md, minHeight: 48, overflow: 'hidden',
+    flexDirection: 'row', alignItems: 'center', borderWidth: 1.5,
+    borderRadius: radius.lg, minHeight: 52, overflow: 'hidden',
   },
   input: {
     flex: 1, fontSize: typography.size.base, fontWeight: typography.weight.regular,

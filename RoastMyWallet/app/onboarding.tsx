@@ -15,32 +15,36 @@ const SLIDES = [
     id: '1',
     title: 'เห็นของอยากได้?\nหยุดก่อนสักแป๊บ',
     sub: 'แค่เพิ่มสินค้าไว้ที่นี่ก่อนกด Order แอพจะช่วยให้คุณตัดสินใจได้ดีขึ้น',
-    grad: ['#F15B50', '#FF8C70'] as [string, string],
-    accent: '#F7CE43',
+    grad: ['#7C62D8', '#7C62D8'] as [string, string],
+    fg: '#FFFBF3',
+    accent: '#F7C548',
     Visual: Visual1,
   },
   {
     id: '2',
     title: 'AI วิเคราะห์ให้\nตรงไปตรงมา',
     sub: 'ระบบคำนวณ Need Score จากคำตอบของคุณ แล้วบอกตรงๆ ว่าซื้อควรไหม',
-    grad: ['#7139D5', '#A77BFF'] as [string, string],
-    accent: '#31B9CE',
+    grad: ['#F0603A', '#F0603A'] as [string, string],
+    fg: '#FFFBF3',
+    accent: '#FFF3DC',
     Visual: Visual2,
   },
   {
     id: '3',
     title: 'รอแล้วค่อยตัดสินใจ\nไม่รีบ ไม่เสียใจ',
     sub: 'หลังจากรอครบเวลา เลือกได้เลย: ซื้อ, ไม่ซื้อ หรือรออีก ส่วนใหญ่จะไม่ซื้อแล้ว',
-    grad: ['#F7CE43', '#F59E0B'] as [string, string],
-    accent: '#F15B50',
+    grad: ['#F7C548', '#F7C548'] as [string, string],
+    fg: '#16130F',
+    accent: '#16130F',
     Visual: Visual3,
   },
   {
     id: '4',
     title: 'เห็นเงินที่ประหยัดได้\nทุกบาท ทุกเดือน',
     sub: 'หน้า Insights บอกชัดเจนว่าคุณหยุดใช้เงินไปเท่าไหร่ ตัวเลขพูดแทนทุกอย่าง',
-    grad: ['#31B9CE', '#197F9D'] as [string, string],
-    accent: '#F7CE43',
+    grad: ['#3F6B50', '#3F6B50'] as [string, string],
+    fg: '#FFFBF3',
+    accent: '#F7C548',
     Visual: Visual4,
   },
 ] as const;
@@ -149,10 +153,11 @@ export default function OnboardingScreen() {
 
   return (
     <LinearGradient colors={current.grad} style={styles.root}>
-      <View style={[styles.blob, { backgroundColor: current.accent + '18' }]} />
+      <View style={[styles.blob, { backgroundColor: 'rgba(255,255,255,0.14)' }]} />
 
       <Animated.FlatList
         ref={flatRef}
+        style={{ flex: 1 }}
         data={SLIDES}
         keyExtractor={s => s.id}
         horizontal pagingEnabled showsHorizontalScrollIndicator={false}
@@ -162,8 +167,8 @@ export default function OnboardingScreen() {
           <View style={[styles.slide, { width: W }]}>
             <View style={styles.visual}><item.Visual accent={item.accent} /></View>
             <View style={styles.copy}>
-              <Text style={[styles.title]}>{item.title}</Text>
-              <Text style={[styles.sub]}>{item.sub}</Text>
+              <Text style={[styles.title, { color: item.fg }]}>{item.title}</Text>
+              <Text style={[styles.sub, { color: item.fg }]}>{item.sub}</Text>
             </View>
           </View>
         )}
@@ -183,14 +188,14 @@ export default function OnboardingScreen() {
 
       {/* Buttons */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 24 }]}>
-        <TouchableOpacity onPress={goNext} style={[styles.nextBtn, { backgroundColor: current.accent }]} activeOpacity={0.85}>
+        <TouchableOpacity onPress={goNext} style={[styles.nextBtn, { backgroundColor: '#16130F' }]} activeOpacity={0.85}>
           <Text style={styles.nextBtnText}>
             {activeIndex < SLIDES.length - 1 ? 'ถัดไป' : 'เริ่มต้นใช้งาน'}
           </Text>
         </TouchableOpacity>
         {activeIndex < SLIDES.length - 1 && (
           <TouchableOpacity onPress={() => router.replace('/(auth)/register')} style={styles.skipBtn}>
-            <Text style={styles.skipText}>ข้ามไปเลย</Text>
+            <Text style={[styles.skipText, { color: current.fg }]}>ข้ามไปเลย</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -204,13 +209,13 @@ const styles = StyleSheet.create({
   slide: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 32, paddingHorizontal: 32 },
   visual: { width: 200, height: 180 },
   copy: { gap: 14, alignItems: 'center' },
-  title: { fontSize: 30, fontWeight: '800', color: '#fff', textAlign: 'center', letterSpacing: -0.8, lineHeight: 38 },
-  sub: { fontSize: 16, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 24 },
+  title: { fontSize: 36, fontWeight: '900', textAlign: 'center', letterSpacing: -1.2, lineHeight: 44 },
+  sub: { fontSize: 16, textAlign: 'center', lineHeight: 24, opacity: 0.85 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingBottom: 16 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
+  dot: { width: 10, height: 10, borderRadius: 5 },
   footer: { paddingHorizontal: 24, gap: 12 },
-  nextBtn: { borderRadius: 22, paddingVertical: 16, alignItems: 'center' },
-  nextBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  nextBtn: { borderRadius: 999, paddingVertical: 18, alignItems: 'center' },
+  nextBtnText: { color: '#FFFBF3', fontSize: 16, fontWeight: '800' },
   skipBtn: { alignItems: 'center', paddingVertical: 8 },
-  skipText: { color: 'rgba(255,255,255,0.35)', fontSize: 14 },
+  skipText: { fontSize: 14, opacity: 0.7, fontWeight: '700' },
 });

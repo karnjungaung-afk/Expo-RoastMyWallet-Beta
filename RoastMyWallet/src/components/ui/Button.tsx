@@ -11,7 +11,7 @@ import {
 import { useTheme } from '@/hooks/useTheme';
 import { spacing, radius, typography } from '@/theme/tokens';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'accent' | 'soft';
 type Size = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
@@ -46,52 +46,40 @@ export function Button({
   // ── Variant styles ────────────────────────────────────────────────────────
 
   const variantStyles: Record<Variant, { container: ViewStyle; label: TextStyle }> = {
+    // Ink-black pill — the signature action button
     primary: {
-      container: {
-        backgroundColor: colors.primary, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 3,
-        borderWidth: 0,
-      },
-      label: {
-        color: colors.primaryText,
-      },
+      container: { backgroundColor: colors.primary, borderWidth: 0 },
+      label: { color: colors.primaryText },
     },
-    secondary: {
+    // Brand coral pill
+    accent: {
       container: {
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
+        backgroundColor: colors.accent, borderWidth: 0,
+        shadowColor: colors.accent, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.28, shadowRadius: 12, elevation: 4,
       },
-      label: {
-        color: colors.textPrimary,
-      },
+      label: { color: '#FFFFFF' },
+    },
+    // Cream/white pill with soft outline
+    secondary: {
+      container: { backgroundColor: colors.surfaceRaised, borderWidth: 1.5, borderColor: colors.border },
+      label: { color: colors.textPrimary },
+    },
+    // Tinted pill, no border (for tertiary actions on cream)
+    soft: {
+      container: { backgroundColor: colors.backgroundSubtle, borderWidth: 0 },
+      label: { color: colors.textPrimary },
     },
     outline: {
-      container: {
-        backgroundColor: 'transparent',
-        borderWidth: 1.5,
-        borderColor: colors.primary,
-      },
-      label: {
-        color: colors.primary,
-      },
+      container: { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.textPrimary },
+      label: { color: colors.textPrimary },
     },
     ghost: {
-      container: {
-        backgroundColor: 'transparent',
-        borderWidth: 0,
-      },
-      label: {
-        color: colors.primary,
-      },
+      container: { backgroundColor: 'transparent', borderWidth: 0 },
+      label: { color: colors.textPrimary },
     },
     danger: {
-      container: {
-        backgroundColor: colors.danger,
-        borderWidth: 0,
-      },
-      label: {
-        color: '#FFFFFF',
-      },
+      container: { backgroundColor: colors.danger, borderWidth: 0 },
+      label: { color: '#FFFFFF' },
     },
   };
 
@@ -99,42 +87,16 @@ export function Button({
 
   const sizeStyles: Record<Size, { container: ViewStyle; label: TextStyle }> = {
     sm: {
-      container: {
-        paddingHorizontal: spacing[3],
-        paddingVertical: spacing[1.5],
-        borderRadius: 15,
-        minHeight: 36,
-      },
-      label: {
-        fontSize: typography.size.sm,
-        fontWeight: typography.weight.medium,
-        letterSpacing: typography.tracking.wide,
-      },
+      container: { paddingHorizontal: spacing[4], paddingVertical: spacing[1.5], borderRadius: radius.full, minHeight: 36 },
+      label: { fontSize: typography.size.sm, fontWeight: typography.weight.bold, letterSpacing: typography.tracking.wide },
     },
     md: {
-      container: {
-        paddingHorizontal: spacing[5],
-        paddingVertical: spacing[3],
-        borderRadius: radius.md,
-        minHeight: 48,
-      },
-      label: {
-        fontSize: typography.size.base,
-        fontWeight: typography.weight.semibold,
-        letterSpacing: typography.tracking.normal,
-      },
+      container: { paddingHorizontal: spacing[6], paddingVertical: spacing[3], borderRadius: radius.full, minHeight: 50 },
+      label: { fontSize: typography.size.base, fontWeight: typography.weight.bold, letterSpacing: typography.tracking.normal },
     },
     lg: {
-      container: {
-        paddingHorizontal: spacing[6],
-        paddingVertical: spacing[4],
-        borderRadius: 18,
-        minHeight: 56,
-      },
-      label: {
-        fontSize: typography.size.md,
-        fontWeight: typography.weight.semibold,
-      },
+      container: { paddingHorizontal: spacing[8], paddingVertical: spacing[4], borderRadius: radius.full, minHeight: 58 },
+      label: { fontSize: typography.size.md, fontWeight: typography.weight.bold },
     },
   };
 

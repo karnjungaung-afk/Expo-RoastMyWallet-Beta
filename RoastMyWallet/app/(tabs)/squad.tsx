@@ -26,14 +26,14 @@ export default function SquadScreen() {
 
 function ProGate({ colors, isDark, insets }: any) {
   const perks = [
-    { icon: <SquadIcon size={18} color="#3B82F6" />, text: 'เชิญเพื่อนเข้า Squad ส่วนตัว' },
+    { icon: <SquadIcon size={18} color="#7C62D8" />, text: 'เชิญเพื่อนเข้า Squad ส่วนตัว' },
     { icon: <FlameIcon size={18} color="#E8A030" />, text: 'เห็นว่าเพื่อนรอซื้ออะไรอยู่' },
     { icon: <ShieldIcon size={18} color="#52B57D" />, text: 'ช่วยกันตัดสินใจและประหยัดด้วยกัน' },
   ];
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <LinearGradient
-        colors={isDark ? ['#211C24', colors.background] : ['#F15B50', '#7139D5']}
+        colors={isDark ? ['#211C24', colors.background] : ['#7C62D8', '#6A50CC']}
         style={[styles.gateHeader, { paddingTop: insets.top + 24 }]}
       >
         <View style={styles.gateIconWrap}>
@@ -45,13 +45,13 @@ function ProGate({ colors, isDark, insets }: any) {
 
       <View style={[styles.gateContent, { paddingHorizontal: 24 }]}>
         {perks.map((p, i) => (
-          <View key={i} style={[styles.perkRow, { borderColor: colors.border, backgroundColor: isDark ? '#1E293B' : '#FAFAFA' }]}>
+          <View key={i} style={[styles.perkRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
             <View style={[styles.perkIcon, { backgroundColor: colors.primarySubtle }]}>{p.icon}</View>
             <Text style={[styles.perkText, { color: colors.textPrimary }]}>{p.text}</Text>
           </View>
         ))}
 
-        <LinearGradient colors={['#F7CE43', '#F15B50']} style={styles.upgradeGrad}>
+        <LinearGradient colors={['#F7C548', '#F0603A']} style={styles.upgradeGrad}>
           <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85}>
             <FlameIcon size={18} color="#fff" />
             <Text style={styles.upgradeBtnText}>อัพเกรดเป็น Pro</Text>
@@ -132,7 +132,7 @@ function SquadMain({ colors, isDark, insets }: any) {
     return (
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <LinearGradient
-          colors={isDark ? ['#0F172A', colors.background] : ['#1E3A8A', colors.background]}
+          colors={[colors.blockPurple, colors.background]}
           style={[styles.gateHeader, { paddingTop: insets.top + 24 }]}
         >
           <Text style={styles.gateTitle}>Squad ของฉัน</Text>
@@ -142,10 +142,10 @@ function SquadMain({ colors, isDark, insets }: any) {
         {mode === 'idle' && (
           <View style={[styles.noSquadContent, { paddingHorizontal: 24 }]}>
             <TouchableOpacity
-              style={[styles.squadActionCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}
+              style={[styles.squadActionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={() => setMode('create')}
             >
-              <LinearGradient colors={['#7139D5', '#31B9CE']} style={styles.squadActionIcon}>
+              <LinearGradient colors={['#7C62D8', '#5D6BAA']} style={styles.squadActionIcon}>
                 <PlusIcon size={20} color="#fff" />
               </LinearGradient>
               <View style={{ flex: 1 }}>
@@ -156,10 +156,10 @@ function SquadMain({ colors, isDark, insets }: any) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.squadActionCard, { backgroundColor: isDark ? '#1E293B' : '#fff', borderColor: colors.border }]}
+              style={[styles.squadActionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={() => setMode('join')}
             >
-              <LinearGradient colors={['#218B62', '#31B9CE']} style={styles.squadActionIcon}>
+              <LinearGradient colors={['#3F6B50', '#2F8A5F']} style={styles.squadActionIcon}>
                 <SquadIcon size={20} color="#fff" />
               </LinearGradient>
               <View style={{ flex: 1 }}>
@@ -175,13 +175,13 @@ function SquadMain({ colors, isDark, insets }: any) {
           <View style={[styles.noSquadContent, { paddingHorizontal: 24, gap: 12 }]}>
             <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>ชื่อ Squad</Text>
             <TextInput
-              style={[styles.codeInput, { borderColor: colors.border, backgroundColor: isDark ? '#1E293B' : '#fff', color: colors.textPrimary }]}
+              style={[styles.codeInput, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.textPrimary }]}
               value={squadName} onChangeText={setSquadName}
               placeholder="เช่น ทีมประหยัดเงิน 2025"
               placeholderTextColor={colors.textMuted}
               autoFocus
             />
-            <LinearGradient colors={['#1E3A8A', '#2563EB']} style={styles.codeSubmitGrad}>
+            <LinearGradient colors={['#16130F', '#2A251F']} style={styles.codeSubmitGrad}>
               <TouchableOpacity style={styles.codeSubmit} onPress={handleCreate}>
                 <Text style={styles.codeSubmitText}>สร้าง Squad</Text>
               </TouchableOpacity>
@@ -196,13 +196,13 @@ function SquadMain({ colors, isDark, insets }: any) {
           <View style={[styles.noSquadContent, { paddingHorizontal: 24, gap: 12 }]}>
             <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Invite Code</Text>
             <TextInput
-              style={[styles.codeInput, { borderColor: colors.border, backgroundColor: isDark ? '#1E293B' : '#fff', color: colors.textPrimary }]}
+              style={[styles.codeInput, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.textPrimary }]}
               value={joinCode} onChangeText={setJoinCode}
               placeholder="ใส่ code 6 ตัวอักษร"
               placeholderTextColor={colors.textMuted}
               autoCapitalize="characters" autoFocus
             />
-            <LinearGradient colors={['#235E3B', '#3A9960']} style={styles.codeSubmitGrad}>
+            <LinearGradient colors={['#3F6B50', '#2F8A5F']} style={styles.codeSubmitGrad}>
               <TouchableOpacity style={styles.codeSubmit} onPress={handleJoin}>
                 <Text style={styles.codeSubmitText}>เข้าร่วม</Text>
               </TouchableOpacity>
@@ -221,7 +221,7 @@ function SquadMain({ colors, isDark, insets }: any) {
     <KeyboardAvoidingView style={[styles.root, { backgroundColor: colors.background }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0}>
       {/* Header */}
       <LinearGradient
-        colors={isDark ? ['#211C24', '#342A38'] : ['#F15B50', '#7139D5']}
+        colors={isDark ? ['#211C24', '#342A38'] : ['#7C62D8', '#6A50CC']}
         style={[styles.chatHeader, { paddingTop: insets.top + 14 }]}
       >
         <View>
@@ -250,7 +250,7 @@ function SquadMain({ colors, isDark, insets }: any) {
           return (
             <View style={[styles.msgRow, isMe && styles.msgRowMe]}>
               {!isMe && <View style={[styles.msgAvatar, { backgroundColor: colors.primarySubtle }]}><Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>{(m.userDisplayName ?? '?').charAt(0).toUpperCase()}</Text></View>}
-              <View style={[styles.msgBubble, { backgroundColor: isMe ? colors.primary : (isDark ? '#1E2A3A' : '#F0F2F5') }]}>
+              <View style={[styles.msgBubble, { backgroundColor: isMe ? colors.primary : (colors.backgroundSubtle) }]}>
                 {!isMe && <Text style={[styles.msgSender, { color: colors.textMuted }]}>{m.userDisplayName}</Text>}
                 <Text style={[styles.msgText, { color: isMe ? '#fff' : colors.textPrimary }]}>{m.content}</Text>
               </View>
@@ -260,9 +260,9 @@ function SquadMain({ colors, isDark, insets }: any) {
       />
 
       {/* Input */}
-      <View style={[styles.inputRow, { borderTopColor: colors.border, backgroundColor: isDark ? '#1E293B' : '#fff', paddingBottom: insets.bottom + 8 }]}>
+      <View style={[styles.inputRow, { borderTopColor: colors.border, backgroundColor: colors.surface, paddingBottom: insets.bottom + 8 }]}>
         <TextInput
-          style={[styles.msgInput, { borderColor: colors.border, backgroundColor: isDark ? '#1E2A3A' : '#F4F6F9', color: colors.textPrimary }]}
+          style={[styles.msgInput, { borderColor: colors.border, backgroundColor: colors.backgroundSubtle, color: colors.textPrimary }]}
           value={text} onChangeText={setText}
           placeholder="พิมพ์ข้อความ..." placeholderTextColor={colors.textMuted}
           multiline returnKeyType="send" onSubmitEditing={handleSend}

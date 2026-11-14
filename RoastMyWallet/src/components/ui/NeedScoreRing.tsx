@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import Svg, { Circle, G } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { useTheme } from '@/hooks/useTheme';
 import { typography, spacing } from '@/theme/tokens';
 import type { ImpulseRisk } from '@/types';
@@ -30,7 +30,7 @@ export function NeedScoreRing({
   score,
   risk,
   size = 120,
-  strokeWidth = 8,
+  strokeWidth = 16,
   showLabel = true,
   animate = true,
 }: NeedScoreRingProps) {
@@ -40,9 +40,7 @@ export function NeedScoreRing({
 
   const center = size / 2;
   const innerRadius = center - strokeWidth - 2;
-  const circumference = 2 * Math.PI * innerRadius;
   const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
-  const strokeDashoffset = circumference * (1 - clampedScore / 100);
 
   useEffect(() => {
     if (animate) {
@@ -69,38 +67,47 @@ export function NeedScoreRing({
 
   const riskLabel = { high: 'HIGH RISK', medium: 'MED RISK', low: 'USEFUL' }[risk];
 
-  // Tick marks at every 10 points along the ring
-  const ticks = Array.from({ length: 10 }, (_, i) => {
-    const angle = ((i * 36 - 90) * Math.PI) / 180;
-    const isActive = (i + 1) * 10 <= clampedScore;
-    const r = innerRadius + strokeWidth + 4;
-    return { x: center + r * Math.cos(angle), y: center + r * Math.sin(angle), isActive };
+  // Five chunky pill-shaped segments (20 points each), each with its own colour.
+  const SEGMENTS = 5;
+  const GAP_DEG = 16;
+  const SPAN = 360 / SEGMENTS - GAP_DEG;
+  const segColors = [colors.blockYellow, colors.blockGreen, colors.blockPink, colors.blockSky, colors.blockPurple];
+  const polar = (deg: number) => {
+    const rad = ((deg - 90) * Math.PI) / 180;
+    return { x: center + innerRadius * Math.cos(rad), y: center + innerRadius * Math.sin(rad) };
+  };
+  const arc = (fromDeg: number, toDeg: number) => {
+    const s0 = polar(fromDeg);
+    const e0 = polar(toDeg);
+    const large = toDeg - fromDeg > 180 ? 1 : 0;
+    return `M ${s0.x.toFixed(2)} ${s0.y.toFixed(2)} A ${innerRadius} ${innerRadius} 0 ${large} 1 ${e0.x.toFixed(2)} ${e0.y.toFixed(2)}`;
+  };
+  const segments = Array.from({ length: SEGMENTS }, (_, i) => {
+    const start = i * (360 / SEGMENTS) + GAP_DEG / 2;
+    const frac = Math.max(0, Math.min(1, (clampedScore - i * 20) / 20));
+    return { start, frac, color: segColors[i] };
   });
 
   return (
     <View style={[styles.container, { width: size, height: size + (showLabel ? 28 : 0) }]}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} accessibilityLabel={`Need score ${clampedScore} out of 100`}>
-        {/* Track */}
-        <Circle
-          cx={center} cy={center} r={innerRadius}
-          stroke={colors.border} strokeWidth={strokeWidth} fill="none"
-        />
-        {/* Progress ring — static at final score value */}
-        <G rotation="-90" origin={`${center}, ${center}`}>
-          <Circle
-            cx={center} cy={center} r={innerRadius}
-            stroke={riskColor} strokeWidth={strokeWidth} fill="none"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            opacity={0.9}
-          />
-        </G>
-        {/* Tick marks */}
-        {ticks.map((tick, i) => (
-          <Circle
-            key={i} cx={tick.x} cy={tick.y} r={1.5}
-            fill={tick.isActive ? riskColor : colors.borderSubtle}
-          />
+        {segments.map((seg, i) => (
+          <React.Fragment key={i}>
+            {/* Soft track */}
+            <Path
+              d={arc(seg.start, seg.start + SPAN)}
+              stroke={seg.color} strokeOpacity={0.28} strokeWidth={strokeWidth}
+              strokeLinecap="round" fill="none"
+            />
+            {/* Filled part */}
+            {seg.frac > 0 && (
+              <Path
+                d={arc(seg.start, seg.start + SPAN * seg.frac)}
+                stroke={seg.color} strokeWidth={strokeWidth}
+                strokeLinecap="round" fill="none"
+              />
+            )}
+          </React.Fragment>
         ))}
       </Svg>
 
@@ -144,19 +151,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row', gap: 1,
   },
   scoreNumber: {
-    fontSize: typography.size['2xl'], fontWeight: typography.weight.bold,
-    fontFamily: 'Courier New', includeFontPadding: false, letterSpacing: -1,
+    fontSize: typography.size['3xl'], fontWeight: typography.weight.black,
+    includeFontPadding: false, letterSpacing: -1.5,
   },
   scoreMax: { fontSize: typography.size.sm, fontWeight: typography.weight.regular, marginTop: 6 },
   labelContainer: { flexDirection: 'row', alignItems: 'center', gap: spacing[1], marginTop: spacing[1.5] },
-  riskDot: { width: 5, height: 5, borderRadius: 2.5 },
-  riskLabel: {
-    fontSize: typography.size.xs, fontWeight: typography.weight.bold,
-    letterSpacing: typography.tracking.wider, fontFamily: 'Courier New',
-  },
-  pill: { paddingHorizontal: spacing[2], paddingVertical: spacing[0.5], borderRadius: 4 },
-  pillText: {
-    fontSize: typography.size.xs, fontWeight: typography.weight.bold,
-    fontFamily: 'Courier New', letterSpacing: 0.5,
-  },
+  riskDot: { width: 8, height: 8, borderRadius: 4 },
+  riskLabel: { fontSize: typography.size.xs, fontWeight: typography.weight.black, letterSpacing: typography.tracking.wide },
+  pill: { paddingHorizontal: spacing[2.5], paddingVertical: spacing[0.5], borderRadius: 999 },
+  pillText: { fontSize: typography.size.xs, fontWeight: typography.weight.black, letterSpacing: 0.3 },
 });

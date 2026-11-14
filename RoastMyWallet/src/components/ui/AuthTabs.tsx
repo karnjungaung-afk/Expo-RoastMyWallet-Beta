@@ -35,7 +35,7 @@ export function AuthTabs({ active }: { active: 'login' | 'register' }) {
 const styles = StyleSheet.create({
   track: { flexDirection: 'row', borderRadius: 12, padding: 4 },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 9, borderWidth: 1, borderColor: 'transparent' },
-  tabOn: { shadowColor: '#1E3A8A', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 2 },
+  tabOn: { shadowColor: '#16130F', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 2 },
   label: { fontSize: 14, fontWeight: '600' },
   labelOn: { fontWeight: '700' },
 });

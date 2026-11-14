@@ -58,7 +58,7 @@ export function InterceptRoastModal() {
       <Animated.View style={[styles.backdrop, { opacity: opacityAnim }]}>
         <TouchableOpacity style={StyleSheet.absoluteFill} onPress={dismiss} />
 
-        <Animated.View style={[styles.sheet, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', transform: [{ translateY: slideAnim }] }]}>
+        <Animated.View style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}>
           {/* Handle */}
           <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
@@ -80,7 +80,7 @@ export function InterceptRoastModal() {
           </View>
 
           {/* Roast message */}
-          <View style={[styles.roastBubble, { backgroundColor: isDark ? '#1E2A3A' : '#F4F6F9', borderColor: isDark ? '#2A3D52' : '#E0E8F0' }]}>
+          <View style={[styles.roastBubble, { backgroundColor: colors.backgroundSubtle, borderColor: colors.border }]}>
             <Text style={[styles.roastText, { color: colors.textPrimary }]}>{roastMessage}</Text>
           </View>
 
@@ -94,7 +94,7 @@ export function InterceptRoastModal() {
 
           {/* Primary CTA */}
           <LinearGradient
-            colors={['#1E3A8A', '#3B82F6']}
+            colors={['#16130F', '#2A251F']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.primaryGradient}

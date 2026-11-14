@@ -61,7 +61,7 @@ export default function PaywallScreen() {
   };
 
   return (
-    <LinearGradient colors={['#F15B50', '#7139D5', '#31B9CE']} style={styles.root}>
+    <LinearGradient colors={['#7C62D8', '#5D4BC0', '#5D6BAA']} style={styles.root}>
       <ScrollView
         contentContainerStyle={[styles.page, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 }]}
         showsVerticalScrollIndicator={false}
@@ -95,7 +95,7 @@ export default function PaywallScreen() {
 
         {isLoading && packages.length === 0 ? (
           <View style={styles.stateCard}>
-            <ActivityIndicator color="#93C5FD" />
+            <ActivityIndicator color="#FFF3DC" />
             <Text style={styles.stateText}>กำลังโหลดแพ็กเกจสมาชิก…</Text>
           </View>
         ) : packages.length > 0 ? (
@@ -164,7 +164,7 @@ export default function PaywallScreen() {
 
         {Platform.OS !== 'web' && (
           <TouchableOpacity onPress={() => { void handleRestore(); }} disabled={isRestoring} style={styles.restoreButton} accessibilityRole="button">
-            {isRestoring ? <ActivityIndicator color="#93C5FD" /> : <Text style={styles.restoreText}>กู้คืนการซื้อเดิม</Text>}
+            {isRestoring ? <ActivityIndicator color="#FFF3DC" /> : <Text style={styles.restoreText}>กู้คืนการซื้อเดิม</Text>}
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   toggleTextOn: { color: '#fff', fontWeight: '800' },
   planGrid: { gap: 14, alignItems: 'stretch' },
   planCard: { ...glass, borderRadius: 24, padding: 22, gap: 8, borderWidth: 1.5 },
-  planCardOn: { borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.16)' },
+  planCardOn: { borderColor: '#7C62D8', backgroundColor: 'rgba(59,130,246,0.16)' },
   saveBadge: { position: 'absolute', top: -11, right: 14, backgroundColor: '#22C55E', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
   saveBadgeText: { color: '#fff', fontSize: 11, fontWeight: '800' },
   planName: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontWeight: '700' },
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   stateTitle: { color: '#fff', fontSize: 17, fontWeight: '800' },
   stateText: { color: 'rgba(255,255,255,0.75)', textAlign: 'center', lineHeight: 21, maxWidth: 560 },
   setupHint: { color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: 12, lineHeight: 18, maxWidth: 560 },
-  retryButton: { paddingHorizontal: 22, paddingVertical: 12, backgroundColor: '#2563EB', borderRadius: 12, marginTop: 6 },
+  retryButton: { paddingHorizontal: 22, paddingVertical: 12, backgroundColor: '#16130F', borderRadius: 12, marginTop: 6 },
   retryText: { color: '#fff', fontWeight: '700' },
   benefits: { gap: 10, alignSelf: 'center', width: '100%', maxWidth: 420, marginTop: 4 },
   benefit: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -217,5 +217,5 @@ const styles = StyleSheet.create({
   feedback: { borderRadius: 12, padding: 14 },
   disclaimer: { color: 'rgba(255,255,255,0.45)', fontSize: 12, lineHeight: 18, textAlign: 'center' },
   restoreButton: { alignSelf: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: 20 },
-  restoreText: { color: '#93C5FD', fontWeight: '600' },
+  restoreText: { color: '#FFF3DC', fontWeight: '600' },
 });

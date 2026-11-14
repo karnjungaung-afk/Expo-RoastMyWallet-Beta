@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Modal, Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions, type StyleProp, type ViewStyle,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Line, Path } from 'react-native-svg';
+import Svg, { Circle, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { radius, shadows, blockPalette } from '@/theme/tokens';
 import { usePurchaseStore } from '@/store/purchaseStore';
 import { useAuthStore, selectProfile } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
@@ -34,7 +34,7 @@ const CATEGORY_LABELS: Record<PurchaseCategory, string> = {
 };
 
 export default function HomeScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -60,7 +60,18 @@ export default function HomeScreen() {
   const displayName = profile?.displayName?.split(' ')[0] ?? 'คุณ';
   const isDesktop = Platform.OS === 'web' && width >= 1024;
   const isWide = width >= 720;
-  const bg = Platform.OS === 'web' && !isDark ? '#F2F6FC' : isDark ? colors.background : '#F7F9FC';
+  const bg = colors.background;
+  // Decisions made this month (avoided + expired + bought) so the progress bar compares like with like.
+  const decidedCount = useMemo(() => {
+    const now = new Date();
+    const inThisMonth = (p: Purchase) => {
+      const d = new Date(p.decidedAt ?? p.updatedAt ?? p.createdAt);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    };
+    const n = purchases.filter(p => (p.status === 'avoided' || p.status === 'expired' || p.status === 'bought') && inThisMonth(p)).length;
+    return Math.max(n, avoidedCount);
+  }, [purchases, avoidedCount]);
+  const savedRatio = decidedCount > 0 ? Math.min(1, avoidedCount / decidedCount) : 0;
 
   const recentPlatforms = useMemo(() => [...new Set(
     purchases.slice(0, 20).map(p => p.platform).filter(Boolean),
@@ -129,110 +140,134 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.page,
-          { maxWidth: isDesktop ? 1380 : 1060, paddingTop: Platform.OS === 'web' ? 22 : insets.top + 12, paddingBottom: insets.bottom + 100 },
+          { maxWidth: isDesktop ? 1380 : 1060, paddingTop: Platform.OS === 'web' ? 22 : insets.top + 12, paddingBottom: 130 },
         ]}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textPrimary} />}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Header ─────────────────────────────────────────────── */}
         <View style={styles.pageHeader}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={[styles.eyebrow, { color: isDark ? colors.textMuted : '#64748B' }]}>{greeting} 👋</Text>
-            <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>{displayName}</Text>
-            <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]}>ภาพรวมการตัดสินใจซื้อและเงินที่คุณช่วยตัวเองไว้</Text>
+            <Text style={[styles.eyebrow, { color: colors.textSecondary }]}>{greeting}, {displayName} 👋</Text>
+            <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>พร้อมประหยัด{'\n'}หรือยัง?</Text>
           </View>
           <View style={styles.headerActions}>
-            <View style={[styles.statusPill, { backgroundColor: isPro() ? '#D9FBE8' : (isDark ? '#202A39' : '#E5EEF9') }]}>
-              <View style={[styles.statusDot, { backgroundColor: isPro() ? '#20A464' : '#4D84C7' }]} />
-              <Text style={[styles.statusText, { color: isPro() ? '#12613D' : (isDark ? '#C9D7E9' : '#315A89') }]}>{isPro() ? 'Pro' : 'Free plan'}</Text>
-            </View>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => !isPro() && router.push('/paywall' as any)}
+              style={[styles.statusPill, { backgroundColor: colors.surfaceRaised }, shadows.sm]}
+              accessibilityRole="button"
+            >
+              <FlameIcon size={16} color={isPro() ? colors.success : colors.accent} />
+              <Text style={[styles.statusText, { color: colors.textPrimary }]}>{isPro() ? 'Pro' : 'Free'}</Text>
+            </TouchableOpacity>
             {isDesktop && (
-              <TouchableOpacity style={styles.primaryButton} onPress={() => setShowAddSheet(true)} accessibilityRole="button">
-                <PlusIcon size={17} color="#fff" />
-                <Text style={styles.primaryButtonText}>เพิ่มรายการ</Text>
+              <TouchableOpacity style={[styles.inkButton, { backgroundColor: colors.primary }]} onPress={() => setShowAddSheet(true)} accessibilityRole="button">
+                <PlusIcon size={17} color={colors.primaryText} />
+                <Text style={[styles.inkButtonText, { color: colors.primaryText }]}>เพิ่มรายการ</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {!isWide && (
-          <LinearGradient colors={['#F15B50', '#FF8068', '#F7CE43']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
-            <View style={styles.heroTop}>
-              <Text style={styles.heroLabel}>ประหยัดได้เดือนนี้</Text>
-              <View style={styles.heroIcon}><WalletIcon size={18} color="#fff" /></View>
-            </View>
-            <Text style={styles.heroAmount} numberOfLines={1} adjustsFontSizeToFit>{formatCurrency(avoided, currency)}</Text>
-            <View style={styles.heroPill}>
-              <ShieldIcon size={12} color="#BBF7D0" />
-              <Text style={styles.heroPillText}>หลีกเลี่ยงแล้ว {avoidedCount} รายการ</Text>
-            </View>
-          </LinearGradient>
-        )}
+        {/* ── Hero: savings this month (purple block) ─────────────── */}
+        <View style={[styles.hero, { backgroundColor: colors.blockPurple }]}>
+          {/* playful collage shapes */}
+          <View pointerEvents="none" style={[styles.shape, { width: 150, height: 150, borderRadius: 75, right: -40, top: -50, backgroundColor: colors.blockOrange }]} />
+          <View pointerEvents="none" style={[styles.shape, { width: 70, height: 70, borderRadius: 18, right: 34, bottom: -22, backgroundColor: colors.blockYellow, transform: [{ rotate: '18deg' }] }]} />
+          <View pointerEvents="none" style={[styles.shape, { width: 26, height: 26, borderRadius: 13, right: 128, top: 74, backgroundColor: colors.blockPink }]} />
 
-        <View style={[styles.metricsGrid, { gap: isWide ? 12 : 10 }, !isWide && { flexWrap: 'nowrap' }]}>
-          {isWide && (
-          <MetricCard
-            title="ประหยัดได้เดือนนี้"
-            value={formatCurrency(avoided, currency)}
-            note={`หลีกเลี่ยงแล้ว ${avoidedCount} รายการ`}
-            icon={<ShieldIcon size={18} color="#1F9D68" />}
-            accent="#1F9D68"
-            colors={colors}
-            isDark={isDark}
-            width={width}
+          <View style={styles.heroLabelRow}>
+            <View style={[styles.heroIcon, { backgroundColor: 'rgba(255,255,255,0.22)' }]}>
+              <WalletIcon size={18} color={colors.onBlockDark} />
+            </View>
+            <Text style={[styles.heroLabel, { color: colors.onBlockDark }]}>ประหยัดได้เดือนนี้</Text>
+          </View>
+          <Text style={[styles.heroAmount, { color: colors.onBlockDark }]} numberOfLines={1} adjustsFontSizeToFit>
+            {formatCurrency(avoided, currency)}
+          </Text>
+          <Text style={[styles.heroNote, { color: colors.onBlockDark }]}>
+            หลีกเลี่ยงแล้ว {avoidedCount} รายการ{decidedCount > 0 ? ` · จาก ${decidedCount} รายการที่ตัดสินใจเดือนนี้` : ''}
+          </Text>
+          <View style={styles.heroProgressRow}>
+            <View style={styles.heroTrack}>
+              <View style={[styles.heroFill, { width: `${Math.max(savedRatio * 100, avoidedCount > 0 ? 8 : 0)}%` }]} />
+            </View>
+            <Text style={[styles.heroProgressText, { color: colors.onBlockDark }]}>{avoidedCount}/{decidedCount}</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.heroCta, { backgroundColor: '#16130F' }]}
+            onPress={() => setShowAddSheet(true)}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+          >
+            <Text style={styles.heroCtaText}>เพิ่มสิ่งที่อยากซื้อ</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Colour tiles ─────────────────────────────────────────── */}
+        <View style={styles.tilesRow}>
+          <StatTile
+            title="รอตัดสินใจ" value={String(waiting.length)} note="ใน Waiting List"
+            bg={colors.blockYellow} fg={colors.onBlockLight}
+            icon={<ClockIcon size={18} color={colors.onBlockLight} />}
+            onPress={() => router.push('/(tabs)/waiting')}
           />
-          )}
-          <MetricCard
-            title="รอตัดสินใจ"
-            value={String(waiting.length)}
-            note="รายการใน Waiting List"
-            icon={<ClockIcon size={18} color="#D48A18" />}
-            accent="#D48A18"
-            colors={colors}
-            isDark={isDark}
-            width={width}
-            compact={!isWide}
+          <StatTile
+            title="ซื้อไปแล้ว" value={String(boughtCount)} note="ตัดสินใจซื้อ"
+            bg={colors.blockOrange} fg={colors.onBlockDark}
+            icon={<CheckIcon size={18} color={colors.onBlockDark} />}
           />
-          <MetricCard
-            title="ซื้อไปแล้ว"
-            value={String(boughtCount)}
-            note="รายการที่ตัดสินใจซื้อ"
-            icon={<CheckIcon size={18} color="#3878D7" />}
-            accent="#3878D7"
-            colors={colors}
-            isDark={isDark}
-            width={width}
-            compact={!isWide}
-          />
-          <MetricCard
-            title="ทั้งหมด"
-            value={String(purchases.length)}
-            note="รายการที่บันทึกไว้"
-            icon={<FlameIcon size={18} color="#8B6AD9" />}
-            accent="#8B6AD9"
-            colors={colors}
-            isDark={isDark}
-            width={width}
-            compact={!isWide}
+          <StatTile
+            title="ทั้งหมด" value={String(purchases.length)} note="ที่บันทึกไว้"
+            bg={colors.blockGreen} fg={colors.onBlockDark}
+            icon={<ShieldIcon size={18} color={colors.onBlockDark} />}
           />
         </View>
 
+        {/* ── Assistant nudge (pink block) ─────────────────────────── */}
+        <View style={[styles.nudge, { backgroundColor: colors.blockPink }]}>
+          <View style={{ flex: 1, gap: 10 }}>
+            <Text style={[styles.nudgeEyebrow, { color: colors.onBlockLight }]}>ผู้ช่วย RoastMyWallet</Text>
+            <Text style={[styles.nudgeText, { color: colors.onBlockLight }]}>
+              {waiting.length > 0
+                ? `คุณมี ${waiting.length} รายการที่กำลังรอตัดสินใจ ลองกลับไปถามตัวเองอีกรอบ`
+                : 'ยังไม่มีรายการที่รอซื้อ เริ่มบันทึกของที่อยากได้แล้วให้เวลาช่วยตัดสินใจ'}
+            </Text>
+            <TouchableOpacity
+              style={[styles.nudgeCta, { backgroundColor: '#16130F' }]}
+              onPress={() => (waiting.length > 0 ? router.push('/(tabs)/waiting') : setShowAddSheet(true))}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+            >
+              <Text style={styles.nudgeCtaText}>{waiting.length > 0 ? 'ไปดูรายการ' : 'เริ่มเลย'}</Text>
+            </TouchableOpacity>
+          </View>
+          <View pointerEvents="none" style={styles.nudgeHeart}>
+            <FlameIcon size={44} color={colors.accent} />
+          </View>
+        </View>
+
+        {/* ── Analytics ────────────────────────────────────────────── */}
         <View style={[styles.analyticsRow, { flexDirection: isWide ? 'row' : 'column' }]}>
-          <Panel colors={colors} isDark={isDark} style={{ flex: 1, minWidth: 0 }}>
+          <Panel colors={colors} style={{ flex: 1, minWidth: 0 }}>
             <View style={styles.panelHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.panelTitle, { color: colors.textPrimary }]}>เงินที่หลีกเลี่ยงได้</Text>
                 <Text style={[styles.panelSubtitle, { color: colors.textMuted }]}>มูลค่ารายการที่เปลี่ยนใจใน 7 วันล่าสุด</Text>
               </View>
-              <Text style={[styles.panelUnit, { color: colors.textMuted }]}>{currency}</Text>
+              <View style={[styles.unitChip, { backgroundColor: colors.backgroundSubtle }]}>
+                <Text style={[styles.unitChipText, { color: colors.textPrimary }]}>{currency}</Text>
+              </View>
             </View>
             {purchases.length === 0 ? (
               <ChartEmpty colors={colors} message="เริ่มบันทึกรายการเพื่อดูแนวโน้มของคุณ" />
             ) : (
-              <WeeklyBarChart values={weeklySavings} currency={currency} colors={colors} isDark={isDark} />
+              <WeeklyBarChart values={weeklySavings} currency={currency} colors={colors} />
             )}
           </Panel>
 
-          <Panel colors={colors} isDark={isDark} style={[styles.categoryPanel, { width: isWide ? 340 : '100%' }]}>
+          <Panel colors={colors} style={[styles.categoryPanel, { width: isWide ? 340 : '100%' }]}>
             <View>
               <Text style={[styles.panelTitle, { color: colors.textPrimary }]}>หมวดหมู่ที่สนใจ</Text>
               <Text style={[styles.panelSubtitle, { color: colors.textMuted }]}>มูลค่ารวมของรายการที่บันทึก</Text>
@@ -240,59 +275,50 @@ export default function HomeScreen() {
             {categoryStats.length === 0 ? (
               <ChartEmpty colors={colors} message="หมวดหมู่จะปรากฏหลังเพิ่มรายการ" />
             ) : (
-              <CategoryDonut
-                categories={categoryStats}
-                total={categoryTotal}
-                currency={currency}
-                colors={colors}
-                isDark={isDark}
-              />
+              <CategoryDonut categories={categoryStats} total={categoryTotal} currency={currency} colors={colors} />
             )}
           </Panel>
         </View>
 
+        {/* ── Waiting + side column ───────────────────────────────── */}
         <View style={[
           styles.contentRow,
-          {
-            flexDirection: isWide ? 'row' : 'column',
-            // In the mobile column layout, stretch panels to the same full width.
-            alignItems: isWide ? 'flex-start' : 'stretch',
-          },
+          { flexDirection: isWide ? 'row' : 'column', alignItems: isWide ? 'flex-start' : 'stretch' },
         ]}>
-          <Panel colors={colors} isDark={isDark} style={{ flex: 1, minWidth: 0 }}>
-            <View style={styles.panelHeader}>
+          <View style={{ flex: 1, minWidth: 0, gap: 14 }}>
+            <View style={styles.sectionHeader}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.panelTitle, { color: colors.textPrimary }]}>รอตัดสินใจ</Text>
-                <Text style={[styles.panelSubtitle, { color: colors.textMuted }]}>ให้เวลากับตัวเองก่อนกดซื้อ</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>รอตัดสินใจ</Text>
+                <Text style={[styles.panelSubtitle, { color: colors.textSecondary }]}>ให้เวลากับตัวเองก่อนกดซื้อ</Text>
               </View>
               <TouchableOpacity onPress={() => router.push('/(tabs)/waiting')} style={styles.textLink} accessibilityRole="link">
-                <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 12 }}>ดูทั้งหมด</Text>
-                <ArrowRightIcon size={14} color={colors.primary} />
+                <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 12 }}>ดูทั้งหมด</Text>
+                <ArrowRightIcon size={14} color={colors.textPrimary} />
               </TouchableOpacity>
             </View>
             {loadingState === 'loading' && waiting.length === 0 ? (
               <View style={styles.cardList}>
-                {[0, 1, 2].map(n => <View key={n} style={[styles.skeleton, { backgroundColor: isDark ? '#1B2737' : '#ECF1F7' }]} />)}
+                {[0, 1, 2].map(n => <View key={n} style={[styles.skeleton, { backgroundColor: colors.skeleton }]} />)}
               </View>
             ) : waiting.length === 0 ? (
-              <EmptyState colors={colors} isDark={isDark} onAdd={() => setShowAddSheet(true)} />
+              <EmptyState colors={colors} onAdd={() => setShowAddSheet(true)} />
             ) : (
               <View style={styles.cardList}>
                 {waiting.slice(0, isDesktop ? 4 : 3).map(p => <PurchaseCard key={p.id} purchase={p} />)}
               </View>
             )}
             {error && (
-              <View style={[styles.errorBox, { backgroundColor: isDark ? '#351E26' : '#FFF0F0' }]}>
-                <Text style={{ color: isDark ? '#FFC2C2' : '#A52A2A', fontSize: 12 }}>{error}</Text>
+              <View style={[styles.errorBox, { backgroundColor: colors.dangerSubtle }]}>
+                <Text style={{ color: colors.dangerText, fontSize: 12 }}>{error}</Text>
                 <TouchableOpacity onPress={() => { void loadPurchases(true); }} accessibilityRole="button">
-                  <Text style={{ color: colors.primary, fontWeight: '700', marginTop: 6 }}>ลองโหลดใหม่</Text>
+                  <Text style={{ color: colors.textPrimary, fontWeight: '800', marginTop: 6 }}>ลองโหลดใหม่</Text>
                 </TouchableOpacity>
               </View>
             )}
-          </Panel>
+          </View>
 
           <View style={[styles.rightColumn, { width: isWide ? 340 : '100%' }]}>
-            <Panel colors={colors} isDark={isDark}>
+            <Panel colors={colors}>
               <View style={styles.panelHeader}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.panelTitle, { color: colors.textPrimary }]}>รายการล่าสุด</Text>
@@ -301,22 +327,32 @@ export default function HomeScreen() {
               </View>
               {recent.length === 0 ? (
                 <ChartEmpty colors={colors} message="รายการใหม่จะแสดงที่นี่" />
-              ) : recent.slice(0, 4).map(item => (
-                <TouchableOpacity key={item.id} style={[styles.recentRow, { borderBottomColor: colors.border }]} onPress={() => router.push({ pathname: '/purchase/[id]', params: { id: item.id } } as any)} accessibilityRole="link">
-                  <View style={[styles.recentIcon, { backgroundColor: isDark ? '#20334A' : '#E9F1FC' }]}>
-                    <Text style={[styles.recentInitial, { color: colors.primary }]}>{item.productName.trim().charAt(0).toUpperCase() || '•'}</Text>
-                  </View>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={[styles.recentName, { color: colors.textPrimary }]} numberOfLines={1}>{item.productName}</Text>
-                    <Text style={[styles.recentMeta, { color: colors.textMuted }]} numberOfLines={1}>{CATEGORY_LABELS[item.category]} · {statusLabel(item)}</Text>
-                  </View>
-                  <Text style={[styles.recentPrice, { color: colors.textPrimary }]} numberOfLines={1}>{formatCurrency(item.price, item.currency)}</Text>
-                </TouchableOpacity>
-              ))}
+              ) : recent.slice(0, 4).map((item, idx, arr) => {
+                const tone = blockPalette(colors)[idx % 7];
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.recentRow, idx < arr.length - 1 && { borderBottomColor: colors.divider, borderBottomWidth: 1 }]}
+                    onPress={() => router.push({ pathname: '/purchase/[id]', params: { id: item.id } } as any)}
+                    accessibilityRole="link"
+                  >
+                    <View style={[styles.recentIcon, { backgroundColor: tone.bg }]}>
+                      <Text style={[styles.recentInitial, { color: tone.fg }]}>{item.productName.trim().charAt(0).toUpperCase() || '•'}</Text>
+                    </View>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={[styles.recentName, { color: colors.textPrimary }]} numberOfLines={1}>{item.productName}</Text>
+                      <Text style={[styles.recentMeta, { color: colors.textMuted }]} numberOfLines={1}>{CATEGORY_LABELS[item.category]} · {statusLabel(item)}</Text>
+                    </View>
+                    <View style={[styles.pricePill, { backgroundColor: colors.backgroundSubtle }]}>
+                      <Text style={[styles.recentPrice, { color: colors.textPrimary }]} numberOfLines={1}>{formatCurrency(item.price, item.currency)}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </Panel>
 
             {recentPlatforms.length > 0 && (
-              <Panel colors={colors} isDark={isDark}>
+              <Panel colors={colors}>
                 <View style={styles.panelHeader}>
                   <Text style={[styles.panelTitle, { color: colors.textPrimary }]}>แพลตฟอร์มที่ใช้</Text>
                 </View>
@@ -332,16 +368,18 @@ export default function HomeScreen() {
             )}
 
             {!isPro() && (
-              <TouchableOpacity onPress={() => router.push('/paywall' as any)} accessibilityRole="link">
-                <LinearGradient colors={['#7139D5', '#A77BFF']} style={styles.proCard}>
-                  <View style={styles.proIcon}><FlameIcon size={18} color="#FFD27A" /></View>
-                  <Text style={styles.proTitle}>RoastMyWallet Pro</Text>
-                  <Text style={styles.proSubtitle}>ปลดล็อกการวิเคราะห์เชิงลึกและเครื่องมือเพิ่มเติม</Text>
-                  <View style={styles.proCta}>
-                    <Text style={styles.proCtaText}>ดูแผนสมาชิก</Text>
-                    <ArrowRightIcon size={14} color="#173B63" />
+              <TouchableOpacity onPress={() => router.push('/paywall' as any)} activeOpacity={0.9} accessibilityRole="link">
+                <View style={[styles.proCard, { backgroundColor: colors.blockBlue }]}>
+                  <View style={[styles.proIcon, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                    <FlameIcon size={20} color={colors.blockYellow} />
                   </View>
-                </LinearGradient>
+                  <Text style={[styles.proTitle, { color: colors.onBlockDark }]}>RoastMyWallet Pro</Text>
+                  <Text style={[styles.proSubtitle, { color: colors.onBlockDark }]}>ปลดล็อกการวิเคราะห์เชิงลึกและเครื่องมือเพิ่มเติม</Text>
+                  <View style={[styles.proCta, { backgroundColor: colors.blockYellow }]}>
+                    <Text style={[styles.proCtaText, { color: colors.onBlockLight }]}>ดูแผนสมาชิก</Text>
+                    <ArrowRightIcon size={14} color={colors.onBlockLight} />
+                  </View>
+                </View>
               </TouchableOpacity>
             )}
           </View>
@@ -349,10 +387,15 @@ export default function HomeScreen() {
       </ScrollView>
 
       {!isDesktop && (
-        <View style={[styles.fab, { bottom: insets.bottom + 16 }]}>
-          <TouchableOpacity style={styles.fabButton} onPress={() => setShowAddSheet(true)} activeOpacity={0.86} accessibilityRole="button">
-            <PlusIcon size={18} color="#fff" />
-            <Text style={styles.fabText}>เพิ่มสิ่งที่อยากซื้อ</Text>
+        <View style={styles.fab} pointerEvents="box-none">
+          <TouchableOpacity
+            style={[styles.fabButton, shadows.float, { backgroundColor: colors.accent }]}
+            onPress={() => setShowAddSheet(true)}
+            activeOpacity={0.88}
+            accessibilityRole="button"
+            accessibilityLabel="เพิ่มสิ่งที่อยากซื้อ"
+          >
+            <PlusIcon size={26} color="#FFFFFF" strokeWidth={2.6} />
           </TouchableOpacity>
         </View>
       )}
@@ -363,7 +406,7 @@ export default function HomeScreen() {
         presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
         onRequestClose={() => setShowAddSheet(false)}
       >
-        <View style={[styles.modal, { backgroundColor: isDark ? '#0F172A' : '#F3F7FC', paddingTop: insets.top }]}>
+        <View style={[styles.modal, { backgroundColor: colors.background, paddingTop: insets.top }]}>
           <AddPurchaseSheet
             onClose={() => { setShowAddSheet(false); setPrefillUrl(undefined); }}
             prefillUrl={prefillUrl}
@@ -374,85 +417,70 @@ export default function HomeScreen() {
   );
 }
 
-function Panel({ children, colors, isDark, style }: {
-  children: React.ReactNode;
-  colors: ReturnType<typeof useTheme>['colors'];
-  isDark: boolean;
-  style?: StyleProp<ViewStyle>;
-}) {
-  return <View style={[styles.panel, { backgroundColor: isDark ? colors.surface : '#FFFFFF', borderColor: isDark ? colors.border : '#E1E9F3' }, style]}>{children}</View>;
+type Colors = ReturnType<typeof useTheme>['colors'];
+
+function Panel({ children, colors, style }: { children: React.ReactNode; colors: Colors; style?: StyleProp<ViewStyle> }) {
+  return <View style={[styles.panel, shadows.sm, { backgroundColor: colors.surface }, style]}>{children}</View>;
 }
 
-function MetricCard({ title, value, note, icon, accent, colors, isDark, width, compact }: {
-  title: string; value: string; note: string; icon: React.ReactNode; accent: string;
-  colors: ReturnType<typeof useTheme>['colors']; isDark: boolean; width: number; compact?: boolean;
+function StatTile({ title, value, note, bg, fg, icon, onPress }: {
+  title: string; value: string; note: string; bg: string; fg: string; icon: React.ReactNode; onPress?: () => void;
 }) {
-  const cardWidth = width >= 1280 ? '24%' : width >= 720 ? '48%' : '100%';
-  if (compact) {
-    return (
-      <View style={[styles.miniCard, { backgroundColor: isDark ? colors.surface : '#FFFFFF', borderColor: isDark ? colors.border : '#E1E9F3' }]}>
-        <View style={[styles.miniIcon, { backgroundColor: accent + '18' }]}>{icon}</View>
-        <Text style={[styles.miniTitle, { color: colors.textSecondary }]} numberOfLines={1}>{title}</Text>
-        <Text style={[styles.miniValue, { color: colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+  const inner = (
+    <View style={[styles.tile, { backgroundColor: bg }]}>
+      <View style={[styles.tileIcon, { backgroundColor: 'rgba(255,255,255,0.28)' }]}>{icon}</View>
+      <Text style={[styles.tileValue, { color: fg }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+      <View>
+        <Text style={[styles.tileTitle, { color: fg }]} numberOfLines={1}>{title}</Text>
+        <Text style={[styles.tileNote, { color: fg }]} numberOfLines={1}>{note}</Text>
       </View>
-    );
-  }
-  return (
-    <View style={[styles.metricCard, { width: cardWidth, backgroundColor: isDark ? colors.surface : '#FFFFFF', borderColor: isDark ? colors.border : '#E1E9F3' }]}>
-      <View style={[styles.metricIcon, { backgroundColor: accent + '18' }]}>{icon}</View>
-      <Text style={[styles.metricTitle, { color: colors.textSecondary }]}>{title}</Text>
-      <Text style={[styles.metricValue, { color: colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-      <Text style={[styles.metricNote, { color: colors.textMuted }]} numberOfLines={1}>{note}</Text>
-      <View style={[styles.metricAccent, { backgroundColor: accent }]} />
     </View>
   );
+  return onPress
+    ? <TouchableOpacity style={styles.tileWrap} onPress={onPress} activeOpacity={0.88} accessibilityRole="button">{inner}</TouchableOpacity>
+    : <View style={styles.tileWrap}>{inner}</View>;
 }
 
-function WeeklyBarChart({ values, currency, colors, isDark }: {
-  values: { label: string; key: string; value: number }[];
-  currency: string; colors: ReturnType<typeof useTheme>['colors']; isDark: boolean;
+function WeeklyBarChart({ values, currency, colors }: {
+  values: { label: string; key: string; value: number }[]; currency: string; colors: Colors;
 }) {
   const { width: windowWidth } = useWindowDimensions();
-  const availableWidth = windowWidth >= 1024 ? windowWidth - 650 : windowWidth >= 768 ? windowWidth - 420 : windowWidth - 48;
+  const availableWidth = windowWidth >= 1024 ? windowWidth - 650 : windowWidth >= 768 ? windowWidth - 420 : windowWidth - 80;
   const chartWidth = Math.max(220, Math.min(availableWidth, 620));
   const max = Math.max(...values.map(item => item.value), 1);
-  const points = values.map((item, index) => ({
-    ...item,
-    x: 12 + (index * (chartWidth - 24)) / Math.max(values.length - 1, 1),
-    y: 112 - (item.value / max) * 82,
-  }));
-  const linePath = points.map((point, index) =>
-    `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`
-  ).join(' ');
-  const areaPath = points.length
-    ? `${linePath} L ${points[points.length - 1].x.toFixed(1)} 120 L ${points[0].x.toFixed(1)} 120 Z`
-    : '';
+  const todayIndex = values.length - 1;
+  const barGap = 10;
+  const barWidth = (chartWidth - barGap * (values.length - 1)) / values.length;
+  const chartHeight = 120;
 
   return (
     <View style={styles.chart}>
       <View style={styles.chartLine}>
-        <Svg width={chartWidth} height={132} viewBox={`0 0 ${chartWidth} 132`}>
-          {[30, 72, 114].map(y => (
-            <Line key={y} x1="8" x2={chartWidth - 8} y1={y} y2={y}
-              stroke={isDark ? '#334155' : '#E8EEF6'} strokeWidth="1" strokeDasharray="3 5" />
-          ))}
-          {points.length > 1 && (
-            <>
-              <Path d={areaPath} fill={isDark ? '#2563EB' : '#DCEBFF'} opacity={isDark ? 0.2 : 0.8} />
-              <Path d={linePath} fill="none" stroke="#2878E2" strokeWidth="3"
-                strokeLinecap="round" strokeLinejoin="round" />
-            </>
-          )}
-          {points.map(point => (
-            <Circle key={point.key} cx={point.x} cy={point.y} r="4"
-              fill={isDark ? '#172B49' : '#FFFFFF'} stroke="#2878E2" strokeWidth="2.5" />
-          ))}
+        <Svg width={chartWidth} height={chartHeight + 4} viewBox={`0 0 ${chartWidth} ${chartHeight + 4}`}>
+          {values.map((item, index) => {
+            const h = Math.max(10, (item.value / max) * chartHeight);
+            const isToday = index === todayIndex;
+            const x = index * (barWidth + barGap);
+            return (
+              <Rect
+                key={item.key}
+                x={x}
+                y={chartHeight - h + 2}
+                width={barWidth}
+                height={h}
+                rx={Math.min(barWidth / 2, 14)}
+                fill={item.value > 0 ? (isToday ? colors.blockPurple : colors.blockYellow) : colors.backgroundSubtle}
+              />
+            );
+          })}
         </Svg>
       </View>
       <View style={styles.chartLabels}>
-        {points.map(point => (
+        {values.map((point, index) => (
           <View key={point.key} style={styles.chartLabelCell}>
-            <Text style={[styles.chartLabel, { color: colors.textMuted }]}>{point.label}</Text>
+            <Text style={[styles.chartLabel, { color: index === todayIndex ? colors.textPrimary : colors.textMuted, fontWeight: index === todayIndex ? '900' : '600' }]}>
+              {point.label}
+            </Text>
           </View>
         ))}
       </View>
@@ -463,32 +491,27 @@ function WeeklyBarChart({ values, currency, colors, isDark }: {
   );
 }
 
-function CategoryDonut({ categories, total, currency, colors, isDark }: {
-  categories: { category: PurchaseCategory; amount: number }[];
-  total: number;
-  currency: Currency;
-  colors: ReturnType<typeof useTheme>['colors'];
-  isDark: boolean;
+function CategoryDonut({ categories, total, currency, colors }: {
+  categories: { category: PurchaseCategory; amount: number }[]; total: number; currency: Currency; colors: Colors;
 }) {
-  const palette = ['#3579D4', '#37A878', '#E3A43B', '#8866D5'];
-  const radius = 48;
-  const circumference = 2 * Math.PI * radius;
+  const palette = [colors.blockPurple, colors.blockYellow, colors.blockOrange, colors.blockGreen];
+  const radiusPx = 48;
+  const circumference = 2 * Math.PI * radiusPx;
   let offset = 0;
 
   return (
     <View style={styles.donutLayout}>
       <View style={styles.donutWrap}>
         <Svg width={132} height={132} viewBox="0 0 132 132">
-          <Circle cx="66" cy="66" r={radius} fill="none"
-            stroke={isDark ? '#26364C' : '#EAF0F7'} strokeWidth="15" />
+          <Circle cx="66" cy="66" r={radiusPx} fill="none" stroke={colors.backgroundSubtle} strokeWidth="18" />
           {total > 0 && categories.map((item, index) => {
             const fraction = item.amount / total;
             const segment = fraction * circumference;
             const dashOffset = -offset;
             offset += segment;
             return (
-              <Circle key={item.category} cx="66" cy="66" r={radius} fill="none"
-                stroke={palette[index % palette.length]} strokeWidth="15"
+              <Circle key={item.category} cx="66" cy="66" r={radiusPx} fill="none"
+                stroke={palette[index % palette.length]} strokeWidth="18"
                 strokeDasharray={`${segment} ${circumference - segment}`}
                 strokeDashoffset={dashOffset}
                 transform="rotate(-90 66 66)" />
@@ -508,9 +531,7 @@ function CategoryDonut({ categories, total, currency, colors, isDark }: {
           return (
             <View key={item.category} style={styles.donutLegendRow}>
               <View style={[styles.categoryDot, { backgroundColor: palette[index % palette.length] }]} />
-              <Text style={[styles.categoryLabel, { color: colors.textSecondary }]} numberOfLines={1}>
-                {CATEGORY_LABELS[item.category]}
-              </Text>
+              <Text style={[styles.categoryLabel, { color: colors.textSecondary }]} numberOfLines={1}>{CATEGORY_LABELS[item.category]}</Text>
               <Text style={[styles.categoryPercent, { color: colors.textPrimary }]}>{percentage}%</Text>
             </View>
           );
@@ -520,30 +541,28 @@ function CategoryDonut({ categories, total, currency, colors, isDark }: {
   );
 }
 
-function ChartEmpty({ colors, message }: { colors: ReturnType<typeof useTheme>['colors']; message: string }) {
+function ChartEmpty({ colors, message }: { colors: Colors; message: string }) {
   return (
     <View style={styles.chartEmpty}>
-      <View style={[styles.chartEmptyIcon, { backgroundColor: colors.primarySubtle }]}>
-        <ShieldIcon size={22} color={colors.primary} />
+      <View style={[styles.chartEmptyIcon, { backgroundColor: colors.blockYellow }]}>
+        <ShieldIcon size={24} color={colors.onBlockLight} />
       </View>
       <Text style={[styles.chartEmptyText, { color: colors.textSecondary }]}>{message}</Text>
     </View>
   );
 }
 
-function EmptyState({ colors, isDark, onAdd }: {
-  colors: ReturnType<typeof useTheme>['colors']; isDark: boolean; onAdd: () => void;
-}) {
+function EmptyState({ colors, onAdd }: { colors: Colors; onAdd: () => void }) {
   return (
-    <View style={[styles.empty, { backgroundColor: isDark ? '#162133' : '#F8FAFD', borderColor: colors.border }]}>
-      <View style={[styles.emptyIcon, { backgroundColor: isDark ? '#243247' : '#E5EEF9' }]}>
-        <ClockIcon size={30} color={colors.primary} />
+    <View style={[styles.empty, { backgroundColor: colors.surface, borderColor: colors.borderStrong }]}>
+      <View style={[styles.emptyIcon, { backgroundColor: colors.blockSky }]}>
+        <ClockIcon size={32} color={colors.onBlockLight} />
       </View>
       <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>ยังไม่มีรายการที่รอซื้อ</Text>
       <Text style={[styles.emptySub, { color: colors.textSecondary }]}>เก็บของที่อยากได้ไว้ก่อน แล้วค่อยตัดสินใจเมื่อพร้อม</Text>
-      <TouchableOpacity style={styles.emptyButton} onPress={onAdd} accessibilityRole="button">
-        <PlusIcon size={15} color="#fff" />
-        <Text style={styles.emptyButtonText}>เพิ่มรายการแรก</Text>
+      <TouchableOpacity style={[styles.emptyButton, { backgroundColor: colors.primary }]} onPress={onAdd} accessibilityRole="button">
+        <PlusIcon size={15} color={colors.primaryText} />
+        <Text style={[styles.emptyButtonText, { color: colors.primaryText }]}>เพิ่มรายการแรก</Text>
       </TouchableOpacity>
     </View>
   );
@@ -561,103 +580,123 @@ function statusLabel(purchase: Purchase): string {
 }
 
 const styles = StyleSheet.create({
-  heroCard: { borderRadius: 26, padding: 22, gap: 9, shadowColor: '#F15B50', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 18, elevation: 6 },
-  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
-  heroIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  heroAmount: { fontSize: 36, fontWeight: '900', color: '#fff', letterSpacing: -1.2 },
-  heroPill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.18)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
-  heroPillText: { fontSize: 12, fontWeight: '600', color: '#fff' },
-  miniCard: { flex: 1, minWidth: 0, borderRadius: 16, borderWidth: 1, padding: 12, gap: 4 },
-  miniIcon: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
-  miniTitle: { fontSize: 11, fontWeight: '500' },
-  miniValue: { fontSize: 20, fontWeight: '800', letterSpacing: -0.4 },
   root: { flex: 1 },
-  page: { width: '100%', alignSelf: 'center', paddingHorizontal: 22, gap: 20 },
-  pageHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' },
-  eyebrow: { fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
-  pageTitle: { fontSize: 30, lineHeight: 36, fontWeight: '900', letterSpacing: -0.8, marginTop: 2 },
-  pageSubtitle: { fontSize: 13, lineHeight: 19, marginTop: 4, maxWidth: 580 },
+  page: { width: '100%', alignSelf: 'center', paddingHorizontal: 20, gap: 18 },
+
+  // header
+  pageHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 },
+  eyebrow: { fontSize: 13, fontWeight: '700' },
+  pageTitle: { fontSize: 34, lineHeight: 40, fontWeight: '900', letterSpacing: -1, marginTop: 6 },
   headerActions: { flexDirection: 'row', gap: 10, alignItems: 'center' },
-  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 8 },
-  statusDot: { width: 7, height: 7, borderRadius: 4 },
-  statusText: { fontSize: 11, fontWeight: '800' },
-  primaryButton: { backgroundColor: '#F15B50', flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
-  primaryButtonText: { color: '#fff', fontSize: 13, fontWeight: '800' },
-  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  metricCard: { borderWidth: 1, borderRadius: 16, padding: 17, minHeight: 142, gap: 7, overflow: 'hidden', shadowColor: '#173B63', shadowOpacity: 0.04, shadowOffset: { width: 0, height: 4 }, shadowRadius: 14, elevation: 1 },
-  metricIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
-  metricTitle: { fontSize: 12, fontWeight: '600' },
-  metricValue: { fontSize: 23, lineHeight: 28, fontWeight: '900', letterSpacing: -0.4 },
-  metricNote: { fontSize: 11 },
-  metricAccent: { height: 3, width: 34, borderRadius: 3, marginTop: 'auto' },
+  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 999, paddingHorizontal: 14, height: 40 },
+  statusText: { fontSize: 13, fontWeight: '900' },
+  inkButton: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 18, height: 44, borderRadius: 999 },
+  inkButtonText: { fontSize: 13, fontWeight: '800' },
+
+  // hero
+  hero: { borderRadius: radius['3xl'], padding: 24, gap: 10, overflow: 'hidden' },
+  shape: { position: 'absolute' },
+  heroLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  heroIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  heroLabel: { fontSize: 14, fontWeight: '800', opacity: 0.92 },
+  heroAmount: { fontSize: 48, lineHeight: 54, fontWeight: '900', letterSpacing: -1.8, maxWidth: '78%', marginTop: 4 },
+  heroNote: { fontSize: 12, fontWeight: '600', opacity: 0.85 },
+  heroProgressRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6, maxWidth: '82%' },
+  heroTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.28)', overflow: 'hidden' },
+  heroFill: { height: 10, borderRadius: 5, backgroundColor: '#FFFFFF' },
+  heroProgressText: { fontSize: 12, fontWeight: '900' },
+  heroCta: { alignSelf: 'flex-start', paddingHorizontal: 22, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  heroCtaText: { color: '#FFFBF3', fontSize: 13, fontWeight: '800' },
+
+  // tiles
+  tilesRow: { flexDirection: 'row', gap: 12 },
+  tileWrap: { flex: 1, minWidth: 0 },
+  tile: { borderRadius: radius.xl, padding: 14, minHeight: 138, justifyContent: 'space-between', gap: 8 },
+  tileIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  tileValue: { fontSize: 34, lineHeight: 38, fontWeight: '900', letterSpacing: -1 },
+  tileTitle: { fontSize: 13, fontWeight: '800' },
+  tileNote: { fontSize: 10, fontWeight: '600', opacity: 0.8, marginTop: 1 },
+
+  // assistant nudge
+  nudge: { borderRadius: radius['2xl'], padding: 20, flexDirection: 'row', alignItems: 'center', gap: 12, overflow: 'hidden' },
+  nudgeEyebrow: { fontSize: 11, fontWeight: '800', opacity: 0.7 },
+  nudgeText: { fontSize: 15, lineHeight: 22, fontWeight: '800' },
+  nudgeCta: { alignSelf: 'flex-start', paddingHorizontal: 20, height: 40, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  nudgeCtaText: { color: '#FFFBF3', fontSize: 13, fontWeight: '800' },
+  nudgeHeart: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.45)', alignItems: 'center', justifyContent: 'center' },
+
+  // panels
   analyticsRow: { gap: 14, alignItems: 'stretch' },
-  contentRow: { gap: 14, alignItems: 'flex-start' },
-  panel: { borderWidth: 1, borderRadius: 22, padding: 20, gap: 15, shadowColor: '#173B63', shadowOpacity: 0.035, shadowOffset: { width: 0, height: 4 }, shadowRadius: 12, elevation: 1 },
+  contentRow: { gap: 14 },
+  panel: { borderRadius: radius['2xl'], padding: 20, gap: 16 },
   panelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  panelTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2 },
+  panelTitle: { fontSize: 17, fontWeight: '900', letterSpacing: -0.3 },
   panelSubtitle: { fontSize: 11, lineHeight: 16, marginTop: 3 },
-  panelUnit: { fontSize: 10, fontWeight: '800', backgroundColor: '#E9F1FC', overflow: 'hidden', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 },
+  unitChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
+  unitChipText: { fontSize: 10, fontWeight: '900' },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sectionTitle: { fontSize: 22, fontWeight: '900', letterSpacing: -0.6 },
 
-
-
-
-
-
-
+  // chart
   chart: { minHeight: 184, gap: 8, justifyContent: 'flex-end' },
-  chartLine: { minHeight: 136, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  chartLine: { minHeight: 126, alignItems: 'center', justifyContent: 'flex-end', overflow: 'hidden' },
   chartLabels: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
   chartLabelCell: { flex: 1, alignItems: 'center' },
-  chartLabel: { fontSize: 10, fontWeight: '600' },
+  chartLabel: { fontSize: 10 },
   chartCaption: { fontSize: 10, lineHeight: 15, marginTop: 2 },
-  chartEmpty: { minHeight: 150, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 12 },
-  chartEmptyIcon: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  chartEmpty: { minHeight: 150, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 12 },
+  chartEmptyIcon: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
   chartEmptyText: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
+
+  // donut
   categoryPanel: { gap: 18 },
   donutLayout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap' },
   donutWrap: { width: 132, height: 132, alignItems: 'center', justifyContent: 'center' },
-  donutCenter: { position: 'absolute', alignItems: 'center', justifyContent: 'center', width: 90 },
-  donutCaption: { fontSize: 9, fontWeight: '600' },
-  donutTotal: { fontSize: 14, fontWeight: '900', maxWidth: 90 },
+  donutCenter: { position: 'absolute', alignItems: 'center', justifyContent: 'center', width: 84 },
+  donutCaption: { fontSize: 9, fontWeight: '700' },
+  donutTotal: { fontSize: 15, fontWeight: '900', maxWidth: 84 },
   donutLegend: { flex: 1, minWidth: 125, gap: 13 },
-  donutLegendRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  categoryList: { gap: 15 },
-  categoryItem: { gap: 6 },
-  categoryLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  categoryDot: { width: 8, height: 8, borderRadius: 4 },
-  categoryLabel: { fontSize: 11, flex: 1 },
-  categoryPercent: { fontSize: 11, fontWeight: '800' },
-  progressTrack: { height: 6, borderRadius: 999, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 999 },
+  donutLegendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  categoryDot: { width: 10, height: 10, borderRadius: 5 },
+  categoryLabel: { fontSize: 12, flex: 1 },
+  categoryPercent: { fontSize: 12, fontWeight: '900' },
+
+  // lists
   textLink: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  cardList: { gap: 10 },
-  skeleton: { height: 104, borderRadius: 16 },
+  cardList: { gap: 12 },
+  skeleton: { height: 110, borderRadius: radius['2xl'] },
   rightColumn: { gap: 14 },
-  recentRow: { flexDirection: 'row', alignItems: 'center', gap: 9, borderBottomWidth: 1, paddingBottom: 11, marginBottom: 2 },
-  recentIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  recentInitial: { fontSize: 14, fontWeight: '800' },
-  recentName: { fontSize: 12, fontWeight: '700' },
+  recentRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingBottom: 12, marginBottom: 2 },
+  recentIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  recentInitial: { fontSize: 16, fontWeight: '900' },
+  recentName: { fontSize: 13, fontWeight: '800' },
   recentMeta: { fontSize: 10, marginTop: 2 },
-  recentPrice: { fontSize: 10, fontWeight: '800', maxWidth: 88, textAlign: 'right' },
+  pricePill: { paddingHorizontal: 10, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', maxWidth: 104 },
+  recentPrice: { fontSize: 11, fontWeight: '900' },
   platformGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
   platformItem: { width: 60, alignItems: 'center', gap: 6 },
   platformLabel: { fontSize: 10, textAlign: 'center' },
-  proCard: { borderRadius: 20, padding: 18, gap: 8 },
-  proIcon: { width: 38, height: 38, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.13)', alignItems: 'center', justifyContent: 'center' },
-  proTitle: { fontSize: 15, color: '#fff', fontWeight: '900' },
-  proSubtitle: { fontSize: 11, lineHeight: 16, color: 'rgba(255,255,255,0.72)' },
-  proCta: { marginTop: 6, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', paddingHorizontal: 13, paddingVertical: 9, borderRadius: 10 },
-  proCtaText: { color: '#173B63', fontSize: 11, fontWeight: '800' },
-  errorBox: { padding: 12, borderRadius: 12, marginTop: 6 },
-  empty: { borderRadius: 18, borderWidth: 1, borderStyle: 'dashed', padding: 24, alignItems: 'center', gap: 10 },
-  emptyIcon: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { fontSize: 15, fontWeight: '800' },
+
+  // pro
+  proCard: { borderRadius: radius['2xl'], padding: 20, gap: 8 },
+  proIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  proTitle: { fontSize: 18, fontWeight: '900', letterSpacing: -0.4 },
+  proSubtitle: { fontSize: 12, lineHeight: 18, opacity: 0.85 },
+  proCta: { marginTop: 6, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, height: 38, borderRadius: 999 },
+  proCtaText: { fontSize: 12, fontWeight: '900' },
+
+  errorBox: { padding: 12, borderRadius: radius.md, marginTop: 6 },
+
+  // empty
+  empty: { borderRadius: radius['2xl'], borderWidth: 2, borderStyle: 'dashed', padding: 26, alignItems: 'center', gap: 10 },
+  emptyIcon: { width: 68, height: 68, borderRadius: 34, alignItems: 'center', justifyContent: 'center' },
+  emptyTitle: { fontSize: 16, fontWeight: '900' },
   emptySub: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
-  emptyButton: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999, backgroundColor: '#1769E0', marginTop: 4 },
-  emptyButtonText: { color: '#fff', fontSize: 12, fontWeight: '800' },
-  fab: { position: 'absolute', alignSelf: 'center', left: 0, right: 0, alignItems: 'center' },
-  fabButton: { flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: '#1769E0', paddingHorizontal: 22, paddingVertical: 14, borderRadius: 999, shadowColor: '#1769E0', shadowOpacity: 0.22, shadowOffset: { width: 0, height: 7 }, shadowRadius: 16, elevation: 9 },
-  fabText: { color: '#fff', fontSize: 13, fontWeight: '800' },
+  emptyButton: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 22, height: 44, borderRadius: 999, marginTop: 6 },
+  emptyButtonText: { fontSize: 13, fontWeight: '800' },
+
+  // fab + modal
+  fab: { position: 'absolute', right: 20, bottom: 14 },
+  fabButton: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
   modal: { flex: 1 },
 });

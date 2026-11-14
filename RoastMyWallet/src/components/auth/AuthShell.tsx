@@ -20,8 +20,13 @@ export function AuthShell({ title, subtitle, backLabel, onBack, children, footer
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   return (
+<<<<<<< HEAD
     <LinearGradient colors={variant === 'popart' ? ['#FFF3D8', '#FFF8E8', '#FFE8A8'] : ['#F15B50', '#7139D5', '#31B9CE']} style={styles.root}>
       {variant === 'popart' ? <PopArtBackdrop /> : <Backdrop />}
+=======
+    <LinearGradient colors={['#7C62D8', '#5D4BC0', '#5D6BAA']} style={styles.root}>
+      <Backdrop />
+>>>>>>> feat(ui): redesign to playful colour-block style (cream + ink, block cards, pill buttons, floating tab bar)
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.col}>
@@ -64,9 +69,9 @@ function Backdrop() {
     <View style={styles.backdrop} pointerEvents="none">
       <Svg width="100%" height="100%" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMax slice">
         {STARS.map(([x, y, r], i) => <Circle key={i} cx={x} cy={y} r={r} fill="#fff" opacity={0.5} />)}
-        <Path d={FAR} fill="#1B3A8F" opacity={0.55} />
-        <Path d={MID} fill="#14307A" opacity={0.8} />
-        <Path d={NEAR} fill="#0E2260" />
+        <Path d={FAR} fill="#5A3FB0" opacity={0.55} />
+        <Path d={MID} fill="#473094" opacity={0.8} />
+        <Path d={NEAR} fill="#2E1F6B" />
       </Svg>
     </View>
   );
@@ -114,7 +119,7 @@ const styles = StyleSheet.create({
   topTitle: { color: '#fff', fontSize: 17, fontWeight: '700' },
   brandBlock: { alignItems: 'center', gap: 10, paddingTop: 8, paddingBottom: 6 },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  logoMark: { width: 34, height: 34, borderRadius: 10, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center' },
+  logoMark: { width: 34, height: 34, borderRadius: 10, backgroundColor: '#16130F', alignItems: 'center', justifyContent: 'center' },
   brandName: { color: '#fff', fontSize: 20, fontWeight: '800', letterSpacing: -0.4 },
   title: { color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginTop: 6, letterSpacing: -0.4 },
   subtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center' },
