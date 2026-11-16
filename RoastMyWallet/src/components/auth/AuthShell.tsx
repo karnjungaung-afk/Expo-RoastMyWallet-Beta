@@ -111,7 +111,7 @@ function PopArtBackdrop() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   backdrop: { position: 'absolute', left: 0, right: 0, top: 0, height: 330, opacity: 0.9 },
-  popArtBackdrop: { ...StyleSheet.absoluteFillObject },
+  popArtBackdrop: { ...StyleSheet.absoluteFill },
   scroll: { flexGrow: 1, alignItems: 'center', paddingHorizontal: 20 },
   col: { width: '100%', maxWidth: 440, gap: 18 },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 44 },
