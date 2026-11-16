@@ -20,13 +20,13 @@ export function AuthShell({ title, subtitle, backLabel, onBack, children, footer
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   return (
-<<<<<<< HEAD
-    <LinearGradient colors={variant === 'popart' ? ['#FFF3D8', '#FFF8E8', '#FFE8A8'] : ['#F15B50', '#7139D5', '#31B9CE']} style={styles.root}>
+    <LinearGradient
+      colors={variant === 'popart'
+        ? ['#FFF3D8', '#FFF8E8', '#FFE8A8']
+        : ['#F15B50', '#7139D5', '#31B9CE']}
+      style={styles.root}
+    >
       {variant === 'popart' ? <PopArtBackdrop /> : <Backdrop />}
-=======
-    <LinearGradient colors={['#7C62D8', '#5D4BC0', '#5D6BAA']} style={styles.root}>
-      <Backdrop />
->>>>>>> feat(ui): redesign to playful colour-block style (cream + ink, block cards, pill buttons, floating tab bar)
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.col}>
